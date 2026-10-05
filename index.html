@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="lt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Karolinos mankštos planas</title>
+<meta name="description" content="Namų mankštos planas su laikmačiu: 10 saugių pratimų liemeniui, sėdmenims ir dubens padėčiai, su instrukcijomis, klaidomis ir video.">
+<meta name="theme-color" content="#23676b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2323676b'/%3E%3Cpath d='M9 22c4-1 6-4 7-6s3-5 7-6' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Manrope:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Namų mankšta · tik kilimėlis</p>
+    <h1>Karolinos mankštos planas</h1>
+    <p class="lead">Apie 22 minučių programa (2 lygyje apie 34 min.) liemens, sėdmenų ir laikysenos raumenims stiprinti. Paspausk „Pradėti“, ir puslapis pats ves per visus pratimus su laikmačiu ir poilsio pertraukėlėmis. Nieko spaudinėti nereikia.</p>
+    <div class="facts">
+      <span class="chip">4–5 dienos per savaitę</span>
+      <span class="chip">1 lygis ~22 min. · 2 lygis ~34 min.</span>
+      <span class="chip">Pradedančiajai</span>
+      <span class="chip">Abi pusės vienodai</span>
+    </div>
+  </header>
+
+  <div class="safety" role="note">
+    <h2>Prieš pradedant</h2>
+    <ul>
+      <li>Tai bendros rekomendacijos, ne medicininė konsultacija. <b>Kitą savaitę parodyk šį planą savo kineziterapeutui</b>, jis gali dalį pratimų pakeisti pagal tavo apžiūrą.</li>
+      <li>Jei kuris nors pratimas sukelia <b>aštrų, duriantį ar plintantį į koją skausmą, tirpimą</b>, iškart nutrauk. Raumenų nuovargis ir lengvas „degimas“ yra normalu, skausmas sąnaryje ar stubure nėra.</li>
+      <li>5–6° kreivė yra nedidelė. Šis planas sąmoningai simetriškas: abi pusės dirba vienodai. Specialius vienpusius korekcinius pratimus (pvz., Schroth metodą) skiria tik specialistas po apžiūros.</li>
+      <li>Kvėpuok visą laiką, nesulaikyk kvapo. Geriau mažiau kartų, bet taisyklingai.</li>
+    </ul>
+  </div>
+
+  <section aria-labelledby="sched">
+    <h2 id="sched">Kaip kartoti</h2>
+    <div class="schedule">
+      <div><b>1–2 savaitė · 1 lygis</b><span>4 dienas per savaitę, pvz., pirm., trečd., penkt., sekm. Mokaisi technikos.</span></div>
+      <div><b>3–4 savaitė · 2 lygis</b><span>4–5 dienas. Daugiau kartojimų ir ilgesnis laikymas, jei 1 lygis jau lengvas ir be skausmo.</span></div>
+      <div><b>Poilsio dienomis</b><span>30 min. pasivaikščiojimas sparčiu žingsniu. Galima atlikti tik kvėpavimą ir tempimus (1, 3, 9, 10).</span></div>
+    </div>
+  </section>
+
+  <section class="player" id="player" aria-labelledby="ptitle">
+    <h2 id="ptitle">Treniruotė su laikmačiu</h2>
+    <div class="level" role="group" aria-label="Lygis">
+      <span>Lygis:</span>
+      <button class="seg" id="lvl1" data-level="0" aria-pressed="true">1 lygis</button>
+      <button class="seg" id="lvl2" data-level="1" aria-pressed="false">2 lygis</button>
+    </div>
+    <div class="stage" aria-live="polite">
+      <p class="kind" id="kind">Pasiruošk</p>
+      <p class="now" id="now">Patiesk kilimėlį ir paspausk „Pradėti“</p>
+      <p class="cue" id="cue">Laikmatis pats perjungs pratimus. Kiekvieno pratimo pabaigoje pasigirs signalas, o pertraukėlės metu pamatysi, kas laukia toliau.</p>
+    </div>
+    <div class="clock" id="clock">0:00</div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="controls">
+      <button class="btn primary" id="start">Pradėti</button>
+      <button class="btn ghost" id="skip">Praleisti žingsnį</button>
+      <button class="btn ghost" id="reset">Iš naujo</button>
+    </div>
+    <p class="meta" id="meta"></p>
+  </section>
+
+  <section aria-labelledby="exlist">
+    <h2 id="exlist">Pratimai</h2>
+    <p class="lead">Prieš pirmą kartą peržiūrėk kiekvieno pratimo video (spausk paveikslėlį, jis pasileis čia pat) ir perskaityk dažniausias klaidas. Video yra anglų kalba, bet judesys aiškiai matosi.</p>
+    <div id="cards" class="cards"></div>
+  </section>
+
+  <section class="two" aria-label="Kasdieniai įpročiai">
+    <div>
+      <h3>Kasdien, ne tik mankštos metu</h3>
+      <ul>
+        <li>Sėdint kas 30–40 min. atsistok ir pajudėk 1–2 min. Ilgas sėdėjimas trumpina klubo lenkiamuosius raumenis ir didina dubens pasvirimą į priekį.</li>
+        <li>Stovint neužsirakink kelių ir „neįkrisk“ į juosmenį: švelniai įtempk sėdmenis ir pilvą, tarsi užsisagstytum kelnes.</li>
+        <li>Rankinę ar kuprinę nešiok pakaitomis ant abiejų pečių.</li>
+        <li>Miegok ant nugaros arba ant šono, kaitaliodama puses.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Ko paklausti kineziterapeuto</h3>
+      <ul>
+        <li>Ar šie pratimai tinka mano kreivei ir dubens padėčiai?</li>
+        <li>Ar reikia man vienpusių (asimetrinių) korekcinių pratimų? Kurių ir į kurią pusę?</li>
+        <li>Ar yra pratimų, kurių turėčiau vengti?</li>
+        <li>Kaip derinti namų mankštą su reabilitacijos dienomis?</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>Video nuorodos patikrintos 2026-10-05: visos veda į esamus YouTube įrašus, kurių pavadinimai atitinka pratimą. Jei kurio nors video nebebūtų, YouTube paieškoje įvesk pratimo pavadinimą anglų kalba (pateiktas po lietuvišku).</footer>
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>
