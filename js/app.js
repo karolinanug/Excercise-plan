@@ -128,14 +128,30 @@ function show() {
   highlight(steps[idx].ex);
   showVideo(st.ex);
 }
-let videoEx = -1;
+// Vienas YouTube grotuvas visai treniruotei: paleidžiamas paspaudus „Pradėti“
+// (naršyklės leidžia paleisti video tik po paspaudimo), o vėliau tik keičiamas video.
+let yt = null, ytReady = false, videoEx = -1;
+window.onYouTubeIframeAPIReady = () => {
+  yt = new YT.Player("ytplayer", {
+    host: "https://www.youtube-nocookie.com",
+    videoId: EX[0].video.id,
+    playerVars: { playsinline: 1, rel: 0, mute: 1 },
+    events: {
+      onReady: () => { ytReady = true; yt.mute(); if (running && videoEx >= 0) { yt.loadVideoById(EX[videoEx].video.id); } },
+      onStateChange: e => { if (e.data === YT.PlayerState.ENDED && running) { yt.seekTo(0); yt.playVideo(); } }
+    }
+  });
+};
 function showVideo(ex) {
   const box = $("pvideo");
-  if (ex < 0) { box.hidden = true; box.innerHTML = ""; videoEx = -1; return; }
+  if (ex < 0) { box.hidden = true; videoEx = -1; if (ytReady) yt.pauseVideo(); return; }
   if (ex === videoEx) return;
   videoEx = ex;
-  const id = EX[ex].video.id;
   box.hidden = false;
+  const id = EX[ex].video.id;
+  if (ytReady) { yt.mute(); yt.loadVideoById(id); return; }
+  if (yt) return; // grotuvas dar kraunasi, onReady pats paleis teisingą video
+  // YouTube valdiklis neįsikėlė: paprastas įterptas video
   box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0" title="${esc(EX[ex].name)}: video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
 }
 function next() {
@@ -156,11 +172,13 @@ function start() {
   if (running) { pause(); return; }
   running = true; $("start").textContent = "Pauzė";
   lockScreen();
+  if (ytReady) { $("pvideo").hidden = false; yt.mute(); yt.playVideo(); }
   if (idx < 0 || idx >= steps.length) { idx = -1; next(); } else show();
   timer = setInterval(tick, 1000);
 }
 function pause() {
   running = false; clearInterval(timer); $("start").textContent = "Tęsti";
+  if (ytReady) yt.pauseVideo();
   try { wake && wake.release(); } catch (e) {}
 }
 function finish() {
