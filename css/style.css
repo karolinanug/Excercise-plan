@@ -108,3 +108,4 @@ section { display: flex; flex-direction: column; gap: 14px; }
 footer { color: var(--muted); font-size: .88rem; }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } html { scroll-behavior: auto; } }
 .cards { display: flex; flex-direction: column; gap: 16px; }
+.player-video { width: 100%; }

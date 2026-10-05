@@ -51,7 +51,7 @@ const EX = [
     video: { id: "HBdNHrt0A7Y", title: "Child's Pose Stretch for Lower Back Pain Relief", by: "Anand Physical Therapy Academy" } }
 ];
 
-const REST = 20, SIDE_SWITCH = 8;
+const REST = 20, SIDE_SWITCH = 8, PREP = 30;
 let level = 0;
 try { const s = localStorage.getItem("karolina-level"); if (s === "1") level = 1; } catch (e) {}
 
@@ -81,6 +81,7 @@ function buildSteps() {
   const steps = [];
   EX.forEach((e, i) => {
     const sets = e.sets[level], secs = e.secs[level];
+    steps.push({ type: "prep", ex: i, title: "Žiūrėk ir pasiruošk", sub: "", cue: `${i + 1}. ${e.name}. Pažiūrėk, kaip daroma, ir užimk pradinę padėtį. ${e.cue}`, secs: PREP });
     const sides = e.sides ? ["kairė pusė", "dešinė pusė"] : [null];
     for (let s = 0; s < sets; s++) {
       sides.forEach((side, k) => {
@@ -94,7 +95,6 @@ function buildSteps() {
         else if (!lastSet) steps.push({ type: "rest", ex: i, title: "Poilsis", sub: "", cue: `Toliau: ${e.name}, ${s + 2} serija.`, secs: REST });
       });
     }
-    if (i < EX.length - 1) steps.push({ type: "rest", ex: i + 1, title: "Poilsis", sub: "", cue: `Toliau: ${i + 2}. ${EX[i + 1].name}. ${EX[i + 1].cue}`, secs: REST });
   });
   return steps;
 }
@@ -119,13 +119,24 @@ function highlight(ex) {
 function show() {
   const st = steps[idx];
   $("kind").textContent = st.type === "work" ? "Daryk" + (st.sub ? " · " + st.sub : "") : st.title;
-  $("now").textContent = st.type === "work" ? st.title : (st.title === "Keisk pusę" ? "Keisk pusę" : "Atsikvėpk");
+  $("now").textContent = st.type === "work" ? st.title : st.type === "prep" ? `${st.ex + 1}. ${EX[st.ex].name}` : (st.title === "Keisk pusę" ? "Keisk pusę" : "Atsikvėpk");
   $("cue").textContent = st.cue;
   $("clock").textContent = fmt(left);
   $("bar").style.width = (100 * (st.secs - left) / st.secs) + "%";
   const remaining = steps.slice(idx + 1).reduce((a, s) => a + s.secs, 0) + left;
   $("meta").textContent = `Žingsnis ${idx + 1} iš ${steps.length} · liko apie ${Math.ceil(remaining / 60)} min.`;
   highlight(steps[idx].ex);
+  showVideo(st.ex);
+}
+let videoEx = -1;
+function showVideo(ex) {
+  const box = $("pvideo");
+  if (ex < 0) { box.hidden = true; box.innerHTML = ""; videoEx = -1; return; }
+  if (ex === videoEx) return;
+  videoEx = ex;
+  const id = EX[ex].video.id;
+  box.hidden = false;
+  box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0" title="${esc(EX[ex].name)}: video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
 }
 function next() {
   idx++;
@@ -159,15 +170,15 @@ function finish() {
   $("now").textContent = "Puiku, šiandienos mankšta atlikta!";
   $("cue").textContent = "Išgerk vandens. Jei kas nors skaudėjo (ne raumenų nuovargis), pasižymėk ir papasakok kineziterapeutui.";
   $("clock").textContent = "0:00"; $("bar").style.width = "100%"; $("meta").textContent = "";
-  $("start").textContent = "Pradėti iš naujo"; highlight(-1);
+  $("start").textContent = "Pradėti iš naujo"; highlight(-1); showVideo(-1);
 }
 function reset() {
   pause(); idx = -1; steps = buildSteps();
   $("start").textContent = "Pradėti"; $("kind").textContent = "Pasiruošk";
   $("now").textContent = "Patiesk kilimėlį ir paspausk „Pradėti“";
-  $("cue").textContent = "Laikmatis pats perjungs pratimus. Kiekvieno pratimo pabaigoje pasigirs signalas, o pertraukėlės metu pamatysi, kas laukia toliau.";
+  $("cue").textContent = "Prieš kiekvieną pratimą 30 s rodomas jo video, kad pamatytum, kaip daroma. Tada laikmatis skaičiuoja serijas, o video lieka rodomas be garso. Viskas persijungia automatiškai.";
   $("clock").textContent = fmt(totalSecs()); $("bar").style.width = "0";
-  $("meta").textContent = `Visa treniruotė: apie ${Math.round(totalSecs() / 60)} min.`; highlight(-1);
+  $("meta").textContent = `Visa treniruotė: apie ${Math.round(totalSecs() / 60)} min.`; highlight(-1); showVideo(-1);
 }
 function setLevel(l) {
   level = l;
