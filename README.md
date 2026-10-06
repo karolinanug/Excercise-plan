@@ -6,9 +6,10 @@ Statinė svetainė su namų mankštos planu: 10 pratimų, laikmatis, kuris pats 
 
 - `index.html` – puslapis
 - `css/style.css` – stiliai (šviesi ir tamsi tema, prisitaiko prie telefono)
-- `js/app.js` – pratimų sąrašas (`EX` masyvas viršuje) ir laikmatis. Prieš kiekvieną pratimą 30 s (`PREP`) rodomas jo video, po to jis lieka rodomas be garso, kol darai serijas.
+- `js/app.js` – pratimų sąrašas (`EX` masyvas viršuje) ir laikmatis. Prieš kiekvieną pratimą 30 s (`PREP`) rodoma jo animacija (arba YouTube video, jei pasirinkta), ji lieka rodoma, kol darai serijas.
+- `js/anim.js` – schematinės pratimų animacijos (SVG). Kiekvienas pratimas `EX` masyve nurodo savo animaciją lauku `anim`, o pozos aprašytos `DEF` objekte sąnarių taškais: `[poza, perėjimo ms, laikymo ms, užuomina]`.
 
-Pasirinktas lygis ir atliktų treniruočių dienos saugomi naršyklės `localStorage` (raktai `karolina-level`, `karolina-done`), todėl skaitliukas „Šią savaitę: X/4“ veikia tik tame pačiame įrenginyje ir naršyklėje.
+Pasirinktas lygis, rodymo būdas (animacija ar video) ir atliktų treniruočių dienos saugomi naršyklės `localStorage` (raktai `karolina-level`, `karolina-media`, `karolina-done`), todėl skaitliukas „Šią savaitę: X/4“ veikia tik tame pačiame įrenginyje ir naršyklėje.
 
 Pratimus, kartojimus ar trukmes keisk `js/app.js` faile, `EX` masyve. `secs` yra vienos serijos trukmė sekundėmis `[1 lygis, 2 lygis]`, `sets` – serijų skaičius, `rest: true` – pratimas siūlomas poilsio dienoms. Bendra trukmė (~24/~36 min.) ir poilsio dienų sąrašas puslapyje sugeneruojami iš `EX` automatiškai.
 
