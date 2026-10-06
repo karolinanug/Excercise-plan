@@ -185,6 +185,14 @@ function next() {
   stepBeep(steps[idx].type);
   show();
 }
+// „Atgal“: jei žingsnis jau eina ilgiau nei 3 s, pradeda jį iš naujo, kitaip grįžta į ankstesnį.
+// Veikia ir per pauzę (laikmatis lieka sustabdytas).
+function back() {
+  if (idx < 0 || idx >= steps.length) return;
+  const elapsed = steps[idx].secs * 1000 - (running ? endAt - Date.now() : remainMs);
+  setStep(elapsed > 3000 || idx === 0 ? idx : idx - 1);
+  show();
+}
 function tick() {
   const now = Date.now();
   let moved = false;
@@ -262,6 +270,7 @@ document.getElementById("cards").addEventListener("click", ev => {
   box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0" title="Video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
 });
 $("start").onclick = start;
+$("back").onclick = back;
 $("skip").onclick = () => { if (idx >= 0 && idx < steps.length) next(); };
 $("reset").onclick = reset;
 $("lvl1").onclick = () => setLevel(0);
