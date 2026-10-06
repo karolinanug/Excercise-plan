@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Karolinos mankštos planas</title>
-<meta name="description" content="Namų mankštos planas su laikmačiu: 10 saugių pratimų liemeniui, sėdmenims ir dubens padėčiai, su instrukcijomis, klaidomis ir video.">
+<meta name="description" content="Namų mankštos planas su laikmačiu: 10 saugių pratimų liemeniui, sėdmenims ir dubens padėčiai, su instrukcijomis, klaidomis, animacijomis ir video.">
 <meta name="theme-color" content="#23676b">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2323676b'/%3E%3Cpath d='M9 22c4-1 6-4 7-6s3-5 7-6' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://www.youtube-nocookie.com">
@@ -18,7 +18,7 @@
   <header>
     <p class="eyebrow">Namų mankšta · tik kilimėlis</p>
     <h1>Karolinos mankštos planas</h1>
-    <p class="lead">Apie <span data-dur="0">24</span> minučių programa (2 lygyje apie <span data-dur="1">36</span> min.) liemens, sėdmenų ir laikysenos raumenims stiprinti. Paspausk „Pradėti“, ir puslapis pats ves per visus pratimus: prieš kiekvieną parodys video, tada skaičiuos laiką ir pereis prie kito. Nieko spaudinėti nereikia.</p>
+    <p class="lead">Apie <span data-dur="0">24</span> minučių programa (2 lygyje apie <span data-dur="1">36</span> min.) liemens, sėdmenų ir laikysenos raumenims stiprinti. Paspausk „Pradėti“, ir puslapis pats ves per visus pratimus: prieš kiekvieną parodys, kaip jis daromas, tada skaičiuos laiką ir pereis prie kito. Nieko spaudinėti nereikia.</p>
     <div class="facts">
       <span class="chip">4–5 dienos per savaitę</span>
       <span class="chip">1 lygis ~<span data-dur="0">24</span> min. · 2 lygis ~<span data-dur="1">36</span> min.</span>
@@ -54,11 +54,17 @@
       <button class="seg" id="lvl2" data-level="1" aria-pressed="false">2 lygis</button>
       <span class="week" id="week" aria-live="polite"></span>
     </div>
+    <div class="level" role="group" aria-label="Ką rodyti treniruotės metu">
+      <span>Rodyti:</span>
+      <button class="seg" id="mAnim" aria-pressed="true">Animaciją</button>
+      <button class="seg" id="mVid" aria-pressed="false">YouTube video</button>
+    </div>
     <div class="stage" aria-live="polite">
       <p class="kind" id="kind">Pasiruošk</p>
       <p class="now" id="now">Patiesk kilimėlį ir paspausk „Pradėti“</p>
-      <p class="cue" id="cue">Prieš kiekvieną pratimą 30 s rodomas jo video, kad pamatytum, kaip daroma. Tada laikmatis skaičiuoja serijas, o video lieka rodomas be garso. Viskas persijungia automatiškai.</p>
+      <p class="cue" id="cue">Prieš kiekvieną pratimą 30 s rodoma, kaip jis daromas (animacija arba, jei pasirinksi, YouTube video be garso). Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.</p>
     </div>
+    <figure class="anim player-anim" id="panim" hidden></figure>
     <div class="embed player-video" id="pvideo" hidden><div id="ytplayer"></div></div>
     <div class="clock" id="clock">0:00</div>
     <div class="bar"><i id="bar"></i></div>
@@ -102,6 +108,5 @@
 </div>
 <script src="js/anim.js"></script>
 <script src="js/app.js"></script>
-<script src="https://www.youtube.com/iframe_api" async></script>
 </body>
 </html>

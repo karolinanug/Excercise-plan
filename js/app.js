@@ -187,7 +187,7 @@ function show() {
   const remaining = steps.slice(idx + 1).reduce((a, s) => a + s.secs, 0) + left;
   $("meta").textContent = `Žingsnis ${idx + 1} iš ${steps.length} · liko apie ${Math.ceil(remaining / 60)} min.`;
   highlight(steps[idx].ex);
-  try { showVideo(st.ex); } catch (e) {}
+  try { showMedia(st.ex); } catch (e) {}
 }
 // Vienas YouTube grotuvas visai treniruotei: paleidžiamas paspaudus „Pradėti“
 // (naršyklės leidžia paleisti video tik po paspaudimo), o vėliau tik keičiamas video.
@@ -195,7 +195,16 @@ function show() {
 // kreipiniai į grotuvą eina per ytDo(), o jei valdiklis neįsikelia per YT_TIMEOUT,
 // naudojamas paprastas įterptas video (arba jokio, jei YouTube visai nepasiekiamas).
 const YT_TIMEOUT = 8000;
-let yt = null, ytReady = false, ytFallback = false, ytWait = null, videoEx = -1;
+let yt = null, ytReady = false, ytFallback = false, ytWait = null, videoEx = -1, ytRequested = false;
+// YouTube skriptas kraunamas tik pasirinkus video, kad be reikalo nebūtų jungiamasi prie YouTube
+function loadYT() {
+  if (ytRequested) return;
+  ytRequested = true;
+  const sc = document.createElement("script");
+  sc.src = "https://www.youtube.com/iframe_api"; sc.async = true;
+  sc.onerror = () => { ytFallback = true; if (videoEx >= 0) fallbackVideo(videoEx); };
+  document.head.append(sc);
+}
 function ytDo(fn) { if (!ytReady || ytFallback) return; try { fn(yt); } catch (e) {} }
 window.onYouTubeIframeAPIReady = () => {
   if (ytFallback || !$("ytplayer")) return;
@@ -230,11 +239,33 @@ function showVideo(ex) {
   if (ex === videoEx) return;
   videoEx = ex;
   box.hidden = false;
-  if (ytFallback || !yt) { fallbackVideo(ex); return; }
+  if (ytFallback) { fallbackVideo(ex); return; }
   if (ytReady) { ytDo(p => { p.mute(); p.loadVideoById(EX[ex].video.id); }); return; }
   // grotuvas dar kraunasi: onReady pats paleis teisingą video, o jei neįsikels – atsarginis variantas
   clearTimeout(ytWait);
   ytWait = setTimeout(() => { if (!ytReady && videoEx >= 0) fallbackVideo(videoEx); }, YT_TIMEOUT);
+}
+// Treniruotės metu rodoma animacija (numatyta) arba YouTube video; pasirinkimas išsaugomas
+let media = "anim", pAnim = null, animEx = -1;
+try { if (localStorage.getItem("karolina-media") === "video") media = "video"; } catch (e) {}
+function showAnim(ex) {
+  const box = $("panim");
+  if (ex < 0) { box.hidden = true; animEx = -1; if (pAnim) { pAnim.destroy(); pAnim = null; } return; }
+  box.hidden = false;
+  if (ex === animEx && pAnim) return;
+  if (pAnim) pAnim.destroy();
+  animEx = ex; pAnim = ANIM.mount(box, EX[ex].anim, level);
+}
+function showMedia(ex) {
+  if (media === "anim") { showVideo(-1); showAnim(ex); }
+  else { showAnim(-1); showVideo(ex); }
+}
+function setMedia(m) {
+  media = m;
+  try { localStorage.setItem("karolina-media", m); } catch (e) {}
+  $("mAnim").setAttribute("aria-pressed", m === "anim"); $("mVid").setAttribute("aria-pressed", m === "video");
+  if (m === "video") loadYT();
+  if (idx >= 0 && idx < steps.length) try { showMedia(steps[idx].ex); } catch (e) {}
 }
 function setStep(i) {
   idx = i;
@@ -292,7 +323,7 @@ function start() {
   lastTick = Date.now();
   if (idx < 0 || idx >= steps.length) trainedMs = 0;
   lockScreen();
-  ytDo(p => { $("pvideo").hidden = false; p.mute(); p.playVideo(); });
+  if (media === "video") ytDo(p => { $("pvideo").hidden = false; p.mute(); p.playVideo(); });
   if (idx < 0 || idx >= steps.length) { idx = -1; next(); }
   else { endAt = Date.now() + remainMs; show(); }
   clearInterval(timer);
@@ -317,15 +348,15 @@ function finish() {
   $("clock").textContent = "0:00"; $("bar").style.width = "100%";
   $("meta").textContent = counted ? "Treniruotė pažymėta kaip atlikta." : "Daugiau nei pusė treniruotės praleista, todėl ji neįskaityta.";
   renderWeek();
-  $("start").textContent = "Pradėti iš naujo"; highlight(-1); showVideo(-1);
+  $("start").textContent = "Pradėti iš naujo"; highlight(-1); showMedia(-1);
 }
 function reset() {
   pause(); idx = -1; steps = buildSteps();
   $("start").textContent = "Pradėti"; $("kind").textContent = "Pasiruošk";
   $("now").textContent = "Patiesk kilimėlį ir paspausk „Pradėti“";
-  $("cue").textContent = "Prieš kiekvieną pratimą 30 s rodomas jo video, kad pamatytum, kaip daroma. Tada laikmatis skaičiuoja serijas, o video lieka rodomas be garso. Viskas persijungia automatiškai.";
+  $("cue").textContent = "Prieš kiekvieną pratimą 30 s rodoma, kaip jis daromas (animacija arba, jei pasirinksi, YouTube video be garso). Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.";
   $("clock").textContent = fmt(totalSecs()); $("bar").style.width = "0";
-  $("meta").textContent = `Visa treniruotė: apie ${Math.round(totalSecs() / 60)} min.`; highlight(-1); showVideo(-1);
+  $("meta").textContent = `Visa treniruotė: apie ${Math.round(totalSecs() / 60)} min.`; highlight(-1); showMedia(-1);
 }
 function setLevel(l) {
   level = l;
@@ -337,6 +368,8 @@ $("start").onclick = start;
 $("back").onclick = back;
 $("skip").onclick = () => { if (idx >= 0 && idx < steps.length) next(); };
 $("reset").onclick = reset;
+$("mAnim").onclick = () => setMedia("anim");
+$("mVid").onclick = () => setMedia("video");
 $("lvl1").onclick = () => setLevel(0);
 $("lvl2").onclick = () => setLevel(1);
 document.addEventListener("visibilitychange", () => {
@@ -346,4 +379,5 @@ document.addEventListener("visibilitychange", () => {
 });
 renderSummary();
 renderWeek();
+setMedia(media);
 setLevel(level);
