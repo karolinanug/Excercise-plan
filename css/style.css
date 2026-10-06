@@ -106,17 +106,27 @@ footer { color: var(--muted); font-size: .88rem; }
 .cards { display: flex; flex-direction: column; gap: 16px; }
 .player-video { width: 100%; }
 
-/* Pratimų animacijos (js/anim.js): artimesnė kūno pusė ryški, tolimesnė blanki */
-.anim { margin: 0; display: flex; flex-direction: column; gap: 6px; }
-.anim-btn { position: relative; display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); cursor: pointer; overflow: hidden; }
+/* Pratimų animacijos (js/anim.js): figūra „apsirengusi“ – marškinėliai, tamprės, oda;
+   tolimesnė kūno pusė tamsesnė, dirbantys raumenys paryškinti šiltu švytėjimu */
+:root { --fig-skin: #e8b597; --fig-hair: #5a3a2a; --fig-top: var(--accent); --fig-legs: #2f4250; --fig-focus: #ff7a3d; --fig-far: brightness(.78); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --fig-skin: #d9a487; --fig-hair: #8a5e45; --fig-legs: #5d7a8c; --fig-focus: #ff9a5c; --fig-far: brightness(.62); }
+}
+:root[data-theme="dark"] { --fig-skin: #d9a487; --fig-hair: #8a5e45; --fig-legs: #5d7a8c; --fig-focus: #ff9a5c; --fig-far: brightness(.62); }
+.anim { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.anim-btn { position: relative; display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(var(--surface), var(--bg)); cursor: pointer; overflow: hidden; }
 .anim-btn svg { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; }
 .anim-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-.anim-near, .anim-far { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.anim-near { stroke: var(--accent); stroke-width: 4.5; }
-.anim-far { stroke: var(--muted); stroke-width: 4; opacity: .45; }
-.anim-torso { stroke-width: 7; }
-.anim-head { fill: var(--accent); }
+.anim-skin { fill: var(--fig-skin); }
+.anim-hair { fill: var(--fig-hair); }
+.anim-top { fill: var(--fig-top); }
+.anim-legs { fill: var(--fig-legs); }
+.anim-far { filter: var(--fig-far); }
+.anim-focus { fill: var(--fig-focus); mix-blend-mode: normal; }
 .anim-mat { fill: var(--accent-soft); }
+.anim-shadow { fill: #000; opacity: .16; }
+.anim-muscle { font-size: .85rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.anim-muscle::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--fig-focus); flex: none; }
 .anim-say { font-size: .92rem; font-weight: 700; color: var(--ink); min-height: 1.5em; }
 .anim-state { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); display: grid; place-items: center; opacity: 0; transition: opacity .2s; }
 .anim-state::after { content: ""; width: 9px; height: 10px; border-left: 3px solid var(--accent); border-right: 3px solid var(--accent); box-sizing: border-box; }
