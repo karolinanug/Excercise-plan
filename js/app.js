@@ -100,6 +100,9 @@ function buildSteps() {
 }
 
 let steps = buildSteps(), idx = -1, left = 0, timer = null, running = false, audio = null, wake = null;
+// Laikas skaičiuojamas nuo žingsnio pabaigos momento (Date.now()), ne mažinant skaitiklį kas
+// sekundę: foniniame skirtuke setInterval lėtėja, bet laikas vis tiek lieka tikslus.
+let endAt = 0, remainMs = 0;
 const $ = id => document.getElementById(id);
 
 function fmt(t) { const m = Math.floor(t / 60), s = t % 60; return m + ":" + String(s).padStart(2, "0"); }
@@ -172,17 +175,29 @@ function showVideo(ex) {
   // YouTube valdiklis neįsikėlė: paprastas įterptas video
   box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0" title="${esc(EX[ex].name)}: video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
 }
+function setStep(i) {
+  idx = i;
+  left = steps[idx].secs; remainMs = left * 1000; endAt = Date.now() + remainMs;
+}
 function next() {
-  idx++;
-  if (idx >= steps.length) { finish(); return; }
-  left = steps[idx].secs;
+  if (idx + 1 >= steps.length) { finish(); return; }
+  setStep(idx + 1);
   stepBeep(steps[idx].type);
   show();
 }
 function tick() {
-  left--;
-  if (left > 0 && left <= 3) countBeep();
-  if (left <= 0) { next(); return; }
+  const now = Date.now();
+  let moved = false;
+  // Jei skirtukas ilgai buvo fone, praleidžiami visi jau pasibaigę žingsniai
+  while (endAt <= now) {
+    if (idx + 1 >= steps.length) { finish(); return; }
+    idx++; endAt += steps[idx].secs * 1000; moved = true;
+  }
+  const l = Math.ceil((endAt - now) / 1000);
+  if (!moved && l === left) return;
+  left = l;
+  if (moved) stepBeep(steps[idx].type);
+  else if (left <= 3) countBeep();
   show();
 }
 // Ekranas neužgęsta, kol vyksta treniruotė. Naršyklė užraktą atleidžia paslėpus skirtuką,
@@ -206,10 +221,13 @@ function start() {
   initAudio();
   lockScreen();
   if (ytReady) { $("pvideo").hidden = false; yt.mute(); yt.playVideo(); }
-  if (idx < 0 || idx >= steps.length) { idx = -1; next(); } else show();
-  timer = setInterval(tick, 1000);
+  if (idx < 0 || idx >= steps.length) { idx = -1; next(); }
+  else { endAt = Date.now() + remainMs; show(); }
+  clearInterval(timer);
+  timer = setInterval(tick, 250);
 }
 function pause() {
+  if (running) remainMs = Math.max(0, endAt - Date.now());
   running = false; clearInterval(timer); $("start").textContent = "Tęsti";
   if (ytReady) yt.pauseVideo();
   unlockScreen();
@@ -248,5 +266,5 @@ $("skip").onclick = () => { if (idx >= 0 && idx < steps.length) next(); };
 $("reset").onclick = reset;
 $("lvl1").onclick = () => setLevel(0);
 $("lvl2").onclick = () => setLevel(1);
-document.addEventListener("visibilitychange", () => { if (running && document.visibilityState === "visible") lockScreen(); });
+document.addEventListener("visibilitychange", () => { if (running && document.visibilityState === "visible") { tick(); lockScreen(); } });
 setLevel(level);
