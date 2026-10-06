@@ -51,7 +51,9 @@ const EX = [
     rest: true, anim: "child", video: { id: "HBdNHrt0A7Y", title: "Child's Pose Stretch for Lower Back Pain Relief", by: "Anand Physical Therapy Academy" } }
 ];
 
-const REST = 20, SIDE_SWITCH = 8, PREP = 30;
+// Sekundės: poilsis tarp serijų, pusės keitimas, pirmo pratimo apžiūra, poilsis tarp pratimų,
+// pasiruošimas po poilsio, poilsio pratęsimas mygtuku
+const REST = 20, SIDE_SWITCH = 8, PREP = 30, REST_BETWEEN = 30, PREP_NEXT = 10, REST_PLUS = 15;
 let level = 0;
 try { const s = localStorage.getItem("karolina-level"); if (s === "1") level = 1; } catch (e) {}
 
@@ -104,7 +106,9 @@ function buildSteps(lvl = level) {
   const steps = [];
   EX.forEach((e, i) => {
     const sets = e.sets[lvl], secs = e.secs[lvl];
-    steps.push({ type: "prep", ex: i, title: "Žiūrėk ir pasiruošk", sub: "", cue: `${i + 1}. ${e.name}. Pažiūrėk, kaip daroma, ir užimk pradinę padėtį. ${e.cue}`, secs: PREP });
+    // Tarp pratimų – poilsis (jau rodoma kito pratimo animacija), po jo trumpas pasiruošimas
+    if (i > 0) steps.push({ type: "rest", between: true, ex: i, title: "Poilsis", sub: "", cue: `Atsikvėpk ir atsigerk vandens. Toliau: ${i + 1}. ${e.name}. ${e.cue}`, secs: REST_BETWEEN });
+    steps.push({ type: "prep", ex: i, title: i ? "Pasiruošk" : "Žiūrėk ir pasiruošk", sub: "", cue: `${i + 1}. ${e.name}. ${i ? "Užimk pradinę padėtį." : "Pažiūrėk, kaip daroma, ir užimk pradinę padėtį."} ${e.cue}`, secs: i ? PREP_NEXT : PREP });
     const sides = e.sides ? ["kairė pusė", "dešinė pusė"] : [null];
     for (let s = 0; s < sets; s++) {
       sides.forEach((side, k) => {
@@ -199,13 +203,16 @@ function highlight(ex) {
 function show() {
   const st = steps[idx];
   $("kind").textContent = st.type === "work" ? "Daryk" + (st.sub ? " · " + st.sub : "") : st.title;
-  $("now").textContent = st.type === "work" ? st.title : st.type === "prep" ? `${st.ex + 1}. ${EX[st.ex].name}` : (st.title === "Keisk pusę" ? "Keisk pusę" : "Atsikvėpk");
+  $("now").textContent = st.type === "work" ? st.title : st.type === "prep" ? `${st.ex + 1}. ${EX[st.ex].name}`
+    : st.between ? `Toliau: ${st.ex + 1}. ${EX[st.ex].name}` : (st.title === "Keisk pusę" ? "Keisk pusę" : "Atsikvėpk");
   $("cue").textContent = st.cue;
   $("clock").textContent = fmt(left);
   $("bar").style.width = (100 * (st.secs - left) / st.secs) + "%";
   const remaining = steps.slice(idx + 1).reduce((a, s) => a + s.secs, 0) + left;
   $("meta").textContent = `Žingsnis ${idx + 1} iš ${steps.length} · liko apie ${Math.ceil(remaining / 60)} min.`;
   highlight(steps[idx].ex);
+  $("restctl").hidden = st.type !== "rest";
+  $("player").classList.toggle("is-rest", st.type === "rest");
   try { showAnim(st.ex); } catch (e) {}
 }
 // Treniruotės metu rodoma dabartinio pratimo animacija
@@ -236,6 +243,15 @@ function back() {
   setStep(elapsed > 3000 || idx === 0 ? idx : idx - 1);
   show();
 }
+// Poilsį galima pratęsti arba baigti anksčiau
+function extendRest() {
+  if (idx < 0 || idx >= steps.length || steps[idx].type !== "rest") return;
+  steps[idx] = Object.assign({}, steps[idx], { secs: steps[idx].secs + REST_PLUS });
+  if (running) endAt += REST_PLUS * 1000; else remainMs += REST_PLUS * 1000;
+  left += REST_PLUS;
+  show();
+}
+function endRest() { if (idx >= 0 && idx < steps.length && steps[idx].type === "rest") next(); }
 function tick() {
   countTrained();
   const now = Date.now();
@@ -298,6 +314,7 @@ function finish() {
   $("meta").textContent = counted ? "Treniruotė pažymėta kaip atlikta." : "Daugiau nei pusė treniruotės praleista, todėl ji neįskaityta.";
   renderWeek();
   $("start").textContent = "Pradėti iš naujo"; highlight(-1); showAnim(-1);
+  $("restctl").hidden = true; $("player").classList.remove("is-rest");
 }
 function reset() {
   pause(); idx = -1; steps = buildSteps();
@@ -306,6 +323,7 @@ function reset() {
   $("cue").textContent = "Prieš kiekvieną pratimą rodoma animacija, kaip jis daromas. Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.";
   $("clock").textContent = fmt(totalSecs()); $("bar").style.width = "0";
   $("meta").textContent = `Visa treniruotė: apie ${Math.round(totalSecs() / 60)} min.`; highlight(-1); showAnim(-1);
+  $("restctl").hidden = true; $("player").classList.remove("is-rest");
 }
 function setLevel(l) {
   level = l;
@@ -326,6 +344,8 @@ $("start").onclick = start;
 $("back").onclick = back;
 $("skip").onclick = () => { if (idx >= 0 && idx < steps.length) next(); };
 $("reset").onclick = reset;
+$("restplus").onclick = extendRest;
+$("restend").onclick = endRest;
 $("lvl1").onclick = () => setLevel(0);
 $("lvl2").onclick = () => setLevel(1);
 document.addEventListener("visibilitychange", () => {
