@@ -99,6 +99,31 @@ function buildSteps(lvl = level) {
   return steps;
 }
 
+// Atliktos treniruotės saugomos localStorage kaip dienų sąrašas („2026-10-06“), viena įskaita
+// per dieną. Savaitė prasideda pirmadienį. Įskaitoma, jei realiai treniruotasi bent pusę
+// numatyto laiko (kad keli „Praleisti žingsnį“ paspaudimai nepažymėtų treniruotės atlikta).
+const DONE_KEY = "karolina-done", WEEK_GOAL = 4, KEEP_DAYS = 120;
+function dayKey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function loadDone() {
+  try {
+    const a = JSON.parse(localStorage.getItem(DONE_KEY) || "[]");
+    return Array.isArray(a) ? a.filter(x => typeof x === "string") : [];
+  } catch (e) { return []; }
+}
+function markDone() {
+  const now = new Date(), today = dayKey(now);
+  const oldest = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - KEEP_DAYS));
+  const done = loadDone().filter(k => k >= oldest && k !== today);
+  done.push(today);
+  try { localStorage.setItem(DONE_KEY, JSON.stringify(done)); } catch (e) {}
+}
+function renderWeek() {
+  const now = new Date(), done = loadDone();
+  const monday = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - (now.getDay() + 6) % 7));
+  const n = done.filter(k => k >= monday).length;
+  $("week").textContent = `Šią savaitę: ${n}/${WEEK_GOAL}` + (done.includes(dayKey(now)) ? " · šiandien ✓" : "");
+}
+
 // Bendra trukmė ir poilsio dienų pratimai skaičiuojami iš EX, kad pakeitus pratimus
 // tekstas puslapyje neatsiliktų.
 function renderSummary() {
@@ -112,7 +137,8 @@ function renderSummary() {
 let steps = buildSteps(), idx = -1, left = 0, timer = null, running = false, audio = null, wake = null;
 // Laikas skaičiuojamas nuo žingsnio pabaigos momento (Date.now()), ne mažinant skaitiklį kas
 // sekundę: foniniame skirtuke setInterval lėtėja, bet laikas vis tiek lieka tikslus.
-let endAt = 0, remainMs = 0;
+let endAt = 0, remainMs = 0, trainedMs = 0, lastTick = 0;
+function countTrained() { const now = Date.now(); if (running) trainedMs += now - lastTick; lastTick = now; }
 const $ = id => document.getElementById(id);
 
 function fmt(t) { const m = Math.floor(t / 60), s = t % 60; return m + ":" + String(s).padStart(2, "0"); }
@@ -225,6 +251,7 @@ function back() {
   show();
 }
 function tick() {
+  countTrained();
   const now = Date.now();
   let moved = false;
   // Jei skirtukas ilgai buvo fone, praleidžiami visi jau pasibaigę žingsniai
@@ -258,6 +285,8 @@ function start() {
   if (running) { pause(); return; }
   running = true; $("start").textContent = "Pauzė";
   initAudio();
+  lastTick = Date.now();
+  if (idx < 0 || idx >= steps.length) trainedMs = 0;
   lockScreen();
   ytDo(p => { $("pvideo").hidden = false; p.mute(); p.playVideo(); });
   if (idx < 0 || idx >= steps.length) { idx = -1; next(); }
@@ -266,18 +295,24 @@ function start() {
   timer = setInterval(tick, 250);
 }
 function pause() {
+  countTrained();
   if (running) remainMs = Math.max(0, endAt - Date.now());
   running = false; clearInterval(timer); $("start").textContent = "Tęsti";
   ytDo(p => p.pauseVideo());
   unlockScreen();
 }
 function finish() {
+  countTrained();
+  const counted = trainedMs >= totalSecs() * 1000 / 2;
+  if (counted) markDone();
   clearInterval(timer); running = false; idx = steps.length; unlockScreen();
   beep(880, 0.2); beep(1175, 0.2, 0.22); beep(1568, 0.45, 0.44); buzz([200, 100, 200, 100, 400]);
   $("kind").textContent = "Baigta";
   $("now").textContent = "Puiku, šiandienos mankšta atlikta!";
   $("cue").textContent = "Išgerk vandens. Jei kas nors skaudėjo (ne raumenų nuovargis), pasižymėk ir papasakok kineziterapeutui.";
-  $("clock").textContent = "0:00"; $("bar").style.width = "100%"; $("meta").textContent = "";
+  $("clock").textContent = "0:00"; $("bar").style.width = "100%";
+  $("meta").textContent = counted ? "Treniruotė pažymėta kaip atlikta." : "Daugiau nei pusė treniruotės praleista, todėl ji neįskaityta.";
+  renderWeek();
   $("start").textContent = "Pradėti iš naujo"; highlight(-1); showVideo(-1);
 }
 function reset() {
@@ -306,6 +341,11 @@ $("skip").onclick = () => { if (idx >= 0 && idx < steps.length) next(); };
 $("reset").onclick = reset;
 $("lvl1").onclick = () => setLevel(0);
 $("lvl2").onclick = () => setLevel(1);
-document.addEventListener("visibilitychange", () => { if (running && document.visibilityState === "visible") { tick(); lockScreen(); } });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  renderWeek();
+  if (running) { tick(); lockScreen(); }
+});
 renderSummary();
+renderWeek();
 setLevel(level);

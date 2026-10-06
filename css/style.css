@@ -60,6 +60,7 @@ section { display: flex; flex-direction: column; gap: 14px; }
 .level { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .level span { font-size: .9rem; color: var(--muted); margin-right: 4px; }
 .seg { border: 1px solid var(--line); background: transparent; color: var(--ink); font: inherit; font-size: .9rem; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+.level .week { margin: 0 0 0 auto; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
 .seg[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
 .stage { display: flex; flex-direction: column; gap: 6px; min-height: 170px; justify-content: center; }
 .stage .kind { font-size: .8rem; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); font-weight: 700; }
