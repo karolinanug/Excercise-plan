@@ -37,6 +37,7 @@ TARIMAS = [
     (r"apie 20–25 cm", "per dvidešimt ar dvidešimt penkis centimetrus"),
     (r"\(kaip 2 pratime\)", "(kaip antrame pratime)"),
     (r"\b1 s pauzė", "sekundės pauzė"),
+    (r"\b(\d+) s\b", r"\1 sekundes"),
     (r"Katė–karvė", "Katė karvė"),
     (r"Paukštis–šuo", "Paukštis šuo"),
 ]

@@ -22,14 +22,14 @@ for (const f of ["js/anim.js", "js/voice.js", "js/app.js"]) vm.runInContext(read
 
 const out = vm.runInContext(`(() => {
   const all = new Set(), add = t => { if (t) all.add(t); };
-  // Įžanga: kiekviena savaitės diena, abu lygiai
-  for (let l = 0; l < 2; l++) for (let d = 0; d < 7; d++) { level = l; selDay = d; add(introStep().cue); }
+  // Įžanga (ilga ir trumpa): kiekviena savaitės diena, abu lygiai
+  for (let l = 0; l < 2; l++) for (let d = 0; d < 7; d++) { level = l; selDay = d; add(introStep(true).cue); add(introStep(false).cue); }
   for (let l = 0; l < 2; l++) {
     level = l;
     for (const type of Object.keys(DAYTYPE)) {
       for (const st of buildSteps(l, DAYTYPE[type].list())) {
         const e = EX[st.ex];
-        if (st.type === "prep") add(descText(st));
+        if (st.type === "prep") { add(descText(st, true)); add(descText(st, false)); }
         if (st.type === "rest") {
           if (st.between) add(\`Poilsis. Atsikvėpk. Toliau – \${e.name}.\`);
           else if (st.sw) add(VOICE_SWITCH[e.anim] || "Keisk pusę.");

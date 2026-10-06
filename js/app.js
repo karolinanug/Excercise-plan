@@ -277,11 +277,23 @@ function showAnim(ex) {
 }
 // ---- Balsas: pranešimai žingsnio pradžioje ir ritmo nurodymai jo metu ----
 const INTRO_SECS = 28;
-function introStep() {
+// Ilgi aprašymai (įžanga ir pratimų žingsniai) sakomi, kol bus išklausyti iki galo; vėliau –
+// trumpai: pavadinimas ir pagrindinis nurodymas. „Atgal“ pasiruošimo metu vėl paskaito visą.
+// Išklausyti aprašymai saugomi localStorage (karolina-heard).
+const HEARD_KEY = "karolina-heard";
+let heard = new Set(), fullIdx = -1;
+try { heard = new Set(JSON.parse(localStorage.getItem(HEARD_KEY) || "[]")); } catch (e) {}
+function markHeard(k) {
+  if (heard.has(k)) return;
+  heard.add(k);
+  try { localStorage.setItem(HEARD_KEY, JSON.stringify([...heard])); } catch (e) {}
+}
+function introStep(full = !heard.has("intro")) {
   const w = WEEK[selDay], list = DAYTYPE[w.type].list(), min = Math.round(buildSteps(level).reduce((a, s) => a + s.secs, 0) / 60);
   const mins = plural(min, "minutė", "minutės", "minučių");
   const what = w.type === "full" ? `visa treniruotė: ${plural(list.length, "pratimas", "pratimai", "pratimų")}, apie ${mins}` : `lengva diena: kvėpavimas ir tempimai, apie ${mins}, o paskui pusvalandis pasivaikščiojimo`;
-  const text = `Labas, Karolina. Šiandien ${w.name.toLowerCase()}, ${what}. ` +
+  const text = !full ? `Labas, Karolina. Šiandien ${w.name.toLowerCase()}, ${what}. Patiesk kilimėlį. Pradedam.`
+    : `Labas, Karolina. Šiandien ${w.name.toLowerCase()}, ${what}. ` +
     "Šios mankštos tikslas – sustiprinti giliuosius pilvo ir sėdmenų raumenis ir išmokti valdyti dubens padėtį. " +
     "Judėk lėtai, visą laiką kvėpuok ir niekada nedaryk per aštrų skausmą. Aš pasakysiu, kada ir ką daryti, tau nereikės skaičiuoti. " +
     "Patiesk kilimėlį. Pradedam.";
@@ -293,14 +305,16 @@ let spokenIdx = -1, vKey = null, vFlags = {};
 // laiko tęsiama vis tiek.
 let holding = false, gateId = 0, gateTimer = null;
 const isGated = st => SAY.active && (st.type === "intro" || st.type === "prep");
-function descText(st) {
+const heardKey = st => st.type === "intro" ? "intro" : EX[st.ex].anim;
+function descText(st, full = !heard.has(heardKey(st))) {
   const e = EX[st.ex];
-  return `${st.pos ? "Kitas pratimas" : "Pirmas pratimas"}: ${e.name}. ${e.steps.join(" ")}${e.sides ? " Pradėk kaire puse." : ""} Pasiruošk.`;
+  return `${st.pos ? "Kitas pratimas" : "Pirmas pratimas"}: ${e.name}. ${full ? e.steps.join(" ") : e.cue}${e.sides ? " Pradėk kaire puse." : ""} Pasiruošk.`;
 }
-function gate(text) {
+// key – kurį aprašymą pažymėti išklausytu, kai jis pasakomas iki galo (ne praleistas)
+function gate(text, key) {
   const id = ++gateId;
   holding = true; clearTimeout(gateTimer);
-  const done = () => gateEnd(id);
+  const done = () => { if (id === gateId && holding && running) markHeard(key); gateEnd(id); };
   SAY.say(text, true, done);
   gateTimer = setTimeout(done, Math.max(5000, text.length * 110 + 4000));
 }
@@ -312,7 +326,10 @@ function gateEnd(id) {
 function announce(st) {
   vKey = null; vFlags = {};
   const e = EX[st.ex];
-  if (isGated(st)) return gate(st.type === "intro" ? st.cue : descText(st));
+  if (isGated(st)) {
+    const full = fullIdx === idx || !heard.has(heardKey(st));
+    return gate(st.type === "intro" ? introStep(full).cue : descText(st, full), heardKey(st));
+  }
   if (st.type === "rest") {
     if (st.between) return SAY.say(`Poilsis. Atsikvėpk. Toliau – ${e.name}.`);
     if (st.sw) return SAY.say(VOICE_SWITCH[e.anim] || "Keisk pusę.");
@@ -358,6 +375,7 @@ function setStep(i) {
   left = steps[idx].secs; remainMs = left * 1000; endAt = Date.now() + remainMs;
 }
 function next() {
+  fullIdx = -1;
   if (idx + 1 >= steps.length) { finish(); return; }
   setStep(idx + 1);
   stepBeep(steps[idx].type);
@@ -367,6 +385,8 @@ function next() {
 // Veikia ir per pauzę (laikmatis lieka sustabdytas).
 function back() {
   if (idx < 0 || idx >= steps.length) return;
+  // Klausantis trumpo aprašymo – pirmas „Atgal“ perskaito visą aprašymą
+  if (holding && isGated(steps[idx]) && fullIdx !== idx) { fullIdx = idx; setStep(idx); spokenIdx = -1; show(); return; }
   const elapsed = steps[idx].secs * 1000 - (running ? endAt - Date.now() : remainMs);
   setStep(elapsed > 3000 || idx === 0 ? idx : idx - 1);
   spokenIdx = -1;

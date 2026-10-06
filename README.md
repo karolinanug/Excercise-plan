@@ -30,6 +30,8 @@ Jokio kompiliavimo nereikia. Lokaliai galima tiesiog atidaryti `index.html` nar�
 
 Paspaudus „Pradėkime“ lietuviškas balsas pasisveikina, papasakoja apie mankštą ir veda per visus pratimus: pasako, kokį pratimą daryti ir kaip atsigulti, kada įkvėpti, kelti, laikyti, grįžti ar keisti pusę.
 
+Ilgi aprašymai (įžanga apie mankštos tikslą ir kiekvieno pratimo žingsniai) sakomi tik tol, kol bus išklausyti iki galo. Vėliau balsas pasako tik pratimo pavadinimą ir pagrindinį nurodymą. Norint vėl išgirsti visą aprašymą, kol balsas jį trumpai sako, reikia paspausti „Atgal“. Išklausyti aprašymai įsimenami naršyklėje (`localStorage` raktas `karolina-heard`); jį ištrynus, aprašymai vėl bus sakomi pilnai.
+
 Visos frazės iš anksto įrašytos į `audio/*.mp3` (~5 MB), todėl balsas skamba vienodai visuose įrenginiuose, ir iPhone, kuriame lietuviško balso nėra. Failo pavadinimas – frazės teksto maiša, sąrašas – `audio/frazes.js`. Jei kurios nors frazės įrašo nėra, ji sakoma naršyklės kalbos sinteze (jei įrenginyje yra lietuviškas balsas).
 
 Balsas – [„Reginutė“ (lt_LT-reginute1-medium)](https://huggingface.co/RobertasTa/lt_LT-reginute1-medium), Piper/VITS modelis, apmokytas Vilniaus universiteto LIEPA korpusu, licencija CC BY 4.0. Meta MMS lietuvių kalbos sintezės modelio neturi (yra tik latvių), todėl naudojamas šis.
