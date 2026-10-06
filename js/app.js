@@ -525,15 +525,22 @@ function renderHello() {
     [`Šiandien ${w.name.toLowerCase()}: ${DAYTYPE[w.type].name.toLowerCase()}, apie ${min} min.`, DAYTYPE[w.type].extra,
       `Šią savaitę jau atlikai ${full} iš ${WEEK_GOAL} treniruočių.`].filter(Boolean).join(" ");
   $("voicenote").textContent = !SAY.supported ? "Ši naršyklė nemoka kalbėti, todėl instrukcijos bus rodomos ekrane."
-    : !SAY.available ? "Šiame įrenginyje nerastas lietuviškas balsas, todėl instrukcijos bus rodomos ekrane. Android telefone jį galima įdiegti: Nustatymai → Sistema → Kalbos ir įvestis → Teksto į kalbą išvestis → lietuvių kalba."
+    : voiceRefused ? "Lietuviško balso nėra, instrukcijos bus rodomos ekrane. iPhone: Nustatymai → Prieinamumas → Šnekamas turinys → Balsai → Lietuvių → atsisiųsk balsą ir atnaujink puslapį. Android: Nustatymai → Sistema → Kalbos ir įvestis → Teksto į kalbą išvestis → lietuvių kalba."
+    : !SAY.available ? `Puslapis nerado lietuviško balso sąraše (naršyklė mato balsų: ${SAY.count}). Paspausk „Išbandyti balsą“ – jei išgirsi lietuviškai, balsą įjungsiu.`
     : SAY.on ? "Įsijunk garsą: vesiu tave balsu per visą mankštą, nereikės nei skaičiuoti, nei žiūrėti į ekraną."
     : "Balsas išjungtas – instrukcijos bus rodomos ekrane. Įjungti galima laikmatyje.";
+  $("vtestbox").hidden = !SAY.supported || SAY.available || voiceRefused;
   $("voice").hidden = !SAY.available;
   $("voice").textContent = SAY.on ? "Balsas: įjungtas" : "Balsas: išjungtas";
   $("voice").setAttribute("aria-pressed", SAY.on);
 }
+let voiceRefused = false;
+$("vtest").onclick = () => { SAY.test(); $("vask").hidden = false; };
+$("vyes").onclick = () => { SAY.force = true; SAY.on = true; $("vask").hidden = true; renderHello(); if (!(idx >= 0 && idx < steps.length)) reset(); };
+$("vno").onclick = () => { voiceRefused = true; $("vask").hidden = true; renderHello(); };
 $("letsgo").onclick = () => {
   if (running) return;
+  SAY.recheck();
   if (selDay !== weekday(new Date())) { selDay = weekday(new Date()); renderWeek(); }
   reset(); start();
   $("player").scrollIntoView({ behavior: "smooth", block: "start" });

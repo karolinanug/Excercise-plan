@@ -2,38 +2,53 @@
 // Balsas veikia tik jei įrenginyje yra lietuviškas balsas; kitaip instrukcijos lieka ekrane.
 const SAY = (() => {
   const synth = window.speechSynthesis || null;
-  let voice = null, on = true;
-  try { on = localStorage.getItem("karolina-voice") !== "0"; } catch (e) {}
+  let voice = null, on = true, force = false, count = 0;
+  try { on = localStorage.getItem("karolina-voice") !== "0"; force = localStorage.getItem("karolina-voice-force") === "1"; } catch (e) {}
   const listeners = [];
+  const notify = () => listeners.forEach(f => f());
   function pick() {
-    if (!synth) return;
-    const vs = synth.getVoices();
+    if (!synth) return false;
+    const vs = synth.getVoices() || [];
+    count = vs.length;
     // Pirmenybė natūraliau skambantiems balsams (iPhone „Enhanced“/„Premium“, Edge „Natural“)
-    const lt = vs.filter(v => /^lt([-_]|$)/i.test(v.lang));
-    voice = lt.find(v => /premium|enhanced|natural|neural/i.test(v.name)) || lt[0] || null;
-    listeners.forEach(f => f());
+    const lt = vs.filter(v => /^lt([-_]|$)/i.test(v.lang || ""));
+    const found = lt.find(v => /premium|enhanced|natural|neural/i.test(v.name)) || lt[0] || null;
+    if (found !== voice) { voice = found; notify(); }
+    return !!voice;
   }
   if (synth) {
     pick();
     if (synth.addEventListener) synth.addEventListener("voiceschanged", pick);
     else synth.onvoiceschanged = pick;
+    // iPhone Safari balsų sąrašą užpildo vėliau ir dažnai apie tai nepraneša – tikrinam kelis kartus
+    let tries = 0;
+    const poll = setInterval(() => { if (pick() || ++tries > 30) { clearInterval(poll); notify(); } }, 300);
+  }
+  function speak(text, interrupt) {
+    if (interrupt) synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    // Be konkretaus balso naršyklė parenka lietuvišką pagal kalbą (taip veikia ir kai sąrašas tuščias)
+    if (voice) u.voice = voice;
+    u.lang = voice ? voice.lang : "lt-LT"; u.rate = 0.95; u.pitch = 1;
+    synth.speak(u);
   }
   return {
     get supported() { return !!synth; },
-    get available() { return !!voice; },
+    get found() { return !!voice; },
+    get available() { return !!voice || (force && !!synth); },
+    get count() { return count; },
     get on() { return on; },
-    get active() { return on && !!voice; },
+    get active() { return on && this.available; },
     set on(v) { on = v; try { localStorage.setItem("karolina-voice", v ? "1" : "0"); } catch (e) {} if (!v) this.stop(); },
+    // Naudotoja patvirtino, kad lietuvišką balsą girdi, nors sąraše jo nematome
+    set force(v) { force = v; try { localStorage.setItem("karolina-voice-force", v ? "1" : "0"); } catch (e) {} notify(); },
+    recheck: pick,
     onChange(f) { listeners.push(f); },
+    test() { if (!synth) return; try { speak("Labas, Karolina! Ar girdi mane lietuviškai?", true); } catch (e) {} },
     // interrupt: nutraukti tai, kas dar kalbama (kad balsas neatsiliktų nuo laikmačio)
     say(text, interrupt = true) {
       if (!this.active || !text) return;
-      try {
-        if (interrupt) synth.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.voice = voice; u.lang = voice.lang; u.rate = 0.95; u.pitch = 1;
-        synth.speak(u);
-      } catch (e) {}
+      try { speak(text, interrupt); } catch (e) {}
     },
     stop() { try { if (synth) synth.cancel(); } catch (e) {} }
   };

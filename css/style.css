@@ -46,6 +46,9 @@ p { margin: 0; }
 .hello-note { font-size: .88rem; opacity: .85; max-width: 60ch; }
 .btn.big { font-size: 1.15rem; padding: 14px 30px; border-radius: 14px; }
 .hello .btn.primary { background: var(--bg); color: var(--accent); border-color: var(--bg); }
+.hello .btn.ghost { color: var(--bg); border-color: var(--bg); background: transparent; padding: 8px 16px; }
+.vtest { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.vask { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-weight: 700; }
 .hello .btn:focus-visible { outline-color: var(--bg); }
 h2.title { font-size: clamp(1.6rem, 5vw, 2.1rem); }
 header { display: flex; flex-direction: column; gap: 10px; }
