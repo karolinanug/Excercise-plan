@@ -75,10 +75,29 @@ function renderCards() {
       <ol>${e.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
       <h4>Dažnos klaidos</h4>
       <ul class="mist">${e.mistakes.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
-      <a class="video" href="https://www.youtube.com/watch?v=${e.video.id}" target="_blank" rel="noopener"><i class="play" aria-hidden="true"></i><span>${esc(e.video.title)}<small>${esc(e.video.by)} · atidaryti YouTube</small></span></a>
+      <a class="video" href="#vid${i}" data-play="${i}"><i class="play" aria-hidden="true"></i><span>Žiūrėti video<small>${esc(e.video.by)} · skiltyje „Video“</small></span></a>
     </article>`).join("");
   cardAnims.forEach(c => c.destroy());
   cardAnims = [...box.querySelectorAll(".anim")].map(f => ANIM.mount(f, f.dataset.anim, level));
+}
+
+// Atskira video skiltis: miniatiūra, paspaudus – įterptas YouTube (nocookie) grotuvas
+function renderVideos() {
+  $("videolist").innerHTML = EX.map((e, i) => `
+    <article class="vcard" id="vid${i}">
+      <h3><span class="num">${i + 1}.</span> ${esc(e.name)}</h3>
+      <div class="embed" data-id="${e.video.id}" data-title="${esc(e.video.title)}">
+        <button class="embed-btn" type="button" aria-label="Paleisti video: ${esc(e.video.title)}">
+          <img src="https://i.ytimg.com/vi/${e.video.id}/hqdefault.jpg" alt="" loading="lazy" width="480" height="360">
+          <i class="play big" aria-hidden="true"></i>
+        </button>
+      </div>
+      <p class="vmeta">${esc(e.video.title)} · ${esc(e.video.by)} · <a href="https://www.youtube.com/watch?v=${e.video.id}" target="_blank" rel="noopener">atidaryti YouTube</a></p>
+    </article>`).join("");
+}
+function playVideo(box) {
+  if (!box || box.querySelector("iframe")) return;
+  box.innerHTML = ytEmbed(box.dataset.id, "autoplay=1&rel=0&playsinline=1", box.dataset.title);
 }
 
 function buildSteps(lvl = level) {
@@ -187,67 +206,10 @@ function show() {
   const remaining = steps.slice(idx + 1).reduce((a, s) => a + s.secs, 0) + left;
   $("meta").textContent = `Žingsnis ${idx + 1} iš ${steps.length} · liko apie ${Math.ceil(remaining / 60)} min.`;
   highlight(steps[idx].ex);
-  try { showMedia(st.ex); } catch (e) {}
+  try { showAnim(st.ex); } catch (e) {}
 }
-// Vienas YouTube grotuvas visai treniruotei: paleidžiamas paspaudus „Pradėti“
-// (naršyklės leidžia paleisti video tik po paspaudimo), o vėliau tik keičiamas video.
-// Video yra tik priedas: jokia YouTube klaida neturi sustabdyti laikmačio, todėl visi
-// kreipiniai į grotuvą eina per ytDo(), o jei valdiklis neįsikelia per YT_TIMEOUT,
-// naudojamas paprastas įterptas video (arba jokio, jei YouTube visai nepasiekiamas).
-const YT_TIMEOUT = 8000;
-let yt = null, ytReady = false, ytFallback = false, ytWait = null, videoEx = -1, ytRequested = false;
-// YouTube skriptas kraunamas tik pasirinkus video, kad be reikalo nebūtų jungiamasi prie YouTube
-function loadYT() {
-  if (ytRequested) return;
-  ytRequested = true;
-  const sc = document.createElement("script");
-  sc.src = "https://www.youtube.com/iframe_api"; sc.async = true;
-  sc.onerror = () => { ytFallback = true; if (videoEx >= 0) fallbackVideo(videoEx); };
-  document.head.append(sc);
-}
-function ytDo(fn) { if (!ytReady || ytFallback) return; try { fn(yt); } catch (e) {} }
-window.onYouTubeIframeAPIReady = () => {
-  if (ytFallback || !$("ytplayer")) return;
-  try {
-    yt = new YT.Player("ytplayer", {
-      host: YT_HOST,
-      videoId: EX[0].video.id,
-      playerVars: { playsinline: 1, rel: 0, mute: 1 },
-      events: {
-        onReady: () => {
-          if (ytFallback) return;
-          ytReady = true; clearTimeout(ytWait);
-          ytDo(p => { p.mute(); if (running && videoEx >= 0) p.loadVideoById(EX[videoEx].video.id); });
-        },
-        onStateChange: e => { if (e.data === 0 /* ENDED */ && running) ytDo(p => { p.seekTo(0); p.playVideo(); }); }
-      }
-    });
-  } catch (e) { yt = null; }
-};
-function fallbackVideo(ex) {
-  ytFallback = true; clearTimeout(ytWait);
-  const box = $("pvideo"), id = EX[ex].video.id;
-  box.innerHTML = ytEmbed(id, `autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0`, EX[ex].name + ": video");
-}
-function showVideo(ex) {
-  const box = $("pvideo");
-  if (ex < 0) {
-    box.hidden = true; videoEx = -1; clearTimeout(ytWait);
-    if (ytFallback) box.innerHTML = ""; else ytDo(p => p.pauseVideo());
-    return;
-  }
-  if (ex === videoEx) return;
-  videoEx = ex;
-  box.hidden = false;
-  if (ytFallback) { fallbackVideo(ex); return; }
-  if (ytReady) { ytDo(p => { p.mute(); p.loadVideoById(EX[ex].video.id); }); return; }
-  // grotuvas dar kraunasi: onReady pats paleis teisingą video, o jei neįsikels – atsarginis variantas
-  clearTimeout(ytWait);
-  ytWait = setTimeout(() => { if (!ytReady && videoEx >= 0) fallbackVideo(videoEx); }, YT_TIMEOUT);
-}
-// Treniruotės metu rodoma animacija (numatyta) arba YouTube video; pasirinkimas išsaugomas
-let media = "anim", pAnim = null, animEx = -1;
-try { if (localStorage.getItem("karolina-media") === "video") media = "video"; } catch (e) {}
+// Treniruotės metu rodoma dabartinio pratimo animacija
+let pAnim = null, animEx = -1;
 function showAnim(ex) {
   const box = $("panim");
   if (ex < 0) { box.hidden = true; animEx = -1; if (pAnim) { pAnim.destroy(); pAnim = null; } return; }
@@ -255,17 +217,6 @@ function showAnim(ex) {
   if (ex === animEx && pAnim) return;
   if (pAnim) pAnim.destroy();
   animEx = ex; pAnim = ANIM.mount(box, EX[ex].anim, level);
-}
-function showMedia(ex) {
-  if (media === "anim") { showVideo(-1); showAnim(ex); }
-  else { showAnim(-1); showVideo(ex); }
-}
-function setMedia(m) {
-  media = m;
-  try { localStorage.setItem("karolina-media", m); } catch (e) {}
-  $("mAnim").setAttribute("aria-pressed", m === "anim"); $("mVid").setAttribute("aria-pressed", m === "video");
-  if (m === "video") loadYT();
-  if (idx >= 0 && idx < steps.length) try { showMedia(steps[idx].ex); } catch (e) {}
 }
 function setStep(i) {
   idx = i;
@@ -323,7 +274,6 @@ function start() {
   lastTick = Date.now();
   if (idx < 0 || idx >= steps.length) trainedMs = 0;
   lockScreen();
-  if (media === "video") ytDo(p => { $("pvideo").hidden = false; p.mute(); p.playVideo(); });
   if (idx < 0 || idx >= steps.length) { idx = -1; next(); }
   else { endAt = Date.now() + remainMs; show(); }
   clearInterval(timer);
@@ -333,7 +283,6 @@ function pause() {
   countTrained();
   if (running) remainMs = Math.max(0, endAt - Date.now());
   running = false; clearInterval(timer); $("start").textContent = "Tęsti";
-  ytDo(p => p.pauseVideo());
   unlockScreen();
 }
 function finish() {
@@ -348,15 +297,15 @@ function finish() {
   $("clock").textContent = "0:00"; $("bar").style.width = "100%";
   $("meta").textContent = counted ? "Treniruotė pažymėta kaip atlikta." : "Daugiau nei pusė treniruotės praleista, todėl ji neįskaityta.";
   renderWeek();
-  $("start").textContent = "Pradėti iš naujo"; highlight(-1); showMedia(-1);
+  $("start").textContent = "Pradėti iš naujo"; highlight(-1); showAnim(-1);
 }
 function reset() {
   pause(); idx = -1; steps = buildSteps();
   $("start").textContent = "Pradėti"; $("kind").textContent = "Pasiruošk";
   $("now").textContent = "Patiesk kilimėlį ir paspausk „Pradėti“";
-  $("cue").textContent = "Prieš kiekvieną pratimą 30 s rodoma, kaip jis daromas (animacija arba, jei pasirinksi, YouTube video be garso). Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.";
+  $("cue").textContent = "Prieš kiekvieną pratimą rodoma animacija, kaip jis daromas. Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.";
   $("clock").textContent = fmt(totalSecs()); $("bar").style.width = "0";
-  $("meta").textContent = `Visa treniruotė: apie ${Math.round(totalSecs() / 60)} min.`; highlight(-1); showMedia(-1);
+  $("meta").textContent = `Visa treniruotė: apie ${Math.round(totalSecs() / 60)} min.`; highlight(-1); showAnim(-1);
 }
 function setLevel(l) {
   level = l;
@@ -364,12 +313,19 @@ function setLevel(l) {
   $("lvl1").setAttribute("aria-pressed", l === 0); $("lvl2").setAttribute("aria-pressed", l === 1);
   renderCards(); reset();
 }
+$("videolist").addEventListener("click", ev => {
+  const btn = ev.target.closest(".embed-btn");
+  if (btn) playVideo(btn.parentElement);
+});
+// Nuoroda „Žiūrėti video“ kortelėje nuveda į video skiltį ir iškart paleidžia video
+$("cards").addEventListener("click", ev => {
+  const a = ev.target.closest("[data-play]");
+  if (a) playVideo(document.querySelector(`#vid${a.dataset.play} .embed`));
+});
 $("start").onclick = start;
 $("back").onclick = back;
 $("skip").onclick = () => { if (idx >= 0 && idx < steps.length) next(); };
 $("reset").onclick = reset;
-$("mAnim").onclick = () => setMedia("anim");
-$("mVid").onclick = () => setMedia("video");
 $("lvl1").onclick = () => setLevel(0);
 $("lvl2").onclick = () => setLevel(1);
 document.addEventListener("visibilitychange", () => {
@@ -378,6 +334,6 @@ document.addEventListener("visibilitychange", () => {
   if (running) { tick(); lockScreen(); }
 });
 renderSummary();
+renderVideos();
 renderWeek();
-setMedia(media);
 setLevel(level);

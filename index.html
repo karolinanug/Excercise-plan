@@ -54,18 +54,12 @@
       <button class="seg" id="lvl2" data-level="1" aria-pressed="false">2 lygis</button>
       <span class="week" id="week" aria-live="polite"></span>
     </div>
-    <div class="level" role="group" aria-label="Ką rodyti treniruotės metu">
-      <span>Rodyti:</span>
-      <button class="seg" id="mAnim" aria-pressed="true">Animaciją</button>
-      <button class="seg" id="mVid" aria-pressed="false">YouTube video</button>
-    </div>
     <div class="stage" aria-live="polite">
       <p class="kind" id="kind">Pasiruošk</p>
       <p class="now" id="now">Patiesk kilimėlį ir paspausk „Pradėti“</p>
-      <p class="cue" id="cue">Prieš kiekvieną pratimą 30 s rodoma, kaip jis daromas (animacija arba, jei pasirinksi, YouTube video be garso). Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.</p>
+      <p class="cue" id="cue">Prieš kiekvieną pratimą rodoma animacija, kaip jis daromas. Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.</p>
     </div>
     <figure class="anim player-anim" id="panim" hidden></figure>
-    <div class="embed player-video" id="pvideo" hidden><div id="ytplayer"></div></div>
     <div class="clock" id="clock">0:00</div>
     <div class="bar"><i id="bar"></i></div>
     <div class="controls">
@@ -79,8 +73,14 @@
 
   <section aria-labelledby="exlist">
     <h2 id="exlist">Pratimai</h2>
-    <p class="lead">Prieš pirmą kartą pažiūrėk kiekvieno pratimo animaciją ir perskaityk dažniausias klaidas. Animaciją sustabdysi ar paleisi ją paspaudusi. Jei nori pamatyti gyvai, po animacija yra nuoroda į YouTube video (anglų kalba, bet judesys aiškiai matosi).</p>
+    <p class="lead">Prieš pirmą kartą pažiūrėk kiekvieno pratimo animaciją ir perskaityk dažniausias klaidas. Animaciją sustabdysi ar paleisi ją paspaudusi. Jei nori pamatyti gyvai, kiekvienam pratimui yra video skiltyje „Video“ žemiau.</p>
     <div id="cards" class="cards"></div>
+  </section>
+
+  <section aria-labelledby="vidh" id="videos">
+    <h2 id="vidh">Video: kaip daromi pratimai</h2>
+    <p class="lead">Trumpi kineziterapeutų ir trenerių video anglų kalba, bet judesys aiškiai matosi. Spausk paveikslėlį, ir video pasileis čia pat.</p>
+    <div id="videolist" class="videos"></div>
   </section>
 
   <section class="two" aria-label="Kasdieniai įpročiai">

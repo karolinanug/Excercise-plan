@@ -92,6 +92,18 @@ section { display: flex; flex-direction: column; gap: 14px; }
 .video { display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; text-decoration: none; color: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px 9px 10px; background: var(--bg); max-width: 100%; }
 .embed { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 12px; overflow: hidden; background: var(--line); }
 .embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.embed-btn { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; padding: 0; cursor: pointer; background: transparent; display: grid; place-items: center; }
+.embed-btn img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.embed-btn .play.big { position: relative; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; box-shadow: 0 4px 18px rgba(0,0,0,.35); transition: transform .15s; }
+.embed-btn .play.big::after { content: ""; border-left: 18px solid var(--bg); border-top: 11px solid transparent; border-bottom: 11px solid transparent; margin-left: 5px; }
+.embed-btn:hover .play.big { transform: scale(1.06); }
+.embed-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+.videos { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.vcard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; scroll-margin-top: 16px; min-width: 0; }
+.vcard h3 { font-size: 1.02rem; }
+.vcard .num { min-width: 0; font-size: 1rem; }
+.vmeta { font-size: .82rem; color: var(--muted); }
+.vmeta a { color: var(--accent); }
 .video:hover { border-color: var(--accent); }
 .video .play { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); flex: none; display: grid; place-items: center; }
 .video .play::after { content: ""; border-left: 10px solid var(--bg); border-top: 6px solid transparent; border-bottom: 6px solid transparent; margin-left: 3px; }
@@ -104,7 +116,6 @@ section { display: flex; flex-direction: column; gap: 14px; }
 footer { color: var(--muted); font-size: .88rem; }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } html { scroll-behavior: auto; } }
 .cards { display: flex; flex-direction: column; gap: 16px; }
-.player-video { width: 100%; }
 
 /* Pratimų animacijos (js/anim.js): figūra „apsirengusi“ – marškinėliai, tamprės, oda;
    tolimesnė kūno pusė tamsesnė, dirbantys raumenys paryškinti šiltu švytėjimu */
