@@ -55,6 +55,12 @@ const REST = 20, SIDE_SWITCH = 8, PREP = 30;
 let level = 0;
 try { const s = localStorage.getItem("karolina-level"); if (s === "1") level = 1; } catch (e) {}
 
+// Visi įterpti video rodomi per youtube-nocookie.com (privatumo režimas: slapukai
+// nesaugomi, kol video nepaleistas). Nuoroda „atidaryti YouTube“ veda į įprastą youtube.com.
+const YT_HOST = "https://www.youtube-nocookie.com";
+function ytEmbed(id, params, title) {
+  return `<iframe src="${YT_HOST}/embed/${id}?${params}" title="${esc(title)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+}
 function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
 function renderCards() {
   const box = document.getElementById("cards");
@@ -197,7 +203,7 @@ window.onYouTubeIframeAPIReady = () => {
   if (ytFallback || !$("ytplayer")) return;
   try {
     yt = new YT.Player("ytplayer", {
-      host: "https://www.youtube-nocookie.com",
+      host: YT_HOST,
       videoId: EX[0].video.id,
       playerVars: { playsinline: 1, rel: 0, mute: 1 },
       events: {
@@ -214,7 +220,7 @@ window.onYouTubeIframeAPIReady = () => {
 function fallbackVideo(ex) {
   ytFallback = true; clearTimeout(ytWait);
   const box = $("pvideo"), id = EX[ex].video.id;
-  box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0" title="${esc(EX[ex].name)}: video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+  box.innerHTML = ytEmbed(id, `autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0`, EX[ex].name + ": video");
 }
 function showVideo(ex) {
   const box = $("pvideo");
@@ -332,8 +338,8 @@ function setLevel(l) {
 document.getElementById("cards").addEventListener("click", ev => {
   const btn = ev.target.closest(".embed-btn");
   if (!btn) return;
-  const box = btn.parentElement, id = box.dataset.id;
-  box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0" title="Video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+  const box = btn.parentElement, id = box.dataset.id, e = EX.find(x => x.video.id === id);
+  box.innerHTML = ytEmbed(id, "autoplay=1&rel=0", e ? e.video.title : "Video");
 });
 $("start").onclick = start;
 $("back").onclick = back;
