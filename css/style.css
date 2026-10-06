@@ -146,6 +146,11 @@ footer { color: var(--muted); font-size: .88rem; }
 .anim-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .anim-skin { fill: var(--fig-skin); }
 .anim-hair { fill: var(--fig-hair); }
+.anim-ear { fill: var(--fig-skin); filter: brightness(.93); }
+.anim-thumb { fill: var(--fig-skin); filter: brightness(.94); }
+.anim-cheek { fill: #e3876f; opacity: .2; }
+.anim-eye { fill: #2a2420; }
+.anim-brow { fill: none; stroke: var(--fig-hair); stroke-width: .6; stroke-linecap: round; }
 .anim-top { fill: var(--fig-top); }
 .anim-legs { fill: var(--fig-legs); }
 .anim-far { filter: var(--fig-far); }

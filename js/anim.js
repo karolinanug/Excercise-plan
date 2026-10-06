@@ -199,6 +199,30 @@ const ANIM = (() => {
     const r1 = width(1, 1), r0 = width(0, 1);
     return `M${front.map(P).join("L")}A${f1(r1)} ${f1(r1)} 0 0 0 ${P(back[N])}L${back.reverse().map(P).join("L")}A${f1(r0)} ${f1(r0)} 0 0 0 ${P(front[0])}Z`;
   }
+  // Glotni uždara kreivė per taškus (Catmull–Rom → kubinės Bezjė kreivės)
+  function smooth(P) {
+    const n = P.length, g = i => P[(i + n) % n];
+    let d = `M${f1(P[0][0])},${f1(P[0][1])}`;
+    for (let i = 0; i < n; i++) {
+      const p0 = g(i - 1), p1 = g(i), p2 = g(i + 1), p3 = g(i + 2);
+      d += `C${f1(p1[0] + (p2[0] - p0[0]) / 6)},${f1(p1[1] + (p2[1] - p0[1]) / 6)} ${f1(p2[0] - (p3[0] - p1[0]) / 6)},${f1(p2[1] - (p3[1] - p1[1]) / 6)} ${f1(p2[0])},${f1(p2[1])}`;
+    }
+    return d + "Z";
+  }
+  // Vietinės koordinatės (x – pirmyn, y – „aukštyn“) → pasaulio; k – mastelis
+  const place = (o, x, y, k = 1) => P => P.map(([a, b]) => [o[0] + (x[0] * a + y[0] * b) * k, o[1] + (x[1] * a + y[1] * b) * k]);
+  // Galva iš profilio (centras – galvos centras, x – veido kryptis, y – viršugalvio kryptis)
+  const HEAD = [[1.8, -5], [4.6, -4.6], [5.6, -3.4], [5.5, -2.5], [6.1, -1.8], [5.9, -1.15], [7.05, -0.35], [6.1, 0.9],
+    [6, 2.4], [5, 4.6], [2.4, 6.4], [-1.2, 6.6], [-4.8, 4.8], [-6.3, 1.6], [-5.8, -1.6], [-3.6, -4.2], [-0.6, -5.2]];
+  const HAIR = [[5.5, 4.1], [3.3, 6.5], [-1, 7.2], [-5.1, 5.5], [-7, 1.8], [-6.5, -1.9], [-4.6, -4], [-3.1, -2.1],
+    [-2.2, 1.4], [0.6, 3.5], [3.6, 3.7]];
+  const circle = (c, r, N = 10) => Array.from({ length: N }, (_, i) => [c[0] + r * Math.cos(i * 2 * Math.PI / N), c[1] + r * Math.sin(i * 2 * Math.PI / N)]);
+  // Plaštaka (nuo riešo, x – pirštų kryptis) ir nykštys
+  const HAND = [[-0.3, 1.4], [1.8, 1.75], [4, 1.55], [5.7, 0.95], [6.15, 0], [5.7, -0.9], [3.8, -1.4], [1.6, -1.6], [-0.3, -1.3]];
+  const THUMB = [[1, 1.1], [2.6, 2.6], [3.7, 3], [4, 2.4], [3, 1.4]];
+  // Pėda (nuo kulkšnies, x – pirštų kryptis, y – į blauzdos pusę)
+  const FOOT = [[-1.6, 2.4], [-2.6, 0.2], [-1.9, -1.8], [2.5, -1.7], [7.6, -1.9], [9.8, -1.1], [10.2, 0], [8.6, 0.8], [4.5, 1.8], [1.6, 2.8]];
+
   // Paryškinama raumenų sritis: centras, spinduliai, pasukimas
   function focusArea(kind, j, sp) {
     if (kind === "core") { const q = sp(0.36); return [[q.c[0] + q.n[0] * 2.5, q.c[1] + q.n[1] * 2.5], 8, 4, q.a]; }
@@ -248,20 +272,15 @@ const ANIM = (() => {
     const shadow = el("ellipse", { class: "anim-shadow", cy: 101.5, ry: 2.2, filter: `url(#${id}b)` });
     const mk = (cls, g) => { const e = el("path", { class: cls }); g.append(e); return e; };
     const far = el("g", { class: "anim-far" }), body = el("g", {}), near = el("g", {});
-    const F = {
-      leg2: [mk("anim-legs", far), mk("anim-legs", far), mk("anim-skin", far)],
-      arm2: [mk("anim-top", far), mk("anim-skin", far), el("circle", { class: "anim-skin", r: 2.3 })]
-    };
-    far.append(F.arm2[2]);
+    // Galūnė: šlaunis, blauzda, pėda; žastas, dilbis, plaštaka, nykštys
+    const side = g => ({ leg: [mk("anim-legs", g), mk("anim-legs", g), mk("anim-skin", g)],
+      arm: [mk("anim-top", g), mk("anim-skin", g), mk("anim-skin", g), mk("anim-skin anim-thumb", g)] });
+    const F = side(far);
     const neck = mk("anim-skin", body), torso = mk("anim-top", body);
-    const hair = el("circle", { class: "anim-hair", r: 7 }), face = el("circle", { class: "anim-skin", r: 6.2 }), bun = el("circle", { class: "anim-hair", r: 3 });
-    body.append(hair, bun, face);
+    const bun = mk("anim-hair", body), face = mk("anim-skin", body), cheek = mk("anim-cheek", body),
+      hair = mk("anim-hair", body), ear = mk("anim-ear", body), eye = mk("anim-eye", body), brow = mk("anim-brow", body);
     const focus = el("ellipse", { class: "anim-focus", filter: `url(#${id}b)` });
-    const Nr = {
-      leg1: [mk("anim-legs", near), mk("anim-legs", near), mk("anim-skin", near)],
-      arm1: [mk("anim-top", near), mk("anim-skin", near), el("circle", { class: "anim-skin", r: 2.3 })]
-    };
-    near.append(Nr.arm1[2]);
+    const Nr = side(near);
     svg.append(shadow, far, body, focus, near);
     const [fKind, fLabel] = FOCUS[name];
     const say = document.createElement("span"); say.className = "anim-say";
@@ -269,26 +288,44 @@ const ANIM = (() => {
     const state = document.createElement("i"); state.className = "anim-state"; state.setAttribute("aria-hidden", "true");
     btn.append(svg, state); box.append(btn, say, muscle);
 
-    function limbs(parts, j, i) {
-      parts.leg[0].setAttribute("d", capsule(j.hip, j["k" + i], 6, 4.2));
-      parts.leg[1].setAttribute("d", capsule(j["k" + i], j["f" + i], 4.2, 2.5));
-      parts.leg[2].setAttribute("d", capsule(j["f" + i], j["t" + i], 2.4, 1.6));
-      parts.arm[0].setAttribute("d", capsule(j.sh, j["e" + i], 3.6, 2.8));
-      parts.arm[1].setAttribute("d", capsule(j["e" + i], j["w" + i], 2.6, 1.9));
-      const h = at(j["w" + i], ang(j["e" + i], j["w" + i]), 1.4);
-      parts.arm[2].setAttribute("cx", f1(h[0])); parts.arm[2].setAttribute("cy", f1(h[1]));
+    function limbs(parts, j, i, facing) {
+      const k = j["k" + i], a = j["f" + i], t = j["t" + i], e = j["e" + i], w = j["w" + i];
+      parts.leg[0].setAttribute("d", capsule(j.hip, k, 6, 4.2));
+      parts.leg[1].setAttribute("d", capsule(k, a, 4.2, 2.4));
+      // Pėda: padas į priešingą nuo kelio pusę
+      const fa = ang(a, t), fx = [Math.cos(fa), Math.sin(fa)];
+      let fy = [-fx[1], fx[0]];
+      if (fy[0] * (k[0] - a[0]) + fy[1] * (k[1] - a[1]) < 0) fy = [-fy[0], -fy[1]];
+      parts.leg[2].setAttribute("d", smooth(place(a, fx, fy, Math.hypot(t[0] - a[0], t[1] - a[1]) / 10)(FOOT)));
+      parts.arm[0].setAttribute("d", capsule(j.sh, e, 3.6, 2.8));
+      parts.arm[1].setAttribute("d", capsule(e, w, 2.6, 1.8));
+      // Plaštaka: tęsia dilbį; ant grindų – guli plokščiai (statmenas dilbis → pirštai į priekį)
+      let ha = ang(e, w);
+      if (w[1] > 95) { const c = Math.cos(ha); ha = Math.abs(c) < 0.35 ? (facing > 0 ? 0 : Math.PI) : (c > 0 ? 0 : Math.PI); }
+      const hx = [Math.cos(ha), Math.sin(ha)];
+      let hy = [-hx[1], hx[0]];
+      if (w[1] > 95 && hy[1] > 0) hy = [-hy[0], -hy[1]]; // ant grindų nykštys viršuje, ne grindyse
+      const hp = place(w, hx, hy, 1.25);
+      parts.arm[2].setAttribute("d", smooth(hp(HAND)));
+      parts.arm[3].setAttribute("d", smooth(hp(THUMB)));
     }
     function draw(P, label, effort) {
-      const j = joints(P), sp = spine(j);
-      limbs({ leg: F.leg2, arm: F.arm2 }, j, 2);
-      limbs({ leg: Nr.leg1, arm: Nr.arm1 }, j, 1);
+      const j = joints(P), sp = spine(j), facing = Math.sign(j.hd[0] - j.hip[0]) || 1;
+      limbs(F, j, 2, facing);
+      limbs(Nr, j, 1, facing);
       torso.setAttribute("d", torsoPath(sp));
       // Galva: veidas į pilvo pusę, plaukai ir kuodas – pakaušyje ir viršugalvyje
       const u = ang(j.sh, j.hd), fx = -Math.sin(u), fy = Math.cos(u), ux = Math.cos(u), uy = Math.sin(u);
       neck.setAttribute("d", capsule(j.sh, at(j.sh, u, Math.hypot(j.hd[0] - j.sh[0], j.hd[1] - j.sh[1]) - 3), 2.8, 2.4));
-      face.setAttribute("cx", f1(j.hd[0] + fx * 0.6)); face.setAttribute("cy", f1(j.hd[1] + fy * 0.6));
-      hair.setAttribute("cx", f1(j.hd[0] - fx * 0.9 + ux * 0.7)); hair.setAttribute("cy", f1(j.hd[1] - fy * 0.9 + uy * 0.7));
-      bun.setAttribute("cx", f1(j.hd[0] + ux * 6 - fx * 2.5)); bun.setAttribute("cy", f1(j.hd[1] + uy * 6 - fy * 2.5));
+      const hp = place(j.hd, [fx, fy], [ux, uy], 1.02), pt = q => hp([q])[0];
+      face.setAttribute("d", smooth(hp(HEAD)));
+      hair.setAttribute("d", smooth(hp(HAIR)));
+      bun.setAttribute("d", smooth(hp(circle([-6.1, 4.9], 2.9))));
+      ear.setAttribute("d", smooth(hp([[-1.2, 0.9], [0.1, 0.8], [0.4, -0.6], [-0.3, -1.7], [-1.3, -1.2]])));
+      cheek.setAttribute("d", smooth(hp(circle([3.3, -1.7], 1.1, 8))));
+      eye.setAttribute("d", smooth(hp([[3.4, 1.05], [4.2, 1.35], [4.7, 0.9], [4.1, 0.55]])));
+      const b0 = pt([2.9, 2.4]), b1 = pt([4.1, 2.85]), b2 = pt([5.1, 2.5]);
+      brow.setAttribute("d", `M${f1(b0[0])},${f1(b0[1])}Q${f1(b1[0])},${f1(b1[1])} ${f1(b2[0])},${f1(b2[1])}`);
       // Šešėlis ant kilimėlio pagal žemiausius taškus
       let lo = 1e9, hi = -1e9;
       ["hip", "sh", "hd", "k1", "k2", "f1", "f2", "w1", "w2"].forEach(k => { if (j[k][1] > 80) { lo = Math.min(lo, j[k][0]); hi = Math.max(hi, j[k][0]); } });
