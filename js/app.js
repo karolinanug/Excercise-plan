@@ -323,6 +323,7 @@ function announce(st) {
     const v = VOICE[e.anim](level, st.secs);
     vFlags.pre = pre || "Pradėk. ";
     if (v.start) { SAY.say(vFlags.pre + v.start); vKey = "start"; }
+    else SAY.stop(); // pirmą ritmo frazę pasakys voiceTick; ankstesnio žingsnio kalba nutraukiama
   }
 }
 // Kviečiama kas 250 ms: pagal praėjusį žingsnio laiką pasako einamą ritmo nurodymą
@@ -336,7 +337,9 @@ function voiceTick() {
     let x = t - k * C, i = 0;
     while (i < v.beat.length - 1 && x >= v.beat[i][1]) { x -= v.beat[i][1]; i++; }
     const key = k + ":" + i;
-    if (key === vKey || rem < 1) return;
+    // Kol dar skamba ankstesnė frazė, naujos nepradedam (kad nenukirstų sakinio vidury) –
+    // ji pasakoma, vos ankstesnė baigiasi, jei dar nepasibaigė jos laikas
+    if (key === vKey || rem < 1 || SAY.busy) return;
     vKey = key;
     const b = v.beat[i], text = k > 0 && b[2] ? b[2] : b[0];
     if (vFlags.pre) { SAY.say(vFlags.pre + text); vFlags.pre = ""; } else SAY.say(text);
@@ -344,7 +347,7 @@ function voiceTick() {
     const n = Math.floor(t / v.every);
     if (n < 1 || rem < 3) return;
     const key = "r" + n;
-    if (key === vKey) return;
+    if (key === vKey || SAY.busy) return;
     vKey = key; SAY.say(v.remind[(n - 1) % v.remind.length]);
   }
 }

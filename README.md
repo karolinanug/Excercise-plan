@@ -7,7 +7,7 @@ Statinė svetainė su namų mankštos planu: 10 pratimų, laikmatis, kuris pats 
 - `index.html` – puslapis
 - `css/style.css` – stiliai (šviesi ir tamsi tema, prisitaiko prie telefono)
 - `js/app.js` – pratimų sąrašas (`EX` masyvas viršuje) ir laikmatis. Prieš kiekvieną pratimą 30 s (`PREP`) rodoma jo animacija (arba YouTube video, jei pasirinkta), ji lieka rodoma, kol darai serijas.
-- `js/voice.js` – lietuviškas balsas (naršyklės kalbos sintezė) ir kiekvieno pratimo ritmo nurodymai (`VOICE`): ką ir po kiek sekundžių pasakyti. Trukmės automatiškai pritaikomos prie serijos ilgio.
+- `js/voice.js` – lietuviškas balsas (įrašytos frazės iš `audio/`, atsarginis – naršyklės kalbos sintezė) ir kiekvieno pratimo ritmo nurodymai (`VOICE`): ką ir po kiek sekundžių pasakyti. Trukmės automatiškai pritaikomos prie serijos ilgio.
 - `js/anim.js` – schematinės pratimų animacijos (SVG). Kiekvienas pratimas `EX` masyve nurodo savo animaciją lauku `anim`, o pozos aprašytos `DEF` objekte sąnarių taškais: `[poza, perėjimo ms, laikymo ms, užuomina, įtampa 0–1]`. `FOCUS` nurodo, kuri kūno vieta paryškinama (dirbantys raumenys) ir kaip ji pavadinta po animacija; spalvos – CSS kintamieji `--fig-*`.
 
 Pabaigus treniruotę atsiveria trumpas įsivertinimas (sunkumas, savijauta, skausmas, pastabos); treniruotė pažymima atlikta tik jį išsaugojus. Įrašus galima peržiūrėti laikmačio skiltyje „Mano įrašai“ ir nukopijuoti tekstu kineziterapeutui.
@@ -28,4 +28,18 @@ Jokio kompiliavimo nereikia. Lokaliai galima tiesiog atidaryti `index.html` nar�
 
 ## Balsas
 
-Paspaudus „Pradėkime“ lietuviškas balsas pasisveikina, papasakoja apie mankštą ir veda per visus pratimus: pasako, kokį pratimą daryti ir kaip atsigulti, kada įkvėpti, kelti, laikyti, grįžti ar keisti pusę. Balsas veikia tik jei įrenginyje yra lietuviškas kalbos sintezės balsas (pvz., Android su Google teksto į kalbą lietuvių kalba, Microsoft Edge). Jei jo nėra, instrukcijos rodomos ekrane.
+Paspaudus „Pradėkime“ lietuviškas balsas pasisveikina, papasakoja apie mankštą ir veda per visus pratimus: pasako, kokį pratimą daryti ir kaip atsigulti, kada įkvėpti, kelti, laikyti, grįžti ar keisti pusę.
+
+Visos frazės iš anksto įrašytos į `audio/*.mp3` (~5 MB), todėl balsas skamba vienodai visuose įrenginiuose, ir iPhone, kuriame lietuviško balso nėra. Failo pavadinimas – frazės teksto maiša, sąrašas – `audio/frazes.js`. Jei kurios nors frazės įrašo nėra, ji sakoma naršyklės kalbos sinteze (jei įrenginyje yra lietuviškas balsas).
+
+Balsas – [„Reginutė“ (lt_LT-reginute1-medium)](https://huggingface.co/RobertasTa/lt_LT-reginute1-medium), Piper/VITS modelis, apmokytas Vilniaus universiteto LIEPA korpusu, licencija CC BY 4.0. Meta MMS lietuvių kalbos sintezės modelio neturi (yra tik latvių), todėl naudojamas šis.
+
+### Įrašų atnaujinimas
+
+Pakeitus pratimus ar balso tekstus (`EX`, `VOICE`, įžangą), įrašus reikia sugeneruoti iš naujo:
+
+```
+python3 tools/garsas.py
+```
+
+Skriptas per `tools/frazes.js` (paleidžia tikrus `js/*.js` su netikru DOM) surenka visas frazes, kurias svetainė gali pasakyti, sugeneruoja trūkstamas, ištrina nebereikalingas ir atnaujina `audio/frazes.js`. `--visi` perrašo visas. Reikia `python3` su `numpy` ir `onnxruntime`, `espeak-ng`, `ffmpeg` ir `node`; modelis (~70 MB) parsiunčiamas į `tools/modelis/` pirmą kartą paleidus. Netaisyklingai perskaitomi skaičiai ir ženklai (laipsniai, intervalai) taisomi `TARIMAS` sąraše `tools/garsas.py` faile.

@@ -1,5 +1,6 @@
-// Lietuviškas balsas (naršyklės kalbos sintezė, Web Speech API) ir pratimų ritmo tekstai.
-// Balsas veikia tik jei įrenginyje yra lietuviškas balsas; kitaip instrukcijos lieka ekrane.
+// Lietuviškas balsas ir pratimų ritmo tekstai. Pirmiausia grojami iš anksto įrašyti frazių failai
+// (audio/*.mp3, sugeneruoti tools/garsas.py); frazės, kurios įrašo neturi, sakomos naršyklės
+// kalbos sinteze (Web Speech API), jei įrenginyje yra lietuviškas balsas.
 // iPhone tyliuoju režimu užtildo puslapio garsus (balsą, pypsėjimus). Jei puslapis groja tikrą
 // garso įrašą, telefonas persijungia į medijos atkūrimo režimą, kurio tylusis jungiklis netildo.
 // Todėl treniruotės metu ciklu grojamas tylus įrašas; naujesnėse Safari – dar ir audioSession.
@@ -25,8 +26,81 @@ const MEDIA = (() => {
         }
         const p = el.play(); if (p && p.catch) p.catch(() => {});
       } catch (e) {}
+      REC.unlock();
     },
     stop() { try { if (el) el.pause(); } catch (e) {} }
+  };
+})();
+
+// Frazės failo pavadinimas – teksto FNV-1a maiša (tą pačią naudoja tools/frazes.js)
+function phraseId(t) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(16).padStart(8, "0");
+}
+// Įrašytų frazių grotuvas (Web Audio). AUDIO_FILES – sąrašas iš audio/frazes.js.
+// Suspausti failai parsiunčiami iš anksto ir laikomi atmintyje, dekoduojami tik grojant.
+const REC = (() => {
+  const files = typeof AUDIO_FILES !== "undefined" ? new Set(AUDIO_FILES) : null;
+  const bytes = new Map();
+  let ctx = null, src = null, busy = false, token = 0, queue = [], fetched = false;
+  function load(id) {
+    if (!bytes.has(id)) {
+      const p = fetch(`audio/${id}.mp3`).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); });
+      p.catch(() => bytes.delete(id));
+      bytes.set(id, p);
+    }
+    return bytes.get(id);
+  }
+  // decodeAudioData atjungia buferį, todėl dekoduojama kopija; senesnė Safari moka tik callback formą
+  const decode = buf => new Promise((res, rej) => ctx.decodeAudioData(buf.slice(0), res, rej));
+  function run(text, onend) {
+    const my = ++token;
+    busy = true;
+    let over = false;
+    const done = () => {
+      if (my !== token || over) return;
+      over = true; src = null; busy = false;
+      if (onend) onend();
+      const n = queue.shift();
+      if (n) run(n[0], n[1]);
+    };
+    load(phraseId(text)).then(decode).then(buf => {
+      if (my !== token) return;
+      if (ctx.state === "suspended") ctx.resume();
+      src = ctx.createBufferSource();
+      src.buffer = buf; src.connect(ctx.destination);
+      src.onended = done;
+      src.start();
+      // Jei onended neateina (pvz., AudioContext sustabdytas fone), neužstrigti „kalbant“
+      setTimeout(done, buf.duration * 1000 + 1500);
+    }).catch(done);
+  }
+  return {
+    get ready() { return !!files && files.size > 0; },
+    has(text) { return !!files && !!text && files.has(phraseId(text)); },
+    // Kviesti paspaudimo metu: tik tada naršyklės leidžia AudioContext groti
+    unlock() {
+      if (!this.ready) return;
+      try {
+        ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === "suspended") ctx.resume();
+        const b = ctx.createBufferSource(); b.buffer = ctx.createBuffer(1, 1, 22050); b.connect(ctx.destination); b.start();
+      } catch (e) { ctx = null; }
+      if (ctx && !fetched) { fetched = true; files.forEach(id => load(id).catch(() => {})); }
+    },
+    get usable() { return !!ctx; },
+    get busy() { return busy; },
+    play(text, interrupt, onend) {
+      if (interrupt) this.stop();
+      if (busy) queue.push([text, onend]);
+      else run(text, onend);
+    },
+    stop() {
+      token++; queue = []; busy = false;
+      const s = src; src = null;
+      try { if (s) { s.onended = null; s.stop(); } } catch (e) {}
+    }
   };
 })();
 
@@ -55,6 +129,12 @@ const SAY = (() => {
     const poll = setInterval(() => { if (pick() || ++tries > 30) { clearInterval(poll); notify(); } }, 300);
   }
   function speak(text, interrupt, onend) {
+    if (REC.has(text) && REC.usable) {
+      if (interrupt && synth) synth.cancel();
+      return REC.play(text, interrupt, onend);
+    }
+    if (interrupt) REC.stop();
+    if (!synth || !(voice || force)) { if (onend) onend(); return; }
     if (interrupt) synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
     if (onend) { u.onend = onend; u.onerror = onend; }
@@ -64,10 +144,12 @@ const SAY = (() => {
     synth.speak(u);
   }
   return {
-    get supported() { return !!synth; },
+    get supported() { return REC.ready || !!synth; },
     get found() { return !!voice; },
-    get available() { return !!voice || (force && !!synth); },
+    get available() { return REC.ready || !!voice || (force && !!synth); },
     get count() { return count; },
+    // Ar dar skamba įrašyta frazė (naršyklės sintezės „speaking“ nepatikimas, todėl jos netikrinam)
+    get busy() { return REC.busy; },
     get on() { return on; },
     get active() { return on && this.available; },
     set on(v) { on = v; try { localStorage.setItem("karolina-voice", v ? "1" : "0"); } catch (e) {} if (!v) this.stop(); },
@@ -75,14 +157,14 @@ const SAY = (() => {
     set force(v) { force = v; try { localStorage.setItem("karolina-voice-force", v ? "1" : "0"); } catch (e) {} notify(); },
     recheck: pick,
     onChange(f) { listeners.push(f); },
-    test() { if (!synth) return; MEDIA.start(); try { speak("Labas, Karolina! Ar girdi mane lietuviškai?", true); } catch (e) {} },
+    test() { if (!this.supported) return; MEDIA.start(); try { speak("Labas, Karolina! Ar girdi mane lietuviškai?", true); } catch (e) {} },
     // interrupt: nutraukti tai, kas dar kalbama (kad balsas neatsiliktų nuo laikmačio)
     // onend – iškviečiama, kai sakinys pasakytas (arba nutrauktas)
     say(text, interrupt = true, onend) {
       if (!this.active || !text) return;
       try { speak(text, interrupt, onend); } catch (e) { if (onend) onend(); }
     },
-    stop() { try { if (synth) synth.cancel(); } catch (e) {} }
+    stop() { REC.stop(); try { if (synth) synth.cancel(); } catch (e) {} }
   };
 })();
 
