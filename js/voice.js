@@ -8,7 +8,9 @@ const SAY = (() => {
   function pick() {
     if (!synth) return;
     const vs = synth.getVoices();
-    voice = vs.find(v => /^lt([-_]|$)/i.test(v.lang)) || null;
+    // Pirmenybė natūraliau skambantiems balsams (iPhone „Enhanced“/„Premium“, Edge „Natural“)
+    const lt = vs.filter(v => /^lt([-_]|$)/i.test(v.lang));
+    voice = lt.find(v => /premium|enhanced|natural|neural/i.test(v.name)) || lt[0] || null;
     listeners.forEach(f => f());
   }
   if (synth) {
