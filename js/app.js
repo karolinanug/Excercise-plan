@@ -248,16 +248,19 @@ function highlight(ex) {
 }
 function show() {
   const st = steps[idx];
-  $("kind").textContent = st.type === "work" ? "Daryk" + (st.sub ? " · " + st.sub : "") : st.title;
+  if (idx !== spokenIdx) { spokenIdx = idx; announce(st); }
+  $("kind").textContent = holding ? (st.type === "intro" ? "Įžanga · klausyk" : "Klausyk ir pasiruošk")
+    : st.type === "work" ? "Daryk" + (st.sub ? " · " + st.sub : "") : st.title;
   $("now").textContent = st.type === "intro" ? "Labas, Karolina!" : st.type === "work" ? st.title : st.type === "prep" ? `${st.ex + 1}. ${EX[st.ex].name}`
     : st.between ? `Toliau: ${st.ex + 1}. ${EX[st.ex].name}` : (st.title === "Keisk pusę" ? "Keisk pusę" : "Atsikvėpk");
-  $("cue").textContent = st.cue;
-  $("clock").textContent = fmt(left);
-  $("bar").style.width = (100 * (st.secs - left) / st.secs) + "%";
+  $("cue").textContent = holding && st.type === "prep" ? EX[st.ex].steps.join(" ") : st.cue;
+  $("clock").textContent = holding ? "Klausyk…" : fmt(left);
+  $("player").classList.toggle("is-listen", holding);
+  $("bar").style.width = holding ? "0" : (100 * (st.secs - left) / st.secs) + "%";
   const remaining = steps.slice(idx + 1).reduce((a, s) => a + s.secs, 0) + left;
-  $("meta").textContent = `Žingsnis ${idx + 1} iš ${steps.length} · liko apie ${Math.ceil(remaining / 60)} min.`;
+  const list = DAYTYPE[dayType()].list();
+  $("meta").textContent = `Pratimas ${list.indexOf(st.ex) + 1} iš ${list.length} · liko apie ${Math.ceil(remaining / 60)} min.`;
   highlight(steps[idx].ex);
-  if (idx !== spokenIdx) { spokenIdx = idx; announce(st); }
   $("restctl").hidden = st.type !== "rest";
   $("player").classList.toggle("is-rest", st.type === "rest");
   try { showAnim(st.ex); } catch (e) {}
@@ -285,14 +288,33 @@ function introStep() {
   return { type: "intro", ex: list[0], title: "Įžanga", sub: "", cue: text, secs: INTRO_SECS };
 }
 let spokenIdx = -1, vKey = null, vFlags = {};
-function exSteps(e) { return e.steps.slice(0, 2).join(" "); }
+// Kol balsas skaito įžangą ar pratimo aprašymą, laikmatis stovi („holding“). Kai baigia –
+// pypsi ir prasideda pratimas. Jei naršyklė nepraneša apie kalbos pabaigą, po apskaičiuoto
+// laiko tęsiama vis tiek.
+let holding = false, gateId = 0, gateTimer = null;
+const isGated = st => SAY.active && (st.type === "intro" || st.type === "prep");
+function descText(st) {
+  const e = EX[st.ex];
+  return `${st.pos ? "Kitas pratimas" : "Pirmas pratimas"}: ${e.name}. ${e.steps.join(" ")}${e.sides ? " Pradėk kaire puse." : ""} Pasiruošk.`;
+}
+function gate(text) {
+  const id = ++gateId;
+  holding = true; clearTimeout(gateTimer);
+  const done = () => gateEnd(id);
+  SAY.say(text, true, done);
+  gateTimer = setTimeout(done, Math.max(5000, text.length * 110 + 4000));
+}
+function gateEnd(id) {
+  if (id !== gateId || !holding || !running) return;
+  clearTimeout(gateTimer);
+  setTimeout(() => { if (id === gateId && running && holding) { holding = false; next(); } }, 500);
+}
 function announce(st) {
   vKey = null; vFlags = {};
   const e = EX[st.ex];
-  if (st.type === "intro") return SAY.say(st.cue);
-  if (st.type === "prep") return SAY.say(st.pos ? "Užimk pradinę padėtį." : `Pirmas pratimas: ${e.name}. ${exSteps(e)}`);
+  if (isGated(st)) return gate(st.type === "intro" ? st.cue : descText(st));
   if (st.type === "rest") {
-    if (st.between) return SAY.say("Poilsis. Atsikvėpk.");
+    if (st.between) return SAY.say(`Poilsis. Atsikvėpk. Toliau – ${e.name}.`);
     if (st.sw) return SAY.say(VOICE_SWITCH[e.anim] || "Keisk pusę.");
     return SAY.say(`Poilsis. Paskui ${ORD[st.nextSet] ? ORD[st.nextSet].toLowerCase() : ""} serija.`);
   }
@@ -307,8 +329,6 @@ function announce(st) {
 function voiceTick() {
   if (!running || idx < 0 || idx >= steps.length || !SAY.active) return;
   const st = steps[idx], rem = (endAt - Date.now()) / 1000, t = st.secs - rem;
-  if (st.type === "prep" && !st.pos && rem <= 6 && !vFlags.ready) { vFlags.ready = 1; SAY.say("Pasiruošk. Pradedam."); }
-  if (st.type === "rest" && st.between && t >= 3 && !vFlags.next) { vFlags.next = 1; SAY.say(`Kitas pratimas: ${EX[st.ex].name}. ${exSteps(EX[st.ex])}`); }
   if (st.type !== "work") return;
   const v = VOICE[EX[st.ex].anim](level, st.secs);
   if (v.beat) {
@@ -330,6 +350,7 @@ function voiceTick() {
 }
 
 function setStep(i) {
+  gateId++; holding = false; clearTimeout(gateTimer);
   idx = i;
   left = steps[idx].secs; remainMs = left * 1000; endAt = Date.now() + remainMs;
 }
@@ -360,6 +381,7 @@ function extendRest() {
 function endRest() { if (idx >= 0 && idx < steps.length && steps[idx].type === "rest") next(); }
 function tick() {
   countTrained();
+  if (holding) { endAt = Date.now() + steps[idx].secs * 1000; return; }
   voiceTick();
   const now = Date.now();
   let moved = false;
@@ -397,8 +419,8 @@ function start() {
   lastTick = Date.now();
   if (idx < 0 || idx >= steps.length) trainedMs = 0;
   lockScreen();
-  if (idx < 0 || idx >= steps.length) { idx = -1; spokenIdx = -1; next(); }
-  else { endAt = Date.now() + remainMs; show(); }
+  if (idx < 0 || idx >= steps.length) { idx = -1; spokenIdx = -1; $("home").hidden = true; setMode("workout"); next(); }
+  else { endAt = Date.now() + remainMs; if (isGated(steps[idx])) spokenIdx = -1; show(); }
   clearInterval(timer);
   timer = setInterval(tick, 250);
 }
@@ -406,7 +428,7 @@ function pause() {
   countTrained();
   if (running) remainMs = Math.max(0, endAt - Date.now());
   running = false; clearInterval(timer); $("start").textContent = "Tęsti";
-  SAY.stop(); vKey = null;
+  clearTimeout(gateTimer); SAY.stop(); vKey = null;
   unlockScreen();
 }
 // Pabaigus treniruotę atsiveria įsivertinimo forma; treniruotė pažymima atlikta tik ją išsaugojus
@@ -422,6 +444,7 @@ function finish() {
   $("clock").textContent = "0:00"; $("bar").style.width = "100%";
   $("restctl").hidden = true; $("player").classList.remove("is-rest");
   $("start").textContent = "Pradėti iš naujo"; highlight(-1); showAnim(-1);
+  $("home").hidden = false; $("player").classList.remove("is-listen");
   SAY.say(dayType() === "full" ? "Puiku, Karolina! Mankšta baigta. Išgerk vandens ir trumpai įsivertink, kaip sekėsi." : "Puiku, Karolina! Dabar dar pusvalandį pasivaikščiok.");
   if (counted) {
     pending = { type: dayType(), min: Math.round(trainedMs / 60000) };
@@ -454,7 +477,7 @@ function saveRate(ev) {
   $("meta").textContent = "Treniruotė pažymėta kaip atlikta.";
   if (pain === "taip" || d.get("feel") === "blogiau")
     $("cue").textContent = "Pasižymėjai skausmą ar blogesnę savijautą. Kitą kartą tą pratimą daryk švelniau arba praleisk ir būtinai pasakyk kineziterapeutui. Jei skausmas aštrus ar plinta į koją, mankštą sustabdyk ir kreipkis į gydytoją.";
-  renderWeek(); renderHistory();
+  renderWeek(); renderHistory(); renderHello();
 }
 // Įrašų istorija (naujausi viršuje) ir kopijavimas tekstu
 const FEEL = { 1: "labai lengva", 2: "lengva", 3: "vidutiniškai", 4: "sunku", 5: "labai sunku" };
@@ -487,12 +510,13 @@ function reset() {
   $("cue").textContent = "Prieš kiekvieną pratimą rodoma animacija, kaip jis daromas. Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.";
   $("clock").textContent = fmt(totalSecs()); $("bar").style.width = "0";
   $("meta").textContent = `Visa treniruotė: apie ${Math.round(totalSecs() / 60)} min.`; highlight(-1); showAnim(-1);
-  $("restctl").hidden = true; $("player").classList.remove("is-rest");
+  $("restctl").hidden = true; $("player").classList.remove("is-rest", "is-listen"); $("home").hidden = true;
 }
 function setLevel(l) {
   level = l;
   try { localStorage.setItem("karolina-level", String(l)); } catch (e) {}
-  $("lvl1").setAttribute("aria-pressed", l === 0); $("lvl2").setAttribute("aria-pressed", l === 1);
+  ["lvl1", "hl1"].forEach(b => $(b).setAttribute("aria-pressed", l === 0));
+  ["lvl2", "hl2"].forEach(b => $(b).setAttribute("aria-pressed", l === 1));
   renderCards(); reset(); renderWeek();
 }
 $("videolist").addEventListener("click", ev => {
@@ -529,6 +553,7 @@ function renderHello() {
     : !SAY.available ? `Puslapis nerado lietuviško balso sąraše (naršyklė mato balsų: ${SAY.count}). Paspausk „Išbandyti balsą“ – jei išgirsi lietuviškai, balsą įjungsiu.`
     : SAY.on ? "Įsijunk garsą: vesiu tave balsu per visą mankštą, nereikės nei skaičiuoti, nei žiūrėti į ekraną."
     : "Balsas išjungtas – instrukcijos bus rodomos ekrane. Įjungti galima laikmatyje.";
+  document.body.classList.toggle("voice-on", SAY.active);
   $("vtestbox").hidden = !SAY.supported || SAY.available || voiceRefused;
   $("voice").hidden = !SAY.available;
   $("voice").textContent = SAY.on ? "Balsas: įjungtas" : "Balsas: išjungtas";
@@ -538,13 +563,23 @@ let voiceRefused = false;
 $("vtest").onclick = () => { SAY.test(); $("vask").hidden = false; };
 $("vyes").onclick = () => { SAY.force = true; SAY.on = true; $("vask").hidden = true; renderHello(); if (!(idx >= 0 && idx < steps.length)) reset(); };
 $("vno").onclick = () => { voiceRefused = true; $("vask").hidden = true; renderHello(); };
+// Režimai: „hello“ – tik pasisveikinimas, „workout“ – vienas pratimas, „browse“ – visas puslapis
+function setMode(m) { document.body.dataset.mode = m; window.scrollTo(0, 0); }
+function goHome() { closeRate(); reset(); renderHello(); renderWeek(); setMode("hello"); }
 $("letsgo").onclick = () => {
   if (running) return;
   SAY.recheck();
   if (selDay !== weekday(new Date())) { selDay = weekday(new Date()); renderWeek(); }
-  reset(); start();
-  $("player").scrollIntoView({ behavior: "smooth", block: "start" });
+  reset(); setMode("workout"); start();
 };
+$("browse").onclick = () => setMode("browse");
+$("quit").onclick = () => {
+  if (idx >= 0 && idx < steps.length && !confirm("Nutraukti treniruotę? Ji nebus įskaityta.")) return;
+  goHome();
+};
+$("home").onclick = goHome;
+$("hl1").onclick = () => { setLevel(0); renderHello(); };
+$("hl2").onclick = () => { setLevel(1); renderHello(); };
 $("voice").onclick = () => {
   SAY.on = !SAY.on;
   renderHello();

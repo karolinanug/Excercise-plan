@@ -204,3 +204,24 @@ footer { color: var(--muted); font-size: .88rem; }
 .history li.pain { color: var(--stop); }
 .history p { font-size: .9rem; color: var(--muted); margin: 10px 0; }
 #rate { align-self: flex-start; }
+
+/* Režimai: pradžioje tik pasisveikinimas; treniruotės metu – tik vienas pratimas */
+body[data-mode="hello"] .wrap > :not(.hello):not(dialog),
+body[data-mode="workout"] .wrap > :not(#player):not(dialog) { display: none !important; }
+body[data-mode="hello"] .wrap { min-height: 100dvh; justify-content: center; }
+body[data-mode="hello"] .hello { padding: 40px 24px; gap: 16px; }
+body[data-mode="hello"] .hello h1 { font-size: clamp(2.3rem, 9vw, 3.2rem); }
+.hello-level { display: flex; gap: 6px; }
+.hello .seg { color: var(--bg); border-color: color-mix(in srgb, var(--bg) 60%, transparent); }
+.hello .seg[aria-pressed="true"] { background: var(--bg); color: var(--accent); border-color: var(--bg); }
+.linkbtn { font: inherit; font-size: .92rem; background: none; border: 0; padding: 4px 0; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; opacity: .9; }
+body[data-mode="workout"] .wrap { min-height: 100dvh; padding-block: 18px 32px; }
+body[data-mode="workout"] #player { border: 0; background: transparent; padding: 0; gap: 14px; }
+body[data-mode="workout"] #player > h2, body[data-mode="workout"] .days, body[data-mode="workout"] .legend,
+body[data-mode="workout"] .dayinfo, body[data-mode="workout"] #player .level, body[data-mode="workout"] #history,
+body[data-mode="workout"] #reset { display: none !important; }
+body[data-mode="workout"] .stage { min-height: 0; }
+body:not([data-mode="workout"]) #quit { display: none; }
+.is-listen .clock { font-size: clamp(2rem, 9vw, 2.8rem); color: var(--muted); }
+/* Kai veda balsas, animacijos užrašas (savo ritmu) nerodomas, kad nesipainiotų su balsu */
+body.voice-on[data-mode="workout"] .anim-say { display: none; }

@@ -13,11 +13,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Manrope:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body data-mode="hello">
 <div class="wrap">
   <section class="hello" aria-labelledby="helloh">
     <h1 id="helloh">Labas, Karolina!</h1>
     <p class="hello-text" id="hellotext"></p>
+    <div class="hello-level" role="group" aria-label="Lygis">
+      <button class="seg" id="hl1" type="button" aria-pressed="true">1 lygis</button>
+      <button class="seg" id="hl2" type="button" aria-pressed="false">2 lygis</button>
+    </div>
     <button class="btn primary big" id="letsgo" type="button">Pradėkime</button>
     <p class="hello-note" id="voicenote"></p>
     <div class="vtest" id="vtestbox" hidden>
@@ -27,6 +31,7 @@
         <button class="btn ghost" id="vno" type="button">Ne</button>
       </span>
     </div>
+    <button class="linkbtn" id="browse" type="button">Peržiūrėti visą planą, pratimus ir įrašus</button>
   </section>
 
   <header>
@@ -89,6 +94,8 @@
       <button class="btn ghost" id="skip">Praleisti žingsnį</button>
       <button class="btn ghost" id="reset">Iš naujo</button>
       <button class="btn ghost" id="voice" type="button" aria-pressed="true" hidden>Balsas: įjungtas</button>
+      <button class="btn ghost" id="quit" type="button">Baigti</button>
+      <button class="btn primary" id="home" type="button" hidden>Į pradžią</button>
     </div>
     <p class="meta" id="meta"></p>
     <button class="btn primary" id="rate" hidden>Įsivertinti ir pažymėti atlikta</button>

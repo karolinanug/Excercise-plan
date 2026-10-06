@@ -24,9 +24,10 @@ const SAY = (() => {
     let tries = 0;
     const poll = setInterval(() => { if (pick() || ++tries > 30) { clearInterval(poll); notify(); } }, 300);
   }
-  function speak(text, interrupt) {
+  function speak(text, interrupt, onend) {
     if (interrupt) synth.cancel();
     const u = new SpeechSynthesisUtterance(text);
+    if (onend) { u.onend = onend; u.onerror = onend; }
     // Be konkretaus balso naršyklė parenka lietuvišką pagal kalbą (taip veikia ir kai sąrašas tuščias)
     if (voice) u.voice = voice;
     u.lang = voice ? voice.lang : "lt-LT"; u.rate = 0.95; u.pitch = 1;
@@ -46,9 +47,10 @@ const SAY = (() => {
     onChange(f) { listeners.push(f); },
     test() { if (!synth) return; try { speak("Labas, Karolina! Ar girdi mane lietuviškai?", true); } catch (e) {} },
     // interrupt: nutraukti tai, kas dar kalbama (kad balsas neatsiliktų nuo laikmačio)
-    say(text, interrupt = true) {
+    // onend – iškviečiama, kai sakinys pasakytas (arba nutrauktas)
+    say(text, interrupt = true, onend) {
       if (!this.active || !text) return;
-      try { speak(text, interrupt); } catch (e) {}
+      try { speak(text, interrupt, onend); } catch (e) { if (onend) onend(); }
     },
     stop() { try { if (synth) synth.cancel(); } catch (e) {} }
   };
