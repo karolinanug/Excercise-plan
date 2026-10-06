@@ -415,7 +415,7 @@ function unlockScreen() {
 function start() {
   if (running) { pause(); return; }
   running = true; $("start").textContent = "Pauzė";
-  initAudio();
+  MEDIA.start(); initAudio();
   lastTick = Date.now();
   if (idx < 0 || idx >= steps.length) trainedMs = 0;
   lockScreen();
@@ -437,6 +437,7 @@ function finish() {
   countTrained();
   const counted = trainedMs >= totalSecs() * 1000 / 2;
   clearInterval(timer); running = false; idx = steps.length; unlockScreen();
+  setTimeout(() => MEDIA.stop(), 8000); // leidžiam pabaigti pasakyti pabaigos sakinį
   beep(880, 0.2); beep(1175, 0.2, 0.22); beep(1568, 0.45, 0.44); buzz([200, 100, 200, 100, 400]);
   $("kind").textContent = "Baigta";
   $("now").textContent = dayType() === "full" ? "Puiku, šiandienos mankšta baigta!" : "Puiku! Dabar dar 30 min. pasivaikščiok.";
@@ -565,7 +566,7 @@ $("vyes").onclick = () => { SAY.force = true; SAY.on = true; $("vask").hidden = 
 $("vno").onclick = () => { voiceRefused = true; $("vask").hidden = true; renderHello(); };
 // Režimai: „hello“ – tik pasisveikinimas, „workout“ – vienas pratimas, „browse“ – visas puslapis
 function setMode(m) { document.body.dataset.mode = m; window.scrollTo(0, 0); }
-function goHome() { closeRate(); reset(); renderHello(); renderWeek(); setMode("hello"); }
+function goHome() { closeRate(); reset(); MEDIA.stop(); renderHello(); renderWeek(); setMode("hello"); }
 $("letsgo").onclick = () => {
   if (running) return;
   SAY.recheck();

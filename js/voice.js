@@ -1,5 +1,35 @@
 // Lietuviškas balsas (naršyklės kalbos sintezė, Web Speech API) ir pratimų ritmo tekstai.
 // Balsas veikia tik jei įrenginyje yra lietuviškas balsas; kitaip instrukcijos lieka ekrane.
+// iPhone tyliuoju režimu užtildo puslapio garsus (balsą, pypsėjimus). Jei puslapis groja tikrą
+// garso įrašą, telefonas persijungia į medijos atkūrimo režimą, kurio tylusis jungiklis netildo.
+// Todėl treniruotės metu ciklu grojamas tylus įrašas; naujesnėse Safari – dar ir audioSession.
+const MEDIA = (() => {
+  let el = null, url = null;
+  function silentWav() {
+    const rate = 8000, n = rate / 2, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+    const str = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+    str(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); str(8, "WAVEfmt "); v.setUint32(16, 16, true);
+    v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true); str(36, "data"); v.setUint32(40, n * 2, true);
+    return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+  }
+  return {
+    // Kviesti paspaudimo metu (naršyklės leidžia paleisti garsą tik po naudotojos veiksmo)
+    start() {
+      try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+      try {
+        if (!el) {
+          url = silentWav();
+          el = document.createElement("audio");
+          el.src = url; el.loop = true; el.setAttribute("playsinline", ""); el.preload = "auto";
+        }
+        const p = el.play(); if (p && p.catch) p.catch(() => {});
+      } catch (e) {}
+    },
+    stop() { try { if (el) el.pause(); } catch (e) {} }
+  };
+})();
+
 const SAY = (() => {
   const synth = window.speechSynthesis || null;
   let voice = null, on = true, force = false, count = 0;
@@ -45,7 +75,7 @@ const SAY = (() => {
     set force(v) { force = v; try { localStorage.setItem("karolina-voice-force", v ? "1" : "0"); } catch (e) {} notify(); },
     recheck: pick,
     onChange(f) { listeners.push(f); },
-    test() { if (!synth) return; try { speak("Labas, Karolina! Ar girdi mane lietuviškai?", true); } catch (e) {} },
+    test() { if (!synth) return; MEDIA.start(); try { speak("Labas, Karolina! Ar girdi mane lietuviškai?", true); } catch (e) {} },
     // interrupt: nutraukti tai, kas dar kalbama (kad balsas neatsiliktų nuo laikmačio)
     // onend – iškviečiama, kai sakinys pasakytas (arba nutrauktas)
     say(text, interrupt = true, onend) {
