@@ -102,13 +102,29 @@ function playVideo(box) {
   box.innerHTML = ytEmbed(box.dataset.id, "autoplay=1&rel=0&playsinline=1", box.dataset.title);
 }
 
-function buildSteps(lvl = level) {
+// Savaitės planas (0 = pirmadienis). „full“ – visi pratimai, „light“ – poilsio dienos
+// pratimai (rest: true) ir pasivaikščiojimas.
+const WEEK = [
+  ["Pirmadienis", "Pr", "full"], ["Antradienis", "An", "light"], ["Trečiadienis", "Tr", "full"],
+  ["Ketvirtadienis", "Kt", "light"], ["Penktadienis", "Pn", "full"], ["Šeštadienis", "Št", "light"],
+  ["Sekmadienis", "Sk", "full"]
+].map(([name, short, type]) => ({ name, short, type }));
+const DAYTYPE = {
+  full: { name: "Visa treniruotė", list: () => EX.map((e, i) => i), extra: "" },
+  light: { name: "Lengva diena (kvėpavimas ir tempimai)", list: () => EX.map((e, i) => (e.rest ? i : -1)).filter(i => i >= 0), extra: "Plius 30 min. pasivaikščiojimas sparčiu žingsniu." }
+};
+const weekday = d => (d.getDay() + 6) % 7;
+let selDay = weekday(new Date()), lastToday = selDay;
+const dayType = () => WEEK[selDay].type;
+
+function buildSteps(lvl = level, list = DAYTYPE[dayType()].list()) {
   const steps = [];
-  EX.forEach((e, i) => {
+  list.forEach((i, pos) => {
+    const e = EX[i];
     const sets = e.sets[lvl], secs = e.secs[lvl];
     // Tarp pratimų – poilsis (jau rodoma kito pratimo animacija), po jo trumpas pasiruošimas
-    if (i > 0) steps.push({ type: "rest", between: true, ex: i, title: "Poilsis", sub: "", cue: `Atsikvėpk ir atsigerk vandens. Toliau: ${i + 1}. ${e.name}. ${e.cue}`, secs: REST_BETWEEN });
-    steps.push({ type: "prep", ex: i, title: i ? "Pasiruošk" : "Žiūrėk ir pasiruošk", sub: "", cue: `${i + 1}. ${e.name}. ${i ? "Užimk pradinę padėtį." : "Pažiūrėk, kaip daroma, ir užimk pradinę padėtį."} ${e.cue}`, secs: i ? PREP_NEXT : PREP });
+    if (pos > 0) steps.push({ type: "rest", between: true, ex: i, title: "Poilsis", sub: "", cue: `Atsikvėpk ir atsigerk vandens. Toliau: ${i + 1}. ${e.name}. ${e.cue}`, secs: REST_BETWEEN });
+    steps.push({ type: "prep", ex: i, title: pos ? "Pasiruošk" : "Žiūrėk ir pasiruošk", sub: "", cue: `${i + 1}. ${e.name}. ${pos ? "Užimk pradinę padėtį." : "Pažiūrėk, kaip daroma, ir užimk pradinę padėtį."} ${e.cue}`, secs: pos ? PREP_NEXT : PREP });
     const sides = e.sides ? ["kairė pusė", "dešinė pusė"] : [null];
     for (let s = 0; s < sets; s++) {
       sides.forEach((side, k) => {
@@ -126,36 +142,61 @@ function buildSteps(lvl = level) {
   return steps;
 }
 
-// Atliktos treniruotės saugomos localStorage kaip dienų sąrašas („2026-10-06“), viena įskaita
-// per dieną. Savaitė prasideda pirmadienį. Įskaitoma, jei realiai treniruotasi bent pusę
-// numatyto laiko (kad keli „Praleisti žingsnį“ paspaudimai nepažymėtų treniruotės atlikta).
-const DONE_KEY = "karolina-done", WEEK_GOAL = 4, KEEP_DAYS = 120;
+// Atliktos treniruotės saugomos localStorage žurnale: { d: "2026-10-06", t: "full" | "light", ... }.
+// Viena įskaita dienai ir tipui. Savaitė prasideda pirmadienį; „Šią savaitę X/4“ skaičiuoja visas
+// treniruotes. Įskaitoma, jei realiai treniruotasi bent pusę numatyto laiko (kad keli
+// „Praleisti žingsnį“ paspaudimai nepažymėtų treniruotės atlikta).
+const LOG_KEY = "karolina-log", OLD_KEY = "karolina-done", WEEK_GOAL = 4, KEEP_DAYS = 180;
 function dayKey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
-function loadDone() {
+function loadLog() {
   try {
-    const a = JSON.parse(localStorage.getItem(DONE_KEY) || "[]");
-    return Array.isArray(a) ? a.filter(x => typeof x === "string") : [];
+    let a = JSON.parse(localStorage.getItem(LOG_KEY) || "null");
+    if (!Array.isArray(a)) {
+      // senas formatas: tik dienų sąrašas
+      const old = JSON.parse(localStorage.getItem(OLD_KEY) || "[]");
+      a = Array.isArray(old) ? old.filter(x => typeof x === "string").map(d => ({ d, t: "full" })) : [];
+    }
+    return a.filter(x => x && typeof x.d === "string");
   } catch (e) { return []; }
 }
-function markDone() {
+function saveLog(log) {
+  try { localStorage.setItem(LOG_KEY, JSON.stringify(log)); localStorage.removeItem(OLD_KEY); } catch (e) {}
+}
+function markDone(type, extra = {}) {
   const now = new Date(), today = dayKey(now);
   const oldest = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - KEEP_DAYS));
-  const done = loadDone().filter(k => k >= oldest && k !== today);
-  done.push(today);
-  try { localStorage.setItem(DONE_KEY, JSON.stringify(done)); } catch (e) {}
+  const log = loadLog().filter(x => x.d >= oldest && !(x.d === today && x.t === type));
+  log.push(Object.assign({ d: today, t: type, lvl: level + 1 }, extra));
+  saveLog(log);
+}
+function weekDates() {
+  const now = new Date(), mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - weekday(now));
+  return WEEK.map((w, i) => dayKey(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
 }
 function renderWeek() {
-  const now = new Date(), done = loadDone();
-  const monday = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - (now.getDay() + 6) % 7));
-  const n = done.filter(k => k >= monday).length;
-  $("week").textContent = `Šią savaitę: ${n}/${WEEK_GOAL}` + (done.includes(dayKey(now)) ? " · šiandien ✓" : "");
+  const log = loadLog(), dates = weekDates(), today = weekday(new Date());
+  const full = new Set(log.filter(x => x.t === "full" && x.d >= dates[0]).map(x => x.d)).size;
+  $("week").textContent = `Šią savaitę: ${full}/${WEEK_GOAL}`;
+  $("days").innerHTML = WEEK.map((w, i) => {
+    const done = log.some(x => x.d === dates[i]);
+    return `<button class="day ${w.type}${i === today ? " today" : ""}${done ? " done" : ""}" data-day="${i}" aria-pressed="${i === selDay}" title="${w.name}: ${DAYTYPE[w.type].name}${done ? " · atlikta" : ""}">
+      <b>${w.short}</b><i aria-hidden="true">${done ? "✓" : w.type === "full" ? "●" : "○"}</i></button>`;
+  }).join("");
+  const w = WEEK[selDay], min = Math.round(buildSteps(level).reduce((a, s) => a + s.secs, 0) / 60), n = DAYTYPE[w.type].list().length;
+  $("dayinfo").innerHTML = `<b>${selDay === today ? "Šiandien" : w.name}${selDay === today ? ` (${w.name.toLowerCase()})` : ""}:</b> ${DAYTYPE[w.type].name.toLowerCase()} – ${n} pratim${n === 1 ? "as" : n < 10 ? "ai" : "ų"}, apie ${min} min. ${DAYTYPE[w.type].extra}`;
+}
+function selectDay(i) {
+  if (i === selDay) return;
+  if (idx >= 0 && idx < steps.length && !confirm("Nutraukti dabartinę treniruotę ir pereiti prie kitos dienos?")) return;
+  selDay = i;
+  renderWeek(); reset();
 }
 
 // Bendra trukmė ir poilsio dienų pratimai skaičiuojami iš EX, kad pakeitus pratimus
 // tekstas puslapyje neatsiliktų.
 function renderSummary() {
   [0, 1].forEach(l => {
-    const min = Math.round(buildSteps(l).reduce((a, s) => a + s.secs, 0) / 60);
+    const min = Math.round(buildSteps(l, DAYTYPE.full.list()).reduce((a, s) => a + s.secs, 0) / 60);
     document.querySelectorAll(`[data-dur="${l}"]`).forEach(el => { el.textContent = min; });
   });
   $("restlist").innerHTML = EX.map((e, i) => e.rest ? `<a href="#ex${i}">${i + 1}. ${esc(e.name)}</a>` : "").filter(Boolean).join(", ");
@@ -304,11 +345,11 @@ function pause() {
 function finish() {
   countTrained();
   const counted = trainedMs >= totalSecs() * 1000 / 2;
-  if (counted) markDone();
+  if (counted) markDone(dayType());
   clearInterval(timer); running = false; idx = steps.length; unlockScreen();
   beep(880, 0.2); beep(1175, 0.2, 0.22); beep(1568, 0.45, 0.44); buzz([200, 100, 200, 100, 400]);
   $("kind").textContent = "Baigta";
-  $("now").textContent = "Puiku, šiandienos mankšta atlikta!";
+  $("now").textContent = dayType() === "full" ? "Puiku, šiandienos mankšta atlikta!" : "Puiku! Dabar dar 30 min. pasivaikščiok.";
   $("cue").textContent = "Išgerk vandens. Jei kas nors skaudėjo (ne raumenų nuovargis), pasižymėk ir papasakok kineziterapeutui.";
   $("clock").textContent = "0:00"; $("bar").style.width = "100%";
   $("meta").textContent = counted ? "Treniruotė pažymėta kaip atlikta." : "Daugiau nei pusė treniruotės praleista, todėl ji neįskaityta.";
@@ -329,7 +370,7 @@ function setLevel(l) {
   level = l;
   try { localStorage.setItem("karolina-level", String(l)); } catch (e) {}
   $("lvl1").setAttribute("aria-pressed", l === 0); $("lvl2").setAttribute("aria-pressed", l === 1);
-  renderCards(); reset();
+  renderCards(); reset(); renderWeek();
 }
 $("videolist").addEventListener("click", ev => {
   const btn = ev.target.closest(".embed-btn");
@@ -339,6 +380,10 @@ $("videolist").addEventListener("click", ev => {
 $("cards").addEventListener("click", ev => {
   const a = ev.target.closest("[data-play]");
   if (a) playVideo(document.querySelector(`#vid${a.dataset.play} .embed`));
+});
+$("days").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-day]");
+  if (b) selectDay(+b.dataset.day);
 });
 $("start").onclick = start;
 $("back").onclick = back;
@@ -350,6 +395,9 @@ $("lvl1").onclick = () => setLevel(0);
 $("lvl2").onclick = () => setLevel(1);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") return;
+  const today = weekday(new Date());
+  if (today !== selDay && !(idx >= 0 && idx < steps.length) && lastToday !== today) { selDay = today; reset(); }
+  lastToday = today;
   renderWeek();
   if (running) { tick(); lockScreen(); }
 });
