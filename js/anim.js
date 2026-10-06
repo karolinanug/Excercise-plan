@@ -58,9 +58,9 @@ const ANIM = (() => {
 
   // ---- Bazinės pozos ----
   // Gulint ant nugaros, galva kairėje
-  const SUP = { hip: [112, 97], sh: [74, 97], hd: [56, 94], a1: [104, 98, -1], l1: [140, 98, -1, 0] };
+  const SUP = { hip: [112, 97], sh: [74, 97], hd: [56, 94], a1: [104, 98, -1], a2: [104, 98, -1], l1: [140, 98, -1, 0], l2: [140, 98, -1, 0] };
   // Keturpėsčia, veidu į dešinę
-  const QUAD = { hip: [70, 71], sh: [108, 66], hd: [124, 63], a1: [109, 100, 1], l1: [44, 98, -1, 180] };
+  const QUAD = { hip: [70, 71], sh: [108, 66], hd: [124, 63], a1: [109, 100, 1], a2: [109, 100, 1], l1: [44, 98, -1, 180], l2: [44, 98, -1, 180] };
   const k = (o, more) => Object.assign({}, o, more);
   const DEF = {
     breath: () => {
@@ -79,7 +79,7 @@ const ANIM = (() => {
       [k(QUAD, { b: 6, hip: [70, 70], hd: [123, 56] }), 2000, 2000, "Karvė · įkvėpk, švelniai išlenk", 0.4]
     ],
     deadbug: lvl => {
-      const top = k(SUP, { a1: [76, 63, 1], l1: [138, 70, -1, -10] });
+      const top = k(SUP, { a1: [76, 63, 1], a2: [76, 63, 1], l1: [138, 70, -1, -10], l2: [138, 70, -1, -10] });
       const down = { l: [161, 90, -1, -70], a: lvl ? [42, 90, 1] : [76, 63, 1] };
       return [
         [top, 1500, 800, "Juosmuo prispaustas prie kilimėlio", 0.4],
