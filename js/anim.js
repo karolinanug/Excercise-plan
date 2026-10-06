@@ -159,7 +159,7 @@ const ANIM = (() => {
   // ---- Piešimas ----
   const NS = "http://www.w3.org/2000/svg";
   const el = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const a in attrs) e.setAttribute(a, attrs[a]); return e; };
-  const f1 = v => v.toFixed(1);
+  const f1 = v => v.toFixed(2); // 0,1 apvalinimas didelėje animacijoje sukelia drebėjimą
   const reduced = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const ease = u => u * u * (3 - 2 * u);
   let uid = 0;
@@ -273,8 +273,11 @@ const ANIM = (() => {
     const mk = (cls, g) => { const e = el("path", { class: cls }); g.append(e); return e; };
     const far = el("g", { class: "anim-far" }), body = el("g", {}), near = el("g", {});
     // Galūnė: šlaunis, blauzda, pėda; žastas, dilbis, plaštaka, nykštys
-    const side = g => ({ leg: [mk("anim-legs", g), mk("anim-legs", g), mk("anim-skin", g)],
-      arm: [mk("anim-top", g), mk("anim-skin", g), mk("anim-skin", g), mk("anim-skin anim-thumb", g)] });
+    // Galūnė: kulkšnis (oda), pėda, blauzda ir šlaunis (tamprės); žastas (oda) ir trumpa rankovė,
+    // dilbis, plaštaka, nykštys. Sąnariai (alkūnė, kulkšnis) – vienos spalvos, todėl nesimato siūlės.
+    const side = g => ({ leg: [mk("anim-skin", g), mk("anim-skin", g), mk("anim-legs", g), mk("anim-legs", g)],
+      arm: [mk("anim-skin", g), mk("anim-top", g), mk("anim-skin", g), mk("anim-skin", g), mk("anim-skin anim-thumb", g)],
+      footSide: 1, thumbSide: 1 });
     const F = side(far);
     const neck = mk("anim-skin", body), torso = mk("anim-top", body);
     const bun = mk("anim-hair", body), face = mk("anim-skin", body), cheek = mk("anim-cheek", body),
@@ -288,26 +291,39 @@ const ANIM = (() => {
     const state = document.createElement("i"); state.className = "anim-state"; state.setAttribute("aria-hidden", "true");
     btn.append(svg, state); box.append(btn, say, muscle);
 
+    const lerpP = (a, b, u) => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+    const clamp01 = v => Math.max(0, Math.min(1, v));
     function limbs(parts, j, i, facing) {
       const k = j["k" + i], a = j["f" + i], t = j["t" + i], e = j["e" + i], w = j["w" + i];
-      parts.leg[0].setAttribute("d", capsule(j.hip, k, 6, 4.2));
-      parts.leg[1].setAttribute("d", capsule(k, a, 4.2, 2.4));
-      // Pėda: padas į priešingą nuo kelio pusę
-      const fa = ang(a, t), fx = [Math.cos(fa), Math.sin(fa)];
-      let fy = [-fx[1], fx[0]];
-      if (fy[0] * (k[0] - a[0]) + fy[1] * (k[1] - a[1]) < 0) fy = [-fy[0], -fy[1]];
-      parts.leg[2].setAttribute("d", smooth(place(a, fx, fy, Math.hypot(t[0] - a[0], t[1] - a[1]) / 10)(FOOT)));
-      parts.arm[0].setAttribute("d", capsule(j.sh, e, 3.6, 2.8));
-      parts.arm[1].setAttribute("d", capsule(e, w, 2.6, 1.8));
-      // Plaštaka: tęsia dilbį; ant grindų – guli plokščiai (statmenas dilbis → pirštai į priekį)
-      let ha = ang(e, w);
-      if (w[1] > 95) { const c = Math.cos(ha); ha = Math.abs(c) < 0.35 ? (facing > 0 ? 0 : Math.PI) : (c > 0 ? 0 : Math.PI); }
-      const hx = [Math.cos(ha), Math.sin(ha)];
-      let hy = [-hx[1], hx[0]];
-      if (w[1] > 95 && hy[1] > 0) hy = [-hy[0], -hy[1]]; // ant grindų nykštys viršuje, ne grindyse
-      const hp = place(w, hx, hy, 1.25);
-      parts.arm[2].setAttribute("d", smooth(hp(HAND)));
-      parts.arm[3].setAttribute("d", smooth(hp(THUMB)));
+      // Koja: tamprės iki ~80 % blauzdos, žemiau – oda iki kulkšnies
+      const cuff = lerpP(k, a, 0.8);
+      parts.leg[0].setAttribute("d", capsule(lerpP(k, a, 0.7), a, 3.1, 2.4));
+      parts.leg[2].setAttribute("d", capsule(k, cuff, 4.2, 3.1));
+      parts.leg[3].setAttribute("d", capsule(j.hip, k, 6, 4.2));
+      // Pėda: padas į priešingą nuo kelio pusę. Kai pėda beveik vienoje linijoje su blauzda,
+      // pusė nebekeičiama (histerezė), kad pėda nesivartytų kas kadrą.
+      const fa = ang(a, t), fx = [Math.cos(fa), Math.sin(fa)], perp = [-fx[1], fx[0]];
+      const sk = [k[0] - a[0], k[1] - a[1]], dot = (perp[0] * sk[0] + perp[1] * sk[1]) / (Math.hypot(sk[0], sk[1]) || 1);
+      if (Math.abs(dot) > 0.25) parts.footSide = Math.sign(dot);
+      const fy = [perp[0] * parts.footSide, perp[1] * parts.footSide];
+      parts.leg[1].setAttribute("d", smooth(place(a, fx, fy, Math.hypot(t[0] - a[0], t[1] - a[1]) / 10)(FOOT)));
+      // Ranka: oda per visą žastą ir dilbį (vienodas storis ties alkūne), rankovė – viršutinė žasto dalis
+      parts.arm[0].setAttribute("d", capsule(lerpP(j.sh, e, 0.4), e, 3.1, 2.7));
+      parts.arm[1].setAttribute("d", capsule(j.sh, lerpP(j.sh, e, 0.55), 3.7, 3.3));
+      parts.arm[2].setAttribute("d", capsule(e, w, 2.7, 1.8));
+      // Plaštaka tęsia dilbį; artėdama prie grindų tolygiai pasisuka ir atsigula plokščiai
+      const fa2 = ang(e, w), c = Math.cos(fa2);
+      const flat = Math.abs(c) < 0.35 ? (facing > 0 ? 0 : Math.PI) : (c > 0 ? 0 : Math.PI);
+      let dd = flat - fa2; dd = Math.atan2(Math.sin(dd), Math.cos(dd));
+      const ha = fa2 + dd * clamp01((w[1] - 90) / 7);
+      const hx = [Math.cos(ha), Math.sin(ha)], hperp = [-hx[1], hx[0]];
+      // Nykštys – galvos pusėje (kaip natūraliai laikomos rankos), su ta pačia histereze
+      const td = [j.hd[0] - j.hip[0], j.hd[1] - j.hip[1]], tdot = (hperp[0] * td[0] + hperp[1] * td[1]) / (Math.hypot(td[0], td[1]) || 1);
+      if (Math.abs(tdot) > 0.25) parts.thumbSide = Math.sign(tdot);
+      if (w[1] > 95 && hperp[1] * parts.thumbSide > 0.5) parts.thumbSide = -parts.thumbSide; // ant grindų – ne į grindis
+      const hp = place(w, hx, [hperp[0] * parts.thumbSide, hperp[1] * parts.thumbSide], 1.25);
+      parts.arm[3].setAttribute("d", smooth(hp(HAND)));
+      parts.arm[4].setAttribute("d", smooth(hp(THUMB)));
     }
     function draw(P, label, effort) {
       const j = joints(P), sp = spine(j), facing = Math.sign(j.hd[0] - j.hip[0]) || 1;
