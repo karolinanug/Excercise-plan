@@ -15,9 +15,16 @@
 </head>
 <body>
 <div class="wrap">
+  <section class="hello" aria-labelledby="helloh">
+    <h1 id="helloh">Labas, Karolina!</h1>
+    <p class="hello-text" id="hellotext"></p>
+    <button class="btn primary big" id="letsgo" type="button">Pradėkime</button>
+    <p class="hello-note" id="voicenote"></p>
+  </section>
+
   <header>
     <p class="eyebrow">Namų mankšta · tik kilimėlis</p>
-    <h1>Karolinos mankštos planas</h1>
+    <h2 class="title">Karolinos mankštos planas</h2>
     <p class="lead">Apie <span data-dur="0">24</span> minučių programa (2 lygyje apie <span data-dur="1">36</span> min.) liemens, sėdmenų ir laikysenos raumenims stiprinti. Paspausk „Pradėti“, ir puslapis pats ves per visus pratimus: prieš kiekvieną parodys, kaip jis daromas, tada skaičiuos laiką ir pereis prie kito. Nieko spaudinėti nereikia.</p>
     <div class="facts">
       <span class="chip">4–5 dienos per savaitę</span>
@@ -74,6 +81,7 @@
       <button class="btn ghost" id="back" title="Pradėti žingsnį iš naujo; paspaudus žingsnio pradžioje – grįžti į ankstesnį">Atgal</button>
       <button class="btn ghost" id="skip">Praleisti žingsnį</button>
       <button class="btn ghost" id="reset">Iš naujo</button>
+      <button class="btn ghost" id="voice" type="button" aria-pressed="true" hidden>Balsas: įjungtas</button>
     </div>
     <p class="meta" id="meta"></p>
     <button class="btn primary" id="rate" hidden>Įsivertinti ir pažymėti atlikta</button>
@@ -163,6 +171,7 @@
   <footer>Video nuorodos patikrintos 2026-10-05: visos veda į esamus YouTube įrašus, kurių pavadinimai atitinka pratimą. Jei kurio nors video nebebūtų, YouTube paieškoje įvesk pratimo pavadinimą anglų kalba (pateiktas po lietuvišku).</footer>
 </div>
 <script src="js/anim.js"></script>
+<script src="js/voice.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

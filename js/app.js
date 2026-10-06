@@ -113,6 +113,11 @@ const DAYTYPE = {
   full: { name: "Visa treniruotė", list: () => EX.map((e, i) => i), extra: "" },
   light: { name: "Lengva diena (kvėpavimas ir tempimai)", list: () => EX.map((e, i) => (e.rest ? i : -1)).filter(i => i >= 0), extra: "Plius 30 min. pasivaikščiojimas sparčiu žingsniu." }
 };
+// Lietuviškas daugiskaitos linksnis: 1 minutė, 2 minutės, 10 minučių, 21 minutė...
+function plural(n, one, few, many) {
+  const t = n % 100, u = n % 10;
+  return n + " " + (u === 0 || (t >= 11 && t <= 19) ? many : u === 1 ? one : few);
+}
 const weekday = d => (d.getDay() + 6) % 7;
 let selDay = weekday(new Date()), lastToday = selDay;
 const dayType = () => WEEK[selDay].type;
@@ -124,7 +129,7 @@ function buildSteps(lvl = level, list = DAYTYPE[dayType()].list()) {
     const sets = e.sets[lvl], secs = e.secs[lvl];
     // Tarp pratimų – poilsis (jau rodoma kito pratimo animacija), po jo trumpas pasiruošimas
     if (pos > 0) steps.push({ type: "rest", between: true, ex: i, title: "Poilsis", sub: "", cue: `Atsikvėpk ir atsigerk vandens. Toliau: ${i + 1}. ${e.name}. ${e.cue}`, secs: REST_BETWEEN });
-    steps.push({ type: "prep", ex: i, title: pos ? "Pasiruošk" : "Žiūrėk ir pasiruošk", sub: "", cue: `${i + 1}. ${e.name}. ${pos ? "Užimk pradinę padėtį." : "Pažiūrėk, kaip daroma, ir užimk pradinę padėtį."} ${e.cue}`, secs: pos ? PREP_NEXT : PREP });
+    steps.push({ type: "prep", pos, ex: i, title: pos ? "Pasiruošk" : "Žiūrėk ir pasiruošk", sub: "", cue: `${i + 1}. ${e.name}. ${pos ? "Užimk pradinę padėtį." : "Pažiūrėk, kaip daroma, ir užimk pradinę padėtį."} ${e.cue}`, secs: pos ? PREP_NEXT : PREP });
     const sides = e.sides ? ["kairė pusė", "dešinė pusė"] : [null];
     for (let s = 0; s < sets; s++) {
       sides.forEach((side, k) => {
@@ -132,10 +137,10 @@ function buildSteps(lvl = level, list = DAYTYPE[dayType()].list()) {
         const parts = [];
         if (sets > 1) parts.push(`${s + 1}/${sets} serija`);
         if (side) parts.push(side);
-        steps.push({ type: "work", ex: i, title: label, sub: parts.join(" · "), cue: e.cue + " " + e.dose[lvl] + ".", secs });
+        steps.push({ type: "work", ex: i, set: s, sets, side: side ? k : -1, title: label, sub: parts.join(" · "), cue: e.cue + " " + e.dose[lvl] + ".", secs });
         const lastSide = k === sides.length - 1, lastSet = s === sets - 1;
-        if (!lastSide) steps.push({ type: "rest", ex: i, title: "Keisk pusę", sub: "", cue: `Atsigulk ant kito šono / pakeisk koją. Toliau: ${e.name}, dešinė pusė.`, secs: SIDE_SWITCH });
-        else if (!lastSet) steps.push({ type: "rest", ex: i, title: "Poilsis", sub: "", cue: `Toliau: ${e.name}, ${s + 2} serija.`, secs: REST });
+        if (!lastSide) steps.push({ type: "rest", sw: true, ex: i, title: "Keisk pusę", sub: "", cue: `Atsigulk ant kito šono / pakeisk koją. Toliau: ${e.name}, dešinė pusė.`, secs: SIDE_SWITCH });
+        else if (!lastSet) steps.push({ type: "rest", nextSet: s + 1, ex: i, title: "Poilsis", sub: "", cue: `Toliau: ${e.name}, ${s + 2} serija.`, secs: REST });
       });
     }
   });
@@ -183,7 +188,7 @@ function renderWeek() {
       <b>${w.short}</b><i aria-hidden="true">${done ? "✓" : w.type === "full" ? "●" : "○"}</i></button>`;
   }).join("");
   const w = WEEK[selDay], min = Math.round(buildSteps(level).reduce((a, s) => a + s.secs, 0) / 60), n = DAYTYPE[w.type].list().length;
-  $("dayinfo").innerHTML = `<b>${selDay === today ? "Šiandien" : w.name}${selDay === today ? ` (${w.name.toLowerCase()})` : ""}:</b> ${DAYTYPE[w.type].name.toLowerCase()} – ${n} pratim${n === 1 ? "as" : n < 10 ? "ai" : "ų"}, apie ${min} min. ${DAYTYPE[w.type].extra}`;
+  $("dayinfo").innerHTML = `<b>${selDay === today ? "Šiandien" : w.name}${selDay === today ? ` (${w.name.toLowerCase()})` : ""}:</b> ${DAYTYPE[w.type].name.toLowerCase()} – ${plural(n, "pratimas", "pratimai", "pratimų")}, apie ${min} min. ${DAYTYPE[w.type].extra}`;
 }
 function selectDay(i) {
   if (i === selDay) return;
@@ -244,7 +249,7 @@ function highlight(ex) {
 function show() {
   const st = steps[idx];
   $("kind").textContent = st.type === "work" ? "Daryk" + (st.sub ? " · " + st.sub : "") : st.title;
-  $("now").textContent = st.type === "work" ? st.title : st.type === "prep" ? `${st.ex + 1}. ${EX[st.ex].name}`
+  $("now").textContent = st.type === "intro" ? "Labas, Karolina!" : st.type === "work" ? st.title : st.type === "prep" ? `${st.ex + 1}. ${EX[st.ex].name}`
     : st.between ? `Toliau: ${st.ex + 1}. ${EX[st.ex].name}` : (st.title === "Keisk pusę" ? "Keisk pusę" : "Atsikvėpk");
   $("cue").textContent = st.cue;
   $("clock").textContent = fmt(left);
@@ -252,6 +257,7 @@ function show() {
   const remaining = steps.slice(idx + 1).reduce((a, s) => a + s.secs, 0) + left;
   $("meta").textContent = `Žingsnis ${idx + 1} iš ${steps.length} · liko apie ${Math.ceil(remaining / 60)} min.`;
   highlight(steps[idx].ex);
+  if (idx !== spokenIdx) { spokenIdx = idx; announce(st); }
   $("restctl").hidden = st.type !== "rest";
   $("player").classList.toggle("is-rest", st.type === "rest");
   try { showAnim(st.ex); } catch (e) {}
@@ -266,6 +272,63 @@ function showAnim(ex) {
   if (pAnim) pAnim.destroy();
   animEx = ex; pAnim = ANIM.mount(box, EX[ex].anim, level);
 }
+// ---- Balsas: pranešimai žingsnio pradžioje ir ritmo nurodymai jo metu ----
+const INTRO_SECS = 28;
+function introStep() {
+  const w = WEEK[selDay], list = DAYTYPE[w.type].list(), min = Math.round(buildSteps(level).reduce((a, s) => a + s.secs, 0) / 60);
+  const mins = plural(min, "minutė", "minutės", "minučių");
+  const what = w.type === "full" ? `visa treniruotė: ${plural(list.length, "pratimas", "pratimai", "pratimų")}, apie ${mins}` : `lengva diena: kvėpavimas ir tempimai, apie ${mins}, o paskui pusvalandis pasivaikščiojimo`;
+  const text = `Labas, Karolina. Šiandien ${w.name.toLowerCase()}, ${what}. ` +
+    "Šios mankštos tikslas – sustiprinti giliuosius pilvo ir sėdmenų raumenis ir išmokti valdyti dubens padėtį. " +
+    "Judėk lėtai, visą laiką kvėpuok ir niekada nedaryk per aštrų skausmą. Aš pasakysiu, kada ir ką daryti, tau nereikės skaičiuoti. " +
+    "Patiesk kilimėlį. Pradedam.";
+  return { type: "intro", ex: list[0], title: "Įžanga", sub: "", cue: text, secs: INTRO_SECS };
+}
+let spokenIdx = -1, vKey = null, vFlags = {};
+function exSteps(e) { return e.steps.slice(0, 2).join(" "); }
+function announce(st) {
+  vKey = null; vFlags = {};
+  const e = EX[st.ex];
+  if (st.type === "intro") return SAY.say(st.cue);
+  if (st.type === "prep") return SAY.say(st.pos ? "Užimk pradinę padėtį." : `Pirmas pratimas: ${e.name}. ${exSteps(e)}`);
+  if (st.type === "rest") {
+    if (st.between) return SAY.say("Poilsis. Atsikvėpk.");
+    if (st.sw) return SAY.say(VOICE_SWITCH[e.anim] || "Keisk pusę.");
+    return SAY.say(`Poilsis. Paskui ${ORD[st.nextSet] ? ORD[st.nextSet].toLowerCase() : ""} serija.`);
+  }
+  if (st.type === "work") {
+    const pre = (st.sets > 1 ? `${ORD[st.set] || ""} serija. ` : "") + (st.side === 0 ? "Kairė pusė. " : st.side === 1 ? "Dešinė pusė. " : "");
+    const v = VOICE[e.anim](level, st.secs);
+    vFlags.pre = pre || "Pradėk. ";
+    if (v.start) { SAY.say(vFlags.pre + v.start); vKey = "start"; }
+  }
+}
+// Kviečiama kas 250 ms: pagal praėjusį žingsnio laiką pasako einamą ritmo nurodymą
+function voiceTick() {
+  if (!running || idx < 0 || idx >= steps.length || !SAY.active) return;
+  const st = steps[idx], rem = (endAt - Date.now()) / 1000, t = st.secs - rem;
+  if (st.type === "prep" && !st.pos && rem <= 6 && !vFlags.ready) { vFlags.ready = 1; SAY.say("Pasiruošk. Pradedam."); }
+  if (st.type === "rest" && st.between && t >= 3 && !vFlags.next) { vFlags.next = 1; SAY.say(`Kitas pratimas: ${EX[st.ex].name}. ${exSteps(EX[st.ex])}`); }
+  if (st.type !== "work") return;
+  const v = VOICE[EX[st.ex].anim](level, st.secs);
+  if (v.beat) {
+    const C = v.beat.reduce((a, b) => a + b[1], 0), k = Math.floor(t / C);
+    let x = t - k * C, i = 0;
+    while (i < v.beat.length - 1 && x >= v.beat[i][1]) { x -= v.beat[i][1]; i++; }
+    const key = k + ":" + i;
+    if (key === vKey || rem < 1) return;
+    vKey = key;
+    const b = v.beat[i], text = k > 0 && b[2] ? b[2] : b[0];
+    if (vFlags.pre) { SAY.say(vFlags.pre + text); vFlags.pre = ""; } else SAY.say(text);
+  } else {
+    const n = Math.floor(t / v.every);
+    if (n < 1 || rem < 3) return;
+    const key = "r" + n;
+    if (key === vKey) return;
+    vKey = key; SAY.say(v.remind[(n - 1) % v.remind.length]);
+  }
+}
+
 function setStep(i) {
   idx = i;
   left = steps[idx].secs; remainMs = left * 1000; endAt = Date.now() + remainMs;
@@ -282,6 +345,7 @@ function back() {
   if (idx < 0 || idx >= steps.length) return;
   const elapsed = steps[idx].secs * 1000 - (running ? endAt - Date.now() : remainMs);
   setStep(elapsed > 3000 || idx === 0 ? idx : idx - 1);
+  spokenIdx = -1;
   show();
 }
 // Poilsį galima pratęsti arba baigti anksčiau
@@ -290,11 +354,13 @@ function extendRest() {
   steps[idx] = Object.assign({}, steps[idx], { secs: steps[idx].secs + REST_PLUS });
   if (running) endAt += REST_PLUS * 1000; else remainMs += REST_PLUS * 1000;
   left += REST_PLUS;
+  SAY.say("Dar penkiolika sekundžių poilsio.");
   show();
 }
 function endRest() { if (idx >= 0 && idx < steps.length && steps[idx].type === "rest") next(); }
 function tick() {
   countTrained();
+  voiceTick();
   const now = Date.now();
   let moved = false;
   // Jei skirtukas ilgai buvo fone, praleidžiami visi jau pasibaigę žingsniai
@@ -331,7 +397,7 @@ function start() {
   lastTick = Date.now();
   if (idx < 0 || idx >= steps.length) trainedMs = 0;
   lockScreen();
-  if (idx < 0 || idx >= steps.length) { idx = -1; next(); }
+  if (idx < 0 || idx >= steps.length) { idx = -1; spokenIdx = -1; next(); }
   else { endAt = Date.now() + remainMs; show(); }
   clearInterval(timer);
   timer = setInterval(tick, 250);
@@ -340,6 +406,7 @@ function pause() {
   countTrained();
   if (running) remainMs = Math.max(0, endAt - Date.now());
   running = false; clearInterval(timer); $("start").textContent = "Tęsti";
+  SAY.stop(); vKey = null;
   unlockScreen();
 }
 // Pabaigus treniruotę atsiveria įsivertinimo forma; treniruotė pažymima atlikta tik ją išsaugojus
@@ -355,6 +422,7 @@ function finish() {
   $("clock").textContent = "0:00"; $("bar").style.width = "100%";
   $("restctl").hidden = true; $("player").classList.remove("is-rest");
   $("start").textContent = "Pradėti iš naujo"; highlight(-1); showAnim(-1);
+  SAY.say(dayType() === "full" ? "Puiku, Karolina! Mankšta baigta. Išgerk vandens ir trumpai įsivertink, kaip sekėsi." : "Puiku, Karolina! Dabar dar pusvalandį pasivaikščiok.");
   if (counted) {
     pending = { type: dayType(), min: Math.round(trainedMs / 60000) };
     $("meta").textContent = "Užpildyk trumpą įsivertinimą, kad treniruotė būtų pažymėta kaip atlikta.";
@@ -412,7 +480,8 @@ async function copyHistory() {
   setTimeout(() => { $("histcopy").textContent = "Kopijuoti įrašus (kineziterapeutui)"; }, 2000);
 }
 function reset() {
-  pause(); idx = -1; pending = null; $("rate").hidden = true; steps = buildSteps();
+  pause(); idx = -1; spokenIdx = -1; pending = null; $("rate").hidden = true; steps = buildSteps();
+  if (SAY.active) steps.unshift(introStep());
   $("start").textContent = "Pradėti"; $("kind").textContent = "Pasiruošk";
   $("now").textContent = "Patiesk kilimėlį ir paspausk „Pradėti“";
   $("cue").textContent = "Prieš kiekvieną pratimą rodoma animacija, kaip jis daromas. Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.";
@@ -446,6 +515,35 @@ $("rateform").addEventListener("change", ev => {
   if (ev.target.name === "pain") $("wherebox").hidden = ev.target.value === "ne";
 });
 $("histcopy").onclick = copyHistory;
+// Pasisveikinimas: šiandienos planas ir mygtukas „Pradėkime“ (paleidžia balsą ir treniruotę)
+function renderHello() {
+  const w = WEEK[weekday(new Date())], log = loadLog(), dates = weekDates();
+  const full = new Set(log.filter(x => x.t === "full" && x.d >= dates[0]).map(x => x.d)).size;
+  const doneToday = log.some(x => x.d === dayKey(new Date()));
+  const steps0 = buildSteps(level, DAYTYPE[w.type].list()), min = Math.round(steps0.reduce((a, s) => a + s.secs, 0) / 60);
+  $("hellotext").textContent = (doneToday ? "Šiandienos mankšta jau atlikta, šaunuolė! Jei nori, gali pakartoti. " : "") +
+    [`Šiandien ${w.name.toLowerCase()}: ${DAYTYPE[w.type].name.toLowerCase()}, apie ${min} min.`, DAYTYPE[w.type].extra,
+      `Šią savaitę jau atlikai ${full} iš ${WEEK_GOAL} treniruočių.`].filter(Boolean).join(" ");
+  $("voicenote").textContent = !SAY.supported ? "Ši naršyklė nemoka kalbėti, todėl instrukcijos bus rodomos ekrane."
+    : !SAY.available ? "Šiame įrenginyje nerastas lietuviškas balsas, todėl instrukcijos bus rodomos ekrane. Android telefone jį galima įdiegti: Nustatymai → Sistema → Kalbos ir įvestis → Teksto į kalbą išvestis → lietuvių kalba."
+    : SAY.on ? "Įsijunk garsą: vesiu tave balsu per visą mankštą, nereikės nei skaičiuoti, nei žiūrėti į ekraną."
+    : "Balsas išjungtas – instrukcijos bus rodomos ekrane. Įjungti galima laikmatyje.";
+  $("voice").hidden = !SAY.available;
+  $("voice").textContent = SAY.on ? "Balsas: įjungtas" : "Balsas: išjungtas";
+  $("voice").setAttribute("aria-pressed", SAY.on);
+}
+$("letsgo").onclick = () => {
+  if (running) return;
+  if (selDay !== weekday(new Date())) { selDay = weekday(new Date()); renderWeek(); }
+  reset(); start();
+  $("player").scrollIntoView({ behavior: "smooth", block: "start" });
+};
+$("voice").onclick = () => {
+  SAY.on = !SAY.on;
+  renderHello();
+  if (idx < 0 || idx >= steps.length) reset();
+};
+SAY.onChange(() => { renderHello(); if (!(idx >= 0 && idx < steps.length)) reset(); });
 $("start").onclick = start;
 $("back").onclick = back;
 $("skip").onclick = () => { if (idx >= 0 && idx < steps.length) next(); };
@@ -466,4 +564,5 @@ renderSummary();
 renderVideos();
 renderWeek();
 renderHistory();
+renderHello();
 setLevel(level);
