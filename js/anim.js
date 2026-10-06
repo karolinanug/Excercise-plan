@@ -114,12 +114,15 @@ const ANIM = (() => {
       ];
     },
     sideplank: () => {
-      // Žiūrint iš priekio: atsirėmus į dilbį, keliai sulenkti už nugaros
-      const legs = { l1: { k: [140, 94], a: [148, 91], t: [154, 89] }, l2: { k: [140, 98], a: [148, 97], t: [154, 96] } };
-      const arm2 = { e: [72, 99], w: [62, 100] };
+      // Žiūrint iš priekio: guli ant šono, atsirėmus dilbiu, keliai sulenkti, blauzdos už nugaros.
+      // Viršuje kūnas tiesia linija nuo galvos iki kelių, petys tiesiai virš alkūnės.
+      const sh = [70, 81];
+      // Blauzdos sulenktos atgal (nuo žiūrinčiojo), todėl matomos sutrumpėjusios, pėdos – už kelių
+      const legs = { l1: { k: [132, 93], a: [143, 92], t: [149, 90] }, l2: { k: [132, 98], a: [143, 98], t: [150, 97] } };
+      const arm2 = { e: [70, 99], w: [61, 100] };
       return [
-        [k(legs, { hip: [112, 96], sh: [72, 79], hd: [56, 73], a2: arm2, a1: { e: [90, 84], w: [106, 89] } }), 1500, 1000, "Alkūnė po petimi", 0.2],
-        [k(legs, { hip: [110, 86], sh: [72, 79], hd: [56, 73], a2: arm2, a1: { e: [90, 79], w: [106, 82] } }), 1500, 3000, "Klubai aukštyn · tiesi linija", 1]
+        [k(legs, { hip: [107, 97], sh, hd: [55, 75], a2: arm2, a1: { e: [88, 82], w: [104, 90] } }), 1500, 1000, "Alkūnė po petimi", 0.2],
+        [k(legs, { hip: [107, 90], sh, hd: [55, 77], a2: arm2, a1: { e: [88, 79], w: [104, 84] } }), 1500, 3000, "Klubai aukštyn · tiesi linija", 1]
       ];
     },
     hipflex: () => {
