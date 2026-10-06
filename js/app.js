@@ -342,23 +342,77 @@ function pause() {
   running = false; clearInterval(timer); $("start").textContent = "Tęsti";
   unlockScreen();
 }
+// Pabaigus treniruotę atsiveria įsivertinimo forma; treniruotė pažymima atlikta tik ją išsaugojus
+let pending = null;
 function finish() {
   countTrained();
   const counted = trainedMs >= totalSecs() * 1000 / 2;
-  if (counted) markDone(dayType());
   clearInterval(timer); running = false; idx = steps.length; unlockScreen();
   beep(880, 0.2); beep(1175, 0.2, 0.22); beep(1568, 0.45, 0.44); buzz([200, 100, 200, 100, 400]);
   $("kind").textContent = "Baigta";
-  $("now").textContent = dayType() === "full" ? "Puiku, šiandienos mankšta atlikta!" : "Puiku! Dabar dar 30 min. pasivaikščiok.";
-  $("cue").textContent = "Išgerk vandens. Jei kas nors skaudėjo (ne raumenų nuovargis), pasižymėk ir papasakok kineziterapeutui.";
+  $("now").textContent = dayType() === "full" ? "Puiku, šiandienos mankšta baigta!" : "Puiku! Dabar dar 30 min. pasivaikščiok.";
+  $("cue").textContent = "Išgerk vandens ir trumpai įsivertink, kaip sekėsi: taip matysi pažangą, o kineziterapeutui bus ką parodyti.";
   $("clock").textContent = "0:00"; $("bar").style.width = "100%";
-  $("meta").textContent = counted ? "Treniruotė pažymėta kaip atlikta." : "Daugiau nei pusė treniruotės praleista, todėl ji neįskaityta.";
-  renderWeek();
-  $("start").textContent = "Pradėti iš naujo"; highlight(-1); showAnim(-1);
   $("restctl").hidden = true; $("player").classList.remove("is-rest");
+  $("start").textContent = "Pradėti iš naujo"; highlight(-1); showAnim(-1);
+  if (counted) {
+    pending = { type: dayType(), min: Math.round(trainedMs / 60000) };
+    $("meta").textContent = "Užpildyk trumpą įsivertinimą, kad treniruotė būtų pažymėta kaip atlikta.";
+    $("rate").hidden = false;
+    openRate();
+  } else {
+    pending = null; $("rate").hidden = true;
+    $("meta").textContent = "Daugiau nei pusė treniruotės praleista, todėl ji neįskaityta.";
+  }
+}
+function openRate() {
+  if (!pending) return;
+  const f = $("rateform");
+  f.reset(); $("wherebox").hidden = true;
+  $("ratesub").textContent = `${DAYTYPE[pending.type].name}, ${level + 1} lygis, apie ${pending.min} min.`;
+  const box = $("ratebox");
+  if (box.showModal) box.showModal(); else box.setAttribute("open", "");
+}
+function closeRate() { const box = $("ratebox"); if (box.close) box.close(); else box.removeAttribute("open"); }
+function saveRate(ev) {
+  ev.preventDefault();
+  const f = $("rateform");
+  if (!f.reportValidity() || !pending) return;
+  const d = new FormData(f), pain = d.get("pain");
+  markDone(pending.type, { min: pending.min, rpe: +d.get("rpe"), feel: d.get("feel"), pain,
+    where: pain !== "ne" ? String(d.get("where") || "").trim() : "", note: String(d.get("note") || "").trim() });
+  pending = null; closeRate();
+  $("rate").hidden = true;
+  $("meta").textContent = "Treniruotė pažymėta kaip atlikta.";
+  if (pain === "taip" || d.get("feel") === "blogiau")
+    $("cue").textContent = "Pasižymėjai skausmą ar blogesnę savijautą. Kitą kartą tą pratimą daryk švelniau arba praleisk ir būtinai pasakyk kineziterapeutui. Jei skausmas aštrus ar plinta į koją, mankštą sustabdyk ir kreipkis į gydytoją.";
+  renderWeek(); renderHistory();
+}
+// Įrašų istorija (naujausi viršuje) ir kopijavimas tekstu
+const FEEL = { 1: "labai lengva", 2: "lengva", 3: "vidutiniškai", 4: "sunku", 5: "labai sunku" };
+function entryText(x) {
+  const parts = [`${x.d} · ${x.t === "full" ? "visa treniruotė" : "lengva diena"}${x.lvl ? `, ${x.lvl} lygis` : ""}${x.min ? `, ${x.min} min.` : ""}`];
+  if (x.rpe) parts.push(`sunkumas ${x.rpe}/5 (${FEEL[x.rpe]})`);
+  if (x.feel) parts.push(`savijauta: ${x.feel}`);
+  if (x.pain) parts.push(`skausmas: ${x.pain}${x.where ? ` (${x.where})` : ""}`);
+  if (x.note) parts.push(`pastabos: ${x.note}`);
+  return parts.join(" · ");
+}
+function renderHistory() {
+  const log = loadLog().slice().reverse().slice(0, 30);
+  $("histlist").innerHTML = log.length
+    ? `<ul>${log.map(x => `<li class="${x.pain && x.pain !== "ne" ? "pain" : ""}">${esc(entryText(x))}</li>`).join("")}</ul>`
+    : "<p>Įrašų dar nėra. Jie atsiras pabaigus treniruotę ir užpildžius įsivertinimą.</p>";
+  $("histcopy").hidden = !log.length;
+}
+async function copyHistory() {
+  const text = "Karolinos mankštos įrašai\n" + loadLog().slice().reverse().map(entryText).join("\n");
+  try { await navigator.clipboard.writeText(text); $("histcopy").textContent = "Nukopijuota ✓"; }
+  catch (e) { prompt("Nukopijuok įrašus:", text); }
+  setTimeout(() => { $("histcopy").textContent = "Kopijuoti įrašus (kineziterapeutui)"; }, 2000);
 }
 function reset() {
-  pause(); idx = -1; steps = buildSteps();
+  pause(); idx = -1; pending = null; $("rate").hidden = true; steps = buildSteps();
   $("start").textContent = "Pradėti"; $("kind").textContent = "Pasiruošk";
   $("now").textContent = "Patiesk kilimėlį ir paspausk „Pradėti“";
   $("cue").textContent = "Prieš kiekvieną pratimą rodoma animacija, kaip jis daromas. Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.";
@@ -385,6 +439,13 @@ $("days").addEventListener("click", ev => {
   const b = ev.target.closest("[data-day]");
   if (b) selectDay(+b.dataset.day);
 });
+$("rate").onclick = openRate;
+$("rateform").addEventListener("submit", saveRate);
+$("ratelater").onclick = closeRate;
+$("rateform").addEventListener("change", ev => {
+  if (ev.target.name === "pain") $("wherebox").hidden = ev.target.value === "ne";
+});
+$("histcopy").onclick = copyHistory;
 $("start").onclick = start;
 $("back").onclick = back;
 $("skip").onclick = () => { if (idx >= 0 && idx < steps.length) next(); };
@@ -404,4 +465,5 @@ document.addEventListener("visibilitychange", () => {
 renderSummary();
 renderVideos();
 renderWeek();
+renderHistory();
 setLevel(level);

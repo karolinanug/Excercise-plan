@@ -76,7 +76,56 @@
       <button class="btn ghost" id="reset">Iš naujo</button>
     </div>
     <p class="meta" id="meta"></p>
+    <button class="btn primary" id="rate" hidden>Įsivertinti ir pažymėti atlikta</button>
+    <details class="history" id="history">
+      <summary>Mano įrašai</summary>
+      <div id="histlist"></div>
+      <button class="btn ghost" id="histcopy" type="button">Kopijuoti įrašus (kineziterapeutui)</button>
+    </details>
   </section>
+
+  <dialog class="rate" id="ratebox" aria-labelledby="rateh">
+    <form id="rateform" method="dialog">
+      <h2 id="rateh">Kaip sekėsi?</h2>
+      <p class="rate-sub" id="ratesub"></p>
+      <fieldset>
+        <legend>Kaip sunku buvo?</legend>
+        <div class="opts scale">
+          <label><input type="radio" name="rpe" value="1" required><span>1<small>labai lengva</small></span></label>
+          <label><input type="radio" name="rpe" value="2"><span>2<small>lengva</small></span></label>
+          <label><input type="radio" name="rpe" value="3"><span>3<small>vidutiniškai</small></span></label>
+          <label><input type="radio" name="rpe" value="4"><span>4<small>sunku</small></span></label>
+          <label><input type="radio" name="rpe" value="5"><span>5<small>labai sunku</small></span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Kaip nugara ir kūnas jaučiasi dabar?</legend>
+        <div class="opts">
+          <label><input type="radio" name="feel" value="geriau" required><span>Geriau nei prieš</span></label>
+          <label><input type="radio" name="feel" value="taip pat"><span>Taip pat</span></label>
+          <label><input type="radio" name="feel" value="blogiau"><span>Blogiau</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Ar buvo skausmo (ne raumenų nuovargio)?</legend>
+        <div class="opts">
+          <label><input type="radio" name="pain" value="ne" required><span>Ne</span></label>
+          <label><input type="radio" name="pain" value="truputį"><span>Truputį</span></label>
+          <label><input type="radio" name="pain" value="taip"><span>Taip</span></label>
+        </div>
+        <label class="field" id="wherebox" hidden>Kur skaudėjo ir per kurį pratimą?
+          <input type="text" name="where" maxlength="200" placeholder="pvz., juosmuo, per 5 pratimą">
+        </label>
+      </fieldset>
+      <label class="field">Pastabos (nebūtina)
+        <textarea name="note" rows="2" maxlength="500" placeholder="Kas sekėsi, kas ne, kaip miegojai…"></textarea>
+      </label>
+      <div class="rate-actions">
+        <button class="btn primary" type="submit">Išsaugoti ir pažymėti atlikta</button>
+        <button class="btn ghost" type="button" id="ratelater">Vėliau</button>
+      </div>
+    </form>
+  </dialog>
 
   <section aria-labelledby="exlist">
     <h2 id="exlist">Pratimai</h2>
