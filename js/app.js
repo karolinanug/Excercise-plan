@@ -147,33 +147,54 @@ function show() {
   const remaining = steps.slice(idx + 1).reduce((a, s) => a + s.secs, 0) + left;
   $("meta").textContent = `Žingsnis ${idx + 1} iš ${steps.length} · liko apie ${Math.ceil(remaining / 60)} min.`;
   highlight(steps[idx].ex);
-  showVideo(st.ex);
+  try { showVideo(st.ex); } catch (e) {}
 }
 // Vienas YouTube grotuvas visai treniruotei: paleidžiamas paspaudus „Pradėti“
 // (naršyklės leidžia paleisti video tik po paspaudimo), o vėliau tik keičiamas video.
-let yt = null, ytReady = false, videoEx = -1;
+// Video yra tik priedas: jokia YouTube klaida neturi sustabdyti laikmačio, todėl visi
+// kreipiniai į grotuvą eina per ytDo(), o jei valdiklis neįsikelia per YT_TIMEOUT,
+// naudojamas paprastas įterptas video (arba jokio, jei YouTube visai nepasiekiamas).
+const YT_TIMEOUT = 8000;
+let yt = null, ytReady = false, ytFallback = false, ytWait = null, videoEx = -1;
+function ytDo(fn) { if (!ytReady || ytFallback) return; try { fn(yt); } catch (e) {} }
 window.onYouTubeIframeAPIReady = () => {
-  yt = new YT.Player("ytplayer", {
-    host: "https://www.youtube-nocookie.com",
-    videoId: EX[0].video.id,
-    playerVars: { playsinline: 1, rel: 0, mute: 1 },
-    events: {
-      onReady: () => { ytReady = true; yt.mute(); if (running && videoEx >= 0) { yt.loadVideoById(EX[videoEx].video.id); } },
-      onStateChange: e => { if (e.data === YT.PlayerState.ENDED && running) { yt.seekTo(0); yt.playVideo(); } }
-    }
-  });
+  if (ytFallback || !$("ytplayer")) return;
+  try {
+    yt = new YT.Player("ytplayer", {
+      host: "https://www.youtube-nocookie.com",
+      videoId: EX[0].video.id,
+      playerVars: { playsinline: 1, rel: 0, mute: 1 },
+      events: {
+        onReady: () => {
+          if (ytFallback) return;
+          ytReady = true; clearTimeout(ytWait);
+          ytDo(p => { p.mute(); if (running && videoEx >= 0) p.loadVideoById(EX[videoEx].video.id); });
+        },
+        onStateChange: e => { if (e.data === 0 /* ENDED */ && running) ytDo(p => { p.seekTo(0); p.playVideo(); }); }
+      }
+    });
+  } catch (e) { yt = null; }
 };
+function fallbackVideo(ex) {
+  ytFallback = true; clearTimeout(ytWait);
+  const box = $("pvideo"), id = EX[ex].video.id;
+  box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0" title="${esc(EX[ex].name)}: video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+}
 function showVideo(ex) {
   const box = $("pvideo");
-  if (ex < 0) { box.hidden = true; videoEx = -1; if (ytReady) yt.pauseVideo(); return; }
+  if (ex < 0) {
+    box.hidden = true; videoEx = -1; clearTimeout(ytWait);
+    if (ytFallback) box.innerHTML = ""; else ytDo(p => p.pauseVideo());
+    return;
+  }
   if (ex === videoEx) return;
   videoEx = ex;
   box.hidden = false;
-  const id = EX[ex].video.id;
-  if (ytReady) { yt.mute(); yt.loadVideoById(id); return; }
-  if (yt) return; // grotuvas dar kraunasi, onReady pats paleis teisingą video
-  // YouTube valdiklis neįsikėlė: paprastas įterptas video
-  box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&playsinline=1&rel=0" title="${esc(EX[ex].name)}: video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+  if (ytFallback || !yt) { fallbackVideo(ex); return; }
+  if (ytReady) { ytDo(p => { p.mute(); p.loadVideoById(EX[ex].video.id); }); return; }
+  // grotuvas dar kraunasi: onReady pats paleis teisingą video, o jei neįsikels – atsarginis variantas
+  clearTimeout(ytWait);
+  ytWait = setTimeout(() => { if (!ytReady && videoEx >= 0) fallbackVideo(videoEx); }, YT_TIMEOUT);
 }
 function setStep(i) {
   idx = i;
@@ -228,7 +249,7 @@ function start() {
   running = true; $("start").textContent = "Pauzė";
   initAudio();
   lockScreen();
-  if (ytReady) { $("pvideo").hidden = false; yt.mute(); yt.playVideo(); }
+  ytDo(p => { $("pvideo").hidden = false; p.mute(); p.playVideo(); });
   if (idx < 0 || idx >= steps.length) { idx = -1; next(); }
   else { endAt = Date.now() + remainMs; show(); }
   clearInterval(timer);
@@ -237,7 +258,7 @@ function start() {
 function pause() {
   if (running) remainMs = Math.max(0, endAt - Date.now());
   running = false; clearInterval(timer); $("start").textContent = "Tęsti";
-  if (ytReady) yt.pauseVideo();
+  ytDo(p => p.pauseVideo());
   unlockScreen();
 }
 function finish() {
