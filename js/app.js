@@ -167,7 +167,21 @@ function tick() {
   if (left <= 0) { next(); return; }
   show();
 }
-async function lockScreen() { try { wake = await navigator.wakeLock.request("screen"); } catch (e) {} }
+// Ekranas neužgęsta, kol vyksta treniruotė. Naršyklė užraktą atleidžia paslėpus skirtuką,
+// todėl grįžus jis paprašomas iš naujo (žr. visibilitychange apačioje).
+async function lockScreen() {
+  if (!("wakeLock" in navigator) || wake || !running || document.visibilityState !== "visible") return;
+  try {
+    const w = await navigator.wakeLock.request("screen");
+    if (!running) { w.release().catch(() => {}); return; }
+    wake = w;
+    w.addEventListener("release", () => { if (wake === w) wake = null; });
+  } catch (e) { wake = null; }
+}
+function unlockScreen() {
+  const w = wake; wake = null;
+  if (w) w.release().catch(() => {});
+}
 function start() {
   if (running) { pause(); return; }
   running = true; $("start").textContent = "Pauzė";
@@ -179,10 +193,10 @@ function start() {
 function pause() {
   running = false; clearInterval(timer); $("start").textContent = "Tęsti";
   if (ytReady) yt.pauseVideo();
-  try { wake && wake.release(); } catch (e) {}
+  unlockScreen();
 }
 function finish() {
-  clearInterval(timer); running = false; idx = steps.length;
+  clearInterval(timer); running = false; idx = steps.length; unlockScreen();
   beep(880, 0.2); setTimeout(() => beep(1175, 0.4), 250);
   $("kind").textContent = "Baigta";
   $("now").textContent = "Puiku, šiandienos mankšta atlikta!";
