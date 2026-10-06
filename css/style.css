@@ -52,7 +52,8 @@ section { display: flex; flex-direction: column; gap: 14px; }
 .schedule { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
 .schedule > div { border-top: 3px solid var(--accent); padding-top: 10px; display: flex; flex-direction: column; gap: 4px; }
 .schedule b { font-family: var(--display); font-size: 1.05rem; }
-.schedule span { color: var(--muted); font-size: .95rem; }
+.schedule > div > span { color: var(--muted); font-size: .95rem; }
+.schedule a { color: var(--accent); }
 
 /* Player */
 .player { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 16px; }

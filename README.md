@@ -8,7 +8,7 @@ Statinė svetainė su namų mankštos planu: 10 pratimų, laikmatis, kuris pats 
 - `css/style.css` – stiliai (šviesi ir tamsi tema, prisitaiko prie telefono)
 - `js/app.js` – pratimų sąrašas (`EX` masyvas viršuje) ir laikmatis. Prieš kiekvieną pratimą 30 s (`PREP`) rodomas jo video, po to jis lieka rodomas be garso, kol darai serijas.
 
-Pratimus, kartojimus ar trukmes keisk `js/app.js` faile, `EX` masyve. `secs` yra vienos serijos trukmė sekundėmis `[1 lygis, 2 lygis]`, `sets` – serijų skaičius.
+Pratimus, kartojimus ar trukmes keisk `js/app.js` faile, `EX` masyve. `secs` yra vienos serijos trukmė sekundėmis `[1 lygis, 2 lygis]`, `sets` – serijų skaičius, `rest: true` – pratimas siūlomas poilsio dienoms. Bendra trukmė (~24/~36 min.) ir poilsio dienų sąrašas puslapyje sugeneruojami iš `EX` automatiškai.
 
 ## Paskelbimas per GitHub Pages
 
