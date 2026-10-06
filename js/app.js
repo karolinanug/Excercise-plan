@@ -104,14 +104,32 @@ const $ = id => document.getElementById(id);
 
 function fmt(t) { const m = Math.floor(t / 60), s = t % 60; return m + ":" + String(s).padStart(2, "0"); }
 function totalSecs() { return steps.reduce((a, s) => a + s.secs, 0); }
-function beep(f, d) {
+// Garsai generuojami Web Audio API, be garso failų. AudioContext sukuriamas paspaudus
+// „Pradėti“, nes kitaip naršyklės (ypač iOS Safari) neleidžia jam groti.
+function initAudio() {
   try {
     audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-    const o = audio.createOscillator(), g = audio.createGain();
-    o.frequency.value = f; o.connect(g); g.connect(audio.destination);
-    g.gain.setValueAtTime(0.18, audio.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + d);
-    o.start(); o.stop(audio.currentTime + d);
+    if (audio.state === "suspended") audio.resume();
   } catch (e) {}
+}
+function beep(f, d, at = 0) {
+  try {
+    if (!audio) return;
+    if (audio.state === "suspended") audio.resume();
+    const t = audio.currentTime + at, o = audio.createOscillator(), g = audio.createGain();
+    o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(audio.destination);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.start(t); o.stop(t + d + 0.02);
+  } catch (e) {}
+}
+function buzz(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
+// Paskutinės 3 sekundės: trumpas pyptelėjimas kas sekundę
+function countBeep() { beep(660, 0.09); buzz(40); }
+// Perėjimas: darbui – du aukšti tonai, poilsiui / pasiruošimui – vienas žemesnis
+function stepBeep(type) {
+  if (type === "work") { beep(880, 0.18); beep(1175, 0.25, 0.2); buzz([180, 80, 180]); }
+  else { beep(520, 0.3); buzz(250); }
 }
 function highlight(ex) {
   document.querySelectorAll(".ex").forEach((el, i) => el.classList.toggle("active", i === ex));
@@ -158,12 +176,12 @@ function next() {
   idx++;
   if (idx >= steps.length) { finish(); return; }
   left = steps[idx].secs;
-  beep(steps[idx].type === "work" ? 880 : 520, 0.25);
+  stepBeep(steps[idx].type);
   show();
 }
 function tick() {
   left--;
-  if (left > 0 && left <= 3) beep(660, 0.08);
+  if (left > 0 && left <= 3) countBeep();
   if (left <= 0) { next(); return; }
   show();
 }
@@ -185,6 +203,7 @@ function unlockScreen() {
 function start() {
   if (running) { pause(); return; }
   running = true; $("start").textContent = "Pauzė";
+  initAudio();
   lockScreen();
   if (ytReady) { $("pvideo").hidden = false; yt.mute(); yt.playVideo(); }
   if (idx < 0 || idx >= steps.length) { idx = -1; next(); } else show();
@@ -197,7 +216,7 @@ function pause() {
 }
 function finish() {
   clearInterval(timer); running = false; idx = steps.length; unlockScreen();
-  beep(880, 0.2); setTimeout(() => beep(1175, 0.4), 250);
+  beep(880, 0.2); beep(1175, 0.2, 0.22); beep(1568, 0.45, 0.44); buzz([200, 100, 200, 100, 400]);
   $("kind").textContent = "Baigta";
   $("now").textContent = "Puiku, šiandienos mankšta atlikta!";
   $("cue").textContent = "Išgerk vandens. Jei kas nors skaudėjo (ne raumenų nuovargis), pasižymėk ir papasakok kineziterapeutui.";
