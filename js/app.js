@@ -494,7 +494,9 @@ function saveRate(ev) {
   const f = $("rateform");
   if (!f.reportValidity() || !pending) return;
   const d = new FormData(f), pain = d.get("pain");
+  const h = HEALTH.today();
   markDone(pending.type, { min: pending.min, rpe: +d.get("rpe"), feel: d.get("feel"), pain,
+    h: h ? { steps: h.steps, sleep: h.sleep, rhr: h.rhr } : undefined,
     where: pain !== "ne" ? String(d.get("where") || "").trim() : "", note: String(d.get("note") || "").trim() });
   pending = null; closeRate();
   $("rate").hidden = true;
@@ -511,6 +513,7 @@ function entryText(x) {
   if (x.feel) parts.push(`savijauta: ${x.feel}`);
   if (x.pain) parts.push(`skausmas: ${x.pain}${x.where ? ` (${x.where})` : ""}`);
   if (x.note) parts.push(`pastabos: ${x.note}`);
+  if (x.h) parts.push(`Garmin: ${HEALTH.text(x.h)}`);
   return parts.join(" · ");
 }
 function renderHistory() {
@@ -521,7 +524,9 @@ function renderHistory() {
   $("histcopy").hidden = !log.length;
 }
 async function copyHistory() {
-  const text = "Karolinos mankštos įrašai\n" + loadLog().slice().reverse().map(entryText).join("\n");
+  const days = HEALTH.all().slice().reverse().slice(0, 60);
+  const text = "Karolinos mankštos įrašai\n" + loadLog().slice().reverse().map(entryText).join("\n") +
+    (days.length ? "\n\nGarmin duomenys pagal dienas\n" + days.map(x => `${x.d} · ${HEALTH.text(x)}`).join("\n") : "");
   try { await navigator.clipboard.writeText(text); $("histcopy").textContent = "Nukopijuota ✓"; }
   catch (e) { prompt("Nukopijuok įrašus:", text); }
   setTimeout(() => { $("histcopy").textContent = "Kopijuoti įrašus (kineziterapeutui)"; }, 2000);
@@ -572,6 +577,7 @@ function renderHello() {
   $("hellotext").textContent = (doneToday ? "Šiandienos mankšta jau atlikta, šaunuolė! Jei nori, gali pakartoti. " : "") +
     [`Šiandien ${w.name.toLowerCase()}: ${DAYTYPE[w.type].name.toLowerCase()}, apie ${min} min.`, DAYTYPE[w.type].extra,
       `Šią savaitę jau atlikai ${full} iš ${WEEK_GOAL} treniruočių.`].filter(Boolean).join(" ");
+  renderHealth(w.type);
   $("voicenote").textContent = !SAY.supported ? "Ši naršyklė nemoka kalbėti, todėl instrukcijos bus rodomos ekrane."
     : voiceRefused ? "Lietuviško balso nėra, instrukcijos bus rodomos ekrane. iPhone: Nustatymai → Prieinamumas → Šnekamas turinys → Balsai → Lietuvių → atsisiųsk balsą ir atnaujink puslapį. Android: Nustatymai → Sistema → Kalbos ir įvestis → Teksto į kalbą išvestis → lietuvių kalba."
     : !SAY.available ? `Puslapis nerado lietuviško balso sąraše (naršyklė mato balsų: ${SAY.count}). Paspausk „Išbandyti balsą“ – jei išgirsi lietuviškai, balsą įjungsiu.`
@@ -582,6 +588,22 @@ function renderHello() {
   $("voice").hidden = !SAY.available;
   $("voice").textContent = SAY.on ? "Balsas: įjungtas" : "Balsas: išjungtas";
   $("voice").setAttribute("aria-pressed", SAY.on);
+}
+// Garmin duomenys (js/health.js): šiandienos skaičiai, patarimas lengviau, jei prastai pailsėta,
+// ir lengvą dieną – ar pasivaikščiojimas jau atliktas pagal žingsnius
+function renderHealth(type) {
+  const t = HEALTH.today(), a = HEALTH.advice(), p = [];
+  if (HEALTH.received && !t) p.push("Nuoroda iš telefono atėjo, bet joje nebuvo skaičių. Patikrink „Shortcut“ nustatymus.");
+  if (t) {
+    p.push(`Iš Garmin: ${HEALTH.text(t)}.`);
+    if (a.tired) p.push(`Šiandien geriau lengviau: ${a.why}. ${level ? "Rinkis 1 lygį" : "Daryk 1 lygį"} ir judėk švelniai.`);
+    else if (t.sleep != null || (t.rhr != null && a.base != null)) p.push("Atrodo, gerai pailsėjai.");
+    if (type === "light" && t.steps != null)
+      p.push(HEALTH.walkDone() ? "Pasivaikščiojimas šiandien jau atliktas ✓"
+        : `Pasivaikščiojimui: iki ${HEALTH.fmtNum(HEALTH.WALK_STEPS)} žingsnių trūksta ${HEALTH.fmtNum(HEALTH.WALK_STEPS - t.steps)}.`);
+  }
+  $("healthnote").textContent = p.join(" ");
+  $("healthnote").hidden = !p.length;
 }
 let voiceRefused = false;
 $("vtest").onclick = () => { SAY.test(); $("vask").hidden = false; };
@@ -618,6 +640,8 @@ $("restplus").onclick = extendRest;
 $("restend").onclick = endRest;
 $("lvl1").onclick = () => setLevel(0);
 $("lvl2").onclick = () => setLevel(1);
+// Jei svetainė jau atidaryta, „Shortcut“ nuoroda gali pakeisti tik # dalį – puslapis neperkraunamas
+window.addEventListener("hashchange", () => { if (HEALTH.readLink()) renderHello(); });
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") return;
   const today = weekday(new Date());

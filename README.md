@@ -45,3 +45,16 @@ python3 tools/garsas.py
 ```
 
 Skriptas per `tools/frazes.js` (paleidžia tikrus `js/*.js` su netikru DOM) surenka visas frazes, kurias svetainė gali pasakyti, sugeneruoja trūkstamas, ištrina nebereikalingas ir atnaujina `audio/frazes.js`. `--visi` perrašo visas. Reikia `python3` su `numpy` ir `onnxruntime`, `espeak-ng`, `ffmpeg` ir `node`; modelis (~70 MB) parsiunčiamas į `tools/modelis/` pirmą kartą paleidus. Netaisyklingai perskaitomi skaičiai ir ženklai (laipsniai, intervalai) taisomi `TARIMAS` sąraše `tools/garsas.py` faile.
+
+## Garmin duomenys
+
+Garmin oficialaus API asmeniniam naudojimui neduoda, todėl duomenys keliauja per telefoną: Garmin Connect → Apple Health → iPhone „Shortcuts“ → svetainė. „Shortcut“ atidaro svetainę su nuoroda `…/#zingsniai=8400&miegas=7.2&pulsas=58`. Naudojama `#` dalis, kuri nesiunčiama į serverį, todėl duomenys lieka tik telefone (`localStorage` raktas `karolina-health`). Kodas – `js/health.js`.
+
+Ką svetainė su jais daro:
+
+- pasisveikinimo ekrane rodo šiandienos miegą, ramybės pulsą ir žingsnius;
+- jei miegota mažiau nei 6 val. arba ramybės pulsas bent 5 dūžiais aukštesnis nei įprastas (ankstesnių 14 dienų mediana), pataria daryti 1 lygį;
+- lengvą dieną pasivaikščiojimas laikomas atliktu, kai žingsnių yra bent 7 000;
+- išsaugant įsivertinimą prie įrašo prideda tos dienos Garmin duomenis, o „Kopijuoti įrašus“ prideda ir visų dienų Garmin duomenis kineziterapeutui.
+
+Ribas galima keisti `js/health.js` viršuje (`SLEEP_LOW`, `RHR_UP`, `WALK_STEPS`).

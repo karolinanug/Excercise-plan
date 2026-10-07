@@ -18,7 +18,7 @@ const ctx = vm.createContext({
   navigator: {}, document: stub, location: stub, alert() {}, confirm: () => false, matchMedia: () => stub
 });
 ctx.window = ctx;
-for (const f of ["js/anim.js", "js/voice.js", "js/app.js"]) vm.runInContext(read(f), ctx, { filename: f });
+for (const f of ["js/anim.js", "js/voice.js", "js/health.js", "js/app.js"]) vm.runInContext(read(f), ctx, { filename: f });
 
 const out = vm.runInContext(`(() => {
   const all = new Set(), add = t => { if (t) all.add(t); };
