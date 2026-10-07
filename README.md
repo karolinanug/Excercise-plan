@@ -32,7 +32,7 @@ Paspaudus „Pradėkime“ lietuviškas balsas pasisveikina, papasakoja apie man
 
 Ilgi aprašymai (įžanga apie mankštos tikslą ir kiekvieno pratimo žingsniai) sakomi tik tol, kol bus išklausyti iki galo. Vėliau balsas pasako tik pratimo pavadinimą ir pagrindinį nurodymą. Norint vėl išgirsti visą aprašymą, kol balsas jį trumpai sako, reikia paspausti „Atgal“. Išklausyti aprašymai įsimenami naršyklėje (`localStorage` raktas `karolina-heard`); jį ištrynus, aprašymai vėl bus sakomi pilnai.
 
-Visos frazės iš anksto įrašytos į `audio/*.mp3` (~5 MB), todėl balsas skamba vienodai visuose įrenginiuose, ir iPhone, kuriame lietuviško balso nėra. Failo pavadinimas – frazės teksto maiša, sąrašas – `audio/frazes.js`. Jei kurios nors frazės įrašo nėra, ji sakoma naršyklės kalbos sinteze (jei įrenginyje yra lietuviškas balsas).
+Visos frazės iš anksto įrašytos į `audio/*.mp3` (~12 MB; iš anksto parsiunčiamos tik trumpos, ~3 MB), todėl balsas skamba vienodai visuose įrenginiuose, ir iPhone, kuriame lietuviško balso nėra. Failo pavadinimas – frazės teksto maiša, sąrašas – `audio/frazes.js`. Jei kurios nors frazės įrašo nėra, ji sakoma naršyklės kalbos sinteze (jei įrenginyje yra lietuviškas balsas).
 
 Balsas – [„Reginutė“ (lt_LT-reginute1-medium)](https://huggingface.co/RobertasTa/lt_LT-reginute1-medium), Piper/VITS modelis, apmokytas Vilniaus universiteto LIEPA korpusu, licencija CC BY 4.0. Meta MMS lietuvių kalbos sintezės modelio neturi (yra tik latvių), todėl naudojamas šis.
 
@@ -68,10 +68,12 @@ Jei Garmin prisijungiant paprašo kodo iš el. pašto, parsisiuntimas parašo ko
 
 ### Ką svetainė su jais daro
 
-- pasisveikinimo ekrane rodo šiandienos miegą, Body Battery, ramybės pulsą, HRV, stresą ir žingsnius;
-- pataria daryti 1 lygį, jei miegota mažiau nei 6 val., Body Battery ryte mažiau nei 35, ramybės pulsas bent 5 dūžiais aukštesnis nei įprastas (ankstesnių 14 dienų mediana) arba Garmin HRV būsena žema;
-- lengvą dieną pasivaikščiojimas laikomas atliktu, kai žingsnių yra bent 7 000;
-- išsaugant įsivertinimą prie įrašo prideda tos dienos Garmin duomenis, o „Kopijuoti įrašus“ prideda ir visų dienų Garmin duomenis kineziterapeutui.
+- **Pasiruošimo kortelė** pasisveikinimo ekrane: animuotas žiedas su balu 0–100 (miegas 30 %, Body Battery 30 %, HRV 20 %, ramybės pulsas 20 %, lyginant su ankstesnių 14 dienų mediana), plytelės su pokyčiu nuo įprasto; paspaudus plytelę – 14 dienų grafikas.
+- **Prisitaikanti treniruotė:** kai balas žemesnis nei 45, automatiškai įjungiama lengvesnė versija (viena serija mažiau, poilsis tarp serijų +10 s), balsas įžangoje pasako kodėl. Perjungti galima ranka mygtuku „Lengvesnė versija“.
+- Kai balas 45–69, siūloma 1 lygis; kai bent 3 dienas iš eilės ≥ 70 ir pasirinktas 1 lygis – pasiūlymas pabandyti 2 lygį.
+- Vakare (nuo 17 val.), jei Garmin vidutinis stresas ≥ 40, siūlomas trumpas atsipalaidavimas (diafragminis kvėpavimas ir vaiko poza).
+- Lengvą dieną pasivaikščiojimas laikomas atliktu, kai žingsnių yra bent 7 000.
+- Išsaugant įsivertinimą prie įrašo prideda tos dienos Garmin duomenis ir pasiruošimo balą, o „Kopijuoti įrašus“ prideda ir visų dienų Garmin duomenis kineziterapeutui.
 
 Ribas galima keisti `js/health.js` viršuje (`SLEEP_LOW`, `BB_LOW`, `RHR_UP`, `WALK_STEPS`).
 

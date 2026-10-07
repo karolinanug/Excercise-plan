@@ -159,10 +159,44 @@ const HEALTH = (() => {
     setGitHubKey(t) { try { localStorage.setItem(G_GH, String(t || "").trim()); } catch (e) {} refreshErr = null; return refreshGarmin(); },
     onChange(f) { listeners.push(f); },
     today() { return this.get(dayKey(new Date())); },
-    // Įprastas ramybės pulsas – ankstesnių 14 dienų mediana (reikia bent 3 dienų)
-    baseline(d = dayKey(new Date())) {
-      const v = merged().filter(x => x.d < d && x.rhr).slice(-14).map(x => x.rhr).sort((a, b) => a - b);
+    // Įprasta reikšmė – ankstesnių 14 dienų mediana (reikia bent 3 dienų)
+    baseline(d = dayKey(new Date()), key = "rhr") {
+      const v = merged().filter(x => x.d < d && x[key] != null).slice(-14).map(x => x[key]).sort((a, b) => a - b);
       return v.length >= 3 ? v[Math.floor(v.length / 2)] : null;
+    },
+    // Paskutinių n dienų reikšmės grafikui: [{ d, v }]
+    series(key, n = 14) {
+      const now = new Date(), m = new Map(merged().map(x => [x.d, x[key]]));
+      return Array.from({ length: n }, (_, i) => {
+        const d = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - (n - 1 - i)));
+        return { d, v: m.has(d) && m.get(d) != null ? m.get(d) : null };
+      });
+    },
+    // Pasiruošimo balas 0–100 iš miego, Body Battery, HRV ir ramybės pulso, lyginant su
+    // pačios įprastomis reikšmėmis. Reikia bent 2 rodiklių. { score, parts: [...] } arba null
+    readiness(d = dayKey(new Date())) {
+      const x = this.get(d);
+      if (!x) return null;
+      const clamp = v => Math.max(0, Math.min(100, Math.round(v)));
+      const parts = [];
+      if (x.sleepScore != null || x.sleep != null)
+        parts.push({ key: "sleep", label: "Miegas", w: 0.3, s: x.sleepScore != null ? x.sleepScore : clamp((x.sleep - 4) / 3.5 * 100),
+          value: x.sleep != null ? `${fmtH(x.sleep)} val.` : `${x.sleepScore}/100`, base: this.baseline(d, "sleep"), cur: x.sleep, unit: " val." });
+      if (x.bb != null)
+        parts.push({ key: "bb", label: "Body Battery", w: 0.3, s: x.bb, value: String(x.bb), base: this.baseline(d, "bb"), cur: x.bb, unit: "" });
+      if (x.hrv != null || x.hrvStatus) {
+        const base = this.baseline(d, "hrv"), st = x.hrvStatus;
+        let sc = base && x.hrv != null ? clamp(75 + (x.hrv / base - 1) * 250) : st === "BALANCED" ? 75 : st === "UNBALANCED" ? 50 : st ? 30 : null;
+        if (sc != null && (st === "LOW" || st === "POOR")) sc = Math.min(sc, 40);
+        if (sc != null) parts.push({ key: "hrv", label: "HRV", w: 0.2, s: sc, value: x.hrv != null ? `${x.hrv} ms` : st, base, cur: x.hrv, unit: " ms" });
+      }
+      if (x.rhr != null) {
+        const base = this.baseline(d, "rhr");
+        if (base != null) parts.push({ key: "rhr", label: "Ramybės pulsas", w: 0.2, s: clamp(75 - (x.rhr - base) * 8), value: `${x.rhr}`, base, cur: x.rhr, unit: "", lowerBetter: true });
+      }
+      if (parts.length < 2) return null;
+      const w = parts.reduce((a, p) => a + p.w, 0);
+      return { score: Math.round(parts.reduce((a, p) => a + p.s * p.w, 0) / w), parts, stress: x.stress };
     },
     text(x) {
       if (!x) return "";

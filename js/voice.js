@@ -38,10 +38,13 @@ function phraseId(t) {
   for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
   return h.toString(16).padStart(8, "0");
 }
-// Įrašytų frazių grotuvas (Web Audio). AUDIO_FILES – sąrašas iš audio/frazes.js.
-// Suspausti failai parsiunčiami iš anksto ir laikomi atmintyje, dekoduojami tik grojant.
+// Įrašytų frazių grotuvas (Web Audio). AUDIO_FILES – iš audio/frazes.js: { id: trukmė s }.
+// Trumpos frazės (ritmo nurodymai) parsiunčiamos iš anksto, ilgos (įžangos, aprašymai) –
+// tik prireikus. Suspausti failai laikomi atmintyje, dekoduojami tik grojant.
+const PREFETCH_MAX_S = 12;
 const REC = (() => {
-  const files = typeof AUDIO_FILES !== "undefined" ? new Set(AUDIO_FILES) : null;
+  const A = typeof AUDIO_FILES !== "undefined" ? AUDIO_FILES : null;
+  const files = A ? new Set(Array.isArray(A) ? A : Object.keys(A)) : null;
   const bytes = new Map();
   let ctx = null, src = null, busy = false, token = 0, queue = [], fetched = false;
   function load(id) {
@@ -87,7 +90,10 @@ const REC = (() => {
         if (ctx.state === "suspended") ctx.resume();
         const b = ctx.createBufferSource(); b.buffer = ctx.createBuffer(1, 1, 22050); b.connect(ctx.destination); b.start();
       } catch (e) { ctx = null; }
-      if (ctx && !fetched) { fetched = true; files.forEach(id => load(id).catch(() => {})); }
+      if (ctx && !fetched) {
+        fetched = true;
+        files.forEach(id => { if (Array.isArray(A) || A[id] <= PREFETCH_MAX_S) load(id).catch(() => {}); });
+      }
     },
     get usable() { return !!ctx; },
     get busy() { return busy; },

@@ -23,11 +23,15 @@ for (const f of ["js/anim.js", "js/voice.js", "js/health.js", "js/app.js"]) vm.r
 const out = vm.runInContext(`(() => {
   const all = new Set(), add = t => { if (t) all.add(t); };
   // Įžanga (ilga ir trumpa): kiekviena savaitės diena, abu lygiai
-  for (let l = 0; l < 2; l++) for (let d = 0; d < 7; d++) { level = l; selDay = d; add(introStep(true).cue); add(introStep(false).cue); }
-  for (let l = 0; l < 2; l++) {
+  // (ir lengvesnė versija, ir vakarinis atsipalaidavimas)
+  for (const ov of [null, "relax"]) for (const ez of [false, true]) for (let l = 0; l < 2; l++) for (let d = 0; d < 7; d++) {
+    override = ov; easy = ez; level = l; selDay = d; add(introStep(true).cue); add(introStep(false).cue);
+  }
+  override = null; easy = false;
+  for (let l = 0; l < 2; l++) for (const ez of [false, true]) {
     level = l;
     for (const type of Object.keys(DAYTYPE)) {
-      for (const st of buildSteps(l, DAYTYPE[type].list())) {
+      for (const st of buildSteps(l, DAYTYPE[type].list(), ez)) {
         const e = EX[st.ex];
         if (st.type === "prep") { add(descText(st, true)); add(descText(st, false)); }
         if (st.type === "rest") {
@@ -48,9 +52,10 @@ const out = vm.runInContext(`(() => {
 })()`, ctx);
 
 // Pastovios frazės, perduodamos SAY.say("...") ir speak("...") tiesiogiai
+// (kvietimas gali būti per kelias eilutes)
 for (const f of ["js/app.js", "js/voice.js"])
-  for (const line of read(f).split("\n"))
-    if (/SAY\.say\(|speak\("/.test(line)) for (const m of line.matchAll(/"([^"$\\]{8,})"/g)) if (/[A-ZĄČĘĖĮŠŲŪŽ]/.test(m[1][0]) && /[.!?]$/.test(m[1])) out.push(m[1]);
+  for (const call of read(f).matchAll(/(?:SAY\.say|speak)\(([\s\S]*?)\);/g))
+    for (const m of call[1].matchAll(/"([^"$\\]{8,})"/g)) if (/[A-ZĄČĘĖĮŠŲŪŽ]/.test(m[1][0]) && /[.!?]$/.test(m[1])) out.push(m[1]);
 
 const res = {};
 for (const t of out) res[ctx.phraseId(t)] = t;

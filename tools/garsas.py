@@ -99,10 +99,15 @@ def main():
         if f.stem not in frazes:
             f.unlink()
             print("ištrinta", f.name, file=sys.stderr)
-    ids = sorted(frazes)
+    # Failų id ir trukmė sekundėmis (svetainė iš anksto parsiunčia tik trumpas frazes)
+    durs = {}
+    for fid in sorted(frazes):
+        out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                              str(AUDIO_DIR / f"{fid}.mp3")], capture_output=True, text=True, check=True).stdout
+        durs[fid] = round(float(out), 1)
     (AUDIO_DIR / "frazes.js").write_text(
-        "// Sugeneruota tools/garsas.py – nekeisti ranka. Įrašytų frazių sąrašas (failų id).\n"
-        "const AUDIO_FILES = " + json.dumps(ids, indent=0).replace("\n", "") + ";\n", encoding="utf-8")
+        "// Sugeneruota tools/garsas.py – nekeisti ranka. Įrašytos frazės: failo id -> trukmė (s).\n"
+        "const AUDIO_FILES = " + json.dumps(durs, separators=(",", ":")) + ";\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -53,7 +53,7 @@ const EX = [
 
 // Sekundės: poilsis tarp serijų, pusės keitimas, pirmo pratimo apžiūra, poilsis tarp pratimų,
 // pasiruošimas po poilsio, poilsio pratęsimas mygtuku
-const REST = 20, SIDE_SWITCH = 8, PREP = 30, REST_BETWEEN = 30, PREP_NEXT = 10, REST_PLUS = 15;
+const REST_SETS = 20, SIDE_SWITCH = 8, PREP = 30, REST_BETWEEN = 30, PREP_NEXT = 10, REST_PLUS = 15;
 let level = 0;
 try { const s = localStorage.getItem("karolina-level"); if (s === "1") level = 1; } catch (e) {}
 
@@ -111,7 +111,9 @@ const WEEK = [
 ].map(([name, short, type]) => ({ name, short, type }));
 const DAYTYPE = {
   full: { name: "Visa treniruotė", list: () => EX.map((e, i) => i), extra: "" },
-  light: { name: "Lengva diena (kvėpavimas ir tempimai)", list: () => EX.map((e, i) => (e.rest ? i : -1)).filter(i => i >= 0), extra: "Plius 30 min. pasivaikščiojimas sparčiu žingsniu." }
+  light: { name: "Lengva diena (kvėpavimas ir tempimai)", list: () => EX.map((e, i) => (e.rest ? i : -1)).filter(i => i >= 0), extra: "Plius 30 min. pasivaikščiojimas sparčiu žingsniu." },
+  // Vakare po įtemptos dienos (Garmin stresas) siūlomas trumpas atsipalaidavimas
+  relax: { name: "Atsipalaidavimas (kvėpavimas ir vaiko poza)", list: () => EX.map((e, i) => (["breath", "child"].includes(e.anim) ? i : -1)).filter(i => i >= 0), extra: "" }
 };
 // Lietuviškas daugiskaitos linksnis: 1 minutė, 2 minutės, 10 minučių, 21 minutė...
 function plural(n, one, few, many) {
@@ -120,13 +122,17 @@ function plural(n, one, few, many) {
 }
 const weekday = d => (d.getDay() + 6) % 7;
 let selDay = weekday(new Date()), lastToday = selDay;
-const dayType = () => WEEK[selDay].type;
+// override – kitas treniruotės tipas nei pagal savaitės planą (pvz., „relax“);
+// easy – lengvesnė versija pavargus: viena serija mažiau, ilgesnis poilsis
+let override = null, easy = false;
+const EASY_REST = 10;
+const dayType = () => override || WEEK[selDay].type;
 
-function buildSteps(lvl = level, list = DAYTYPE[dayType()].list()) {
-  const steps = [];
+function buildSteps(lvl = level, list = DAYTYPE[dayType()].list(), ez = easy) {
+  const steps = [], REST = ez ? REST_SETS + EASY_REST : REST_SETS;
   list.forEach((i, pos) => {
     const e = EX[i];
-    const sets = e.sets[lvl], secs = e.secs[lvl];
+    const sets = ez ? Math.max(1, e.sets[lvl] - 1) : e.sets[lvl], secs = e.secs[lvl];
     // Tarp pratimų – poilsis (jau rodoma kito pratimo animacija), po jo trumpas pasiruošimas
     if (pos > 0) steps.push({ type: "rest", between: true, ex: i, title: "Poilsis", sub: "", cue: `Atsikvėpk ir atsigerk vandens. Toliau: ${i + 1}. ${e.name}. ${e.cue}`, secs: REST_BETWEEN });
     steps.push({ type: "prep", pos, ex: i, title: pos ? "Pasiruošk" : "Žiūrėk ir pasiruošk", sub: "", cue: `${i + 1}. ${e.name}. ${pos ? "Užimk pradinę padėtį." : "Pažiūrėk, kaip daroma, ir užimk pradinę padėtį."} ${e.cue}`, secs: pos ? PREP_NEXT : PREP });
@@ -289,11 +295,15 @@ function markHeard(k) {
   try { localStorage.setItem(HEARD_KEY, JSON.stringify([...heard])); } catch (e) {}
 }
 function introStep(full = !heard.has("intro")) {
-  const w = WEEK[selDay], list = DAYTYPE[w.type].list(), min = Math.round(buildSteps(level).reduce((a, s) => a + s.secs, 0) / 60);
+  const w = WEEK[selDay], type = dayType(), list = DAYTYPE[type].list(), min = Math.round(buildSteps(level).reduce((a, s) => a + s.secs, 0) / 60);
   const mins = plural(min, "minutė", "minutės", "minučių");
-  const what = w.type === "full" ? `visa treniruotė: ${plural(list.length, "pratimas", "pratimai", "pratimų")}, apie ${mins}` : `lengva diena: kvėpavimas ir tempimai, apie ${mins}, o paskui pusvalandis pasivaikščiojimo`;
-  const text = !full ? `Labas, Karolina. Šiandien ${w.name.toLowerCase()}, ${what}. Patiesk kilimėlį. Pradedam.`
-    : `Labas, Karolina. Šiandien ${w.name.toLowerCase()}, ${what}. ` +
+  if (type === "relax")
+    return { type: "intro", ex: list[0], title: "Įžanga", sub: "", secs: INTRO_SECS,
+      cue: `Labas, Karolina. Diena buvo įtempta, todėl dabar – trumpas atsipalaidavimas: kvėpavimas ir vaiko poza, apie ${mins}. Atsigulk patogiai. Pradedam.` };
+  const what = type === "full" ? `visa treniruotė: ${plural(list.length, "pratimas", "pratimai", "pratimų")}, apie ${mins}` : `lengva diena: kvėpavimas ir tempimai, apie ${mins}, o paskui pusvalandis pasivaikščiojimo`;
+  const why = easy ? "Šiandien tavo kūnas pavargęs, todėl darysim lengvesnę versiją: mažiau serijų ir ilgesnis poilsis. " : "";
+  const text = !full ? `Labas, Karolina. Šiandien ${w.name.toLowerCase()}, ${what}. ${why}Patiesk kilimėlį. Pradedam.`
+    : `Labas, Karolina. Šiandien ${w.name.toLowerCase()}, ${what}. ${why}` +
     "Šios mankštos tikslas – sustiprinti giliuosius pilvo ir sėdmenų raumenis ir išmokti valdyti dubens padėtį. " +
     "Judėk lėtai, visą laiką kvėpuok ir niekada nedaryk per aštrų skausmą. Aš pasakysiu, kada ir ką daryti, tau nereikės skaičiuoti. " +
     "Patiesk kilimėlį. Pradedam.";
@@ -463,15 +473,16 @@ function finish() {
   setTimeout(() => MEDIA.stop(), 8000); // leidžiam pabaigti pasakyti pabaigos sakinį
   beep(880, 0.2); beep(1175, 0.2, 0.22); beep(1568, 0.45, 0.44); buzz([200, 100, 200, 100, 400]);
   $("kind").textContent = "Baigta";
-  $("now").textContent = dayType() === "full" ? "Puiku, šiandienos mankšta baigta!" : "Puiku! Dabar dar 30 min. pasivaikščiok.";
+  $("now").textContent = dayType() === "full" ? "Puiku, šiandienos mankšta baigta!" : dayType() === "relax" ? "Puiku! Gero vakaro." : "Puiku! Dabar dar 30 min. pasivaikščiok.";
   $("cue").textContent = "Išgerk vandens ir trumpai įsivertink, kaip sekėsi: taip matysi pažangą, o kineziterapeutui bus ką parodyti.";
   $("clock").textContent = "0:00"; $("bar").style.width = "100%";
   $("restctl").hidden = true; $("player").classList.remove("is-rest");
   $("start").textContent = "Pradėti iš naujo"; highlight(-1); showAnim(-1);
   $("home").hidden = false; $("player").classList.remove("is-listen");
-  SAY.say(dayType() === "full" ? "Puiku, Karolina! Mankšta baigta. Išgerk vandens ir trumpai įsivertink, kaip sekėsi." : "Puiku, Karolina! Dabar dar pusvalandį pasivaikščiok.");
+  SAY.say(dayType() === "full" ? "Puiku, Karolina! Mankšta baigta. Išgerk vandens ir trumpai įsivertink, kaip sekėsi."
+    : dayType() === "relax" ? "Puiku, Karolina! Gero vakaro ir ramaus miego." : "Puiku, Karolina! Dabar dar pusvalandį pasivaikščiok.");
   if (counted) {
-    pending = { type: dayType(), min: Math.round(trainedMs / 60000) };
+    pending = { type: dayType(), min: Math.round(trainedMs / 60000), easy };
     $("meta").textContent = "Užpildyk trumpą įsivertinimą, kad treniruotė būtų pažymėta kaip atlikta.";
     $("rate").hidden = false;
     openRate();
@@ -484,7 +495,7 @@ function openRate() {
   if (!pending) return;
   const f = $("rateform");
   f.reset(); $("wherebox").hidden = true;
-  $("ratesub").textContent = `${DAYTYPE[pending.type].name}, ${level + 1} lygis, apie ${pending.min} min.`;
+  $("ratesub").textContent = `${DAYTYPE[pending.type].name}, ${level + 1} lygis${pending.easy ? ", lengvesnė versija" : ""}, apie ${pending.min} min.`;
   const box = $("ratebox");
   if (box.showModal) box.showModal(); else box.setAttribute("open", "");
 }
@@ -494,9 +505,9 @@ function saveRate(ev) {
   const f = $("rateform");
   if (!f.reportValidity() || !pending) return;
   const d = new FormData(f), pain = d.get("pain");
-  const h = HEALTH.today();
-  markDone(pending.type, { min: pending.min, rpe: +d.get("rpe"), feel: d.get("feel"), pain,
-    h: h ? { steps: h.steps, sleep: h.sleep, rhr: h.rhr, bb: h.bb, hrv: h.hrv } : undefined,
+  const h = HEALTH.today(), r = HEALTH.readiness();
+  markDone(pending.type, { min: pending.min, rpe: +d.get("rpe"), feel: d.get("feel"), pain, easy: pending.easy || undefined,
+    h: h ? { steps: h.steps, sleep: h.sleep, rhr: h.rhr, bb: h.bb, hrv: h.hrv, ready: r ? r.score : undefined } : undefined,
     where: pain !== "ne" ? String(d.get("where") || "").trim() : "", note: String(d.get("note") || "").trim() });
   pending = null; closeRate();
   $("rate").hidden = true;
@@ -508,12 +519,12 @@ function saveRate(ev) {
 // Įrašų istorija (naujausi viršuje) ir kopijavimas tekstu
 const FEEL = { 1: "labai lengva", 2: "lengva", 3: "vidutiniškai", 4: "sunku", 5: "labai sunku" };
 function entryText(x) {
-  const parts = [`${x.d} · ${x.t === "full" ? "visa treniruotė" : "lengva diena"}${x.lvl ? `, ${x.lvl} lygis` : ""}${x.min ? `, ${x.min} min.` : ""}`];
+  const parts = [`${x.d} · ${x.t === "full" ? "visa treniruotė" : x.t === "relax" ? "atsipalaidavimas" : "lengva diena"}${x.lvl ? `, ${x.lvl} lygis` : ""}${x.easy ? ", lengvesnė" : ""}${x.min ? `, ${x.min} min.` : ""}`];
   if (x.rpe) parts.push(`sunkumas ${x.rpe}/5 (${FEEL[x.rpe]})`);
   if (x.feel) parts.push(`savijauta: ${x.feel}`);
   if (x.pain) parts.push(`skausmas: ${x.pain}${x.where ? ` (${x.where})` : ""}`);
   if (x.note) parts.push(`pastabos: ${x.note}`);
-  if (x.h) parts.push(`Garmin: ${HEALTH.text(x.h)}`);
+  if (x.h) parts.push(`Garmin: ${HEALTH.text(x.h)}${x.h.ready != null ? `, pasiruošimas ${x.h.ready}/100` : ""}`);
   return parts.join(" · ");
 }
 function renderHistory() {
@@ -570,6 +581,11 @@ $("rateform").addEventListener("change", ev => {
 $("histcopy").onclick = copyHistory;
 // Pasisveikinimas: šiandienos planas ir mygtukas „Pradėkime“ (paleidžia balsą ir treniruotę)
 function renderHello() {
+  // Lengvesnė versija įjungiama automatiškai, kai pasiruošimas žemas, nebent šiandien perjungta ranka
+  if (!(idx >= 0 && idx < steps.length) && easyTouched !== dayKey(new Date())) {
+    const r = HEALTH.readiness(), e = !!r && r.score < 45;
+    if (e !== easy) { easy = e; reset(); }
+  }
   const w = WEEK[weekday(new Date())], log = loadLog(), dates = weekDates();
   const full = new Set(log.filter(x => x.t === "full" && x.d >= dates[0]).map(x => x.d)).size;
   const doneToday = log.some(x => x.d === dayKey(new Date()));
@@ -589,35 +605,117 @@ function renderHello() {
   $("voice").textContent = SAY.on ? "Balsas: įjungtas" : "Balsas: išjungtas";
   $("voice").setAttribute("aria-pressed", SAY.on);
 }
-// Garmin duomenys (js/health.js): šiandienos skaičiai, patarimas lengviau, jei prastai pailsėta,
-// ir lengvą dieną – ar pasivaikščiojimas jau atliktas pagal žingsnius
+// Garmin duomenys (js/health.js): pasiruošimo kortelė (žiedas su balu, rodiklių plytelės su
+// 14 dienų grafiku, pasiūlymas) ir prisitaikanti treniruotė. Būsenos žinutės – #healthnote.
+let easyTouched = null, sparkKey = null;
+const C_RING = 2 * Math.PI * 52;
+const fmt1 = v => String(Math.round(v * 10) / 10).replace(".", ",");
 function renderHealth(type) {
-  const t = HEALTH.today(), a = HEALTH.advice(), p = [], gs = HEALTH.garminState;
+  const t = HEALTH.today(), r = HEALTH.readiness(), p = [], gs = HEALTH.garminState;
   if (gs === "need-key") p.push("Garmin duomenys paruošti. Įvesk raktą, kad galėčiau juos parodyti.");
   if (gs === "bad-key") p.push("Garmin raktas netinka. Įvesk jį iš naujo.");
   if (HEALTH.received && !t) p.push("Nuoroda iš telefono atėjo, bet joje nebuvo skaičių. Patikrink „Shortcut“ nustatymus.");
   if (HEALTH.badSleep != null) p.push(`Miego trukmė atėjo neteisinga (${String(HEALTH.badSleep).replace(".", ",")} val.), todėl jos neišsaugojau.`);
   if (HEALTH.refreshing) p.push("Garmin duomenys atnaujinami, palauk 1–2 min.");
   if (HEALTH.refreshErr) p.push(HEALTH.refreshErr + ".");
-  if (t) {
-    const up = HEALTH.garminUpdated ? new Date(HEALTH.garminUpdated * 1000) : null;
-    const when = up && dayKey(up) === dayKey(new Date()) ? ` (${String(up.getHours()).padStart(2, "0")}:${String(up.getMinutes()).padStart(2, "0")})` : "";
-    p.push(`Iš Garmin${when}: ${HEALTH.text(t)}.`);
-    if (a.tired) p.push(`Šiandien geriau lengviau: ${a.why}. ${level ? "Rinkis 1 lygį" : "Daryk 1 lygį"} ir judėk švelniai.`);
-    else if (t.sleep != null || t.bb != null || (t.rhr != null && a.base != null)) p.push("Atrodo, gerai pailsėjai.");
-    if (type === "light" && t.steps != null)
-      p.push(HEALTH.walkDone() ? "Pasivaikščiojimas šiandien jau atliktas ✓"
-        : `Pasivaikščiojimui: iki ${HEALTH.fmtNum(HEALTH.WALK_STEPS)} žingsnių trūksta ${HEALTH.fmtNum(HEALTH.WALK_STEPS - t.steps)}.`);
-  }
+  if (t && !r) p.push(`Iš Garmin: ${HEALTH.text(t)}.`);
   $("healthnote").textContent = p.join(" ");
   $("healthnote").hidden = !p.length;
   $("garminkey").hidden = gs !== "need-key" && gs !== "bad-key";
   $("ghkey").hidden = gs !== "ok" || (HEALTH.hasGitHubKey && !/raktas/.test(HEALTH.refreshErr || ""));
+  renderReady(t, r, type);
+  $("letsgo").textContent = easy ? "Pradėkime · lengvesnė versija" : "Pradėkime";
 }
-$("ghkey").onclick = () => {
-  const k = prompt("Įklijuok GitHub raktą (prasideda github_pat_):");
-  if (k && k.trim()) HEALTH.setGitHubKey(k);
-};
+function renderReady(t, r, type) {
+  const box = $("ready");
+  box.hidden = !r;
+  if (!r) return;
+  const sc = r.score, fg = $("ringfg");
+  $("readyscore").textContent = sc;
+  box.dataset.zone = sc >= 70 ? "good" : sc >= 45 ? "mid" : "low";
+  // Žiedas užsipildo animuotai (CSS transition)
+  fg.style.strokeDasharray = C_RING;
+  if (!fg.dataset.drawn) { fg.style.strokeDashoffset = C_RING; fg.getBoundingClientRect(); fg.dataset.drawn = "1"; }
+  fg.style.strokeDashoffset = C_RING * (1 - sc / 100);
+  $("readytitle").textContent = sc >= 70 ? "Gerai pailsėjusi" : sc >= 45 ? "Vidutiniškai pailsėjusi" : "Kūnas pavargęs";
+  const up = HEALTH.garminUpdated ? new Date(HEALTH.garminUpdated * 1000) : null;
+  $("readywhen").textContent = up ? `Garmin duomenys ${dayKey(up) === dayKey(new Date()) ? "šiandien" : dayKey(up)} ${String(up.getHours()).padStart(2, "0")}:${String(up.getMinutes()).padStart(2, "0")}` : "";
+  // Plytelės: rodiklis, reikšmė ir pokytis nuo įprasto; paspaudus – 14 dienų grafikas
+  const tiles = r.parts.map(p => {
+    let delta = "", cls = "";
+    if (p.base != null && p.cur != null && Math.abs(p.cur - p.base) >= (p.key === "sleep" ? 0.2 : 1)) {
+      const diff = p.cur - p.base, good = p.lowerBetter ? diff < 0 : diff > 0;
+      cls = good ? "up" : "down";
+      delta = `${diff > 0 ? "↑" : "↓"} ${fmt1(Math.abs(diff))}${p.unit}`;
+    } else if (p.base != null && p.cur != null) delta = "kaip įprastai";
+    return { key: p.key, label: p.label, value: p.value, delta, cls };
+  });
+  if (t.steps != null) {
+    const left = HEALTH.WALK_STEPS - t.steps;
+    tiles.push({ key: "steps", label: "Žingsniai", value: HEALTH.fmtNum(t.steps),
+      delta: type === "light" ? (left > 0 ? `iki tikslo ${HEALTH.fmtNum(left)}` : "pasivaikščiota ✓") : "", cls: type === "light" && left <= 0 ? "up" : "" });
+  }
+  if (sparkKey && !tiles.some(x => x.key === sparkKey)) sparkKey = null;
+  $("tiles").innerHTML = tiles.map(x => `<button class="tile ${x.cls}" type="button" data-key="${x.key}" aria-pressed="${x.key === sparkKey}">
+    <span class="tl">${esc(x.label)}</span><b>${esc(x.value)}</b><span class="td">${esc(x.delta)}</span></button>`).join("");
+  renderSpark();
+  // Pasiūlymas ir mygtukai
+  const tip = [], acts = [];
+  const weak = r.parts.filter(p => p.s < 45).map(p => `${{ sleep: "miegas", rhr: "ramybės pulsas" }[p.key] || p.label} ${p.value}`);
+  if (sc < 45) tip.push(`${weak.length ? weak.join(", ") + ". " : ""}Siūlau lengvesnę versiją: viena serija mažiau ir ilgesnis poilsis.`);
+  else if (sc < 70) tip.push(level ? "Šiandien geriau 1 lygis ir neskubėk." : "Daryk įprastai, tik neskubėk.");
+  else tip.push("Puiki diena treniruotei.");
+  if (sc < 70 && level) acts.push(`<button class="btn ghost" type="button" data-act="lvl1">Rinktis 1 lygį</button>`);
+  if (sc >= 70 && !level) {
+    const good = [1, 2].every(i => { const x = HEALTH.readiness(dayKey(new Date(Date.now() - i * 864e5))); return x && x.score >= 70; });
+    if (good) { tip.push("Jau kelias dienas gerai pailsėjusi, gal pabandyk 2 lygį?"); acts.push(`<button class="btn ghost" type="button" data-act="lvl2">Pabandyti 2 lygį</button>`); }
+  }
+  if (new Date().getHours() >= 17 && r.stress != null && r.stress >= 40) {
+    const min = Math.max(1, Math.round(buildSteps(level, DAYTYPE.relax.list(), false).reduce((a, s) => a + s.secs, 0) / 60));
+    tip.push(`Šiandien stresas buvo aukštas (${r.stress}), vakare tiks trumpas atsipalaidavimas.`);
+    acts.push(`<button class="btn ghost" type="button" data-act="relax">Atsipalaidavimas · ${min} min.</button>`);
+  }
+  acts.push(`<button class="seg" type="button" data-act="easy" aria-pressed="${easy}">Lengvesnė versija</button>`);
+  $("readytip").textContent = tip.join(" ");
+  $("readyactions").innerHTML = acts.join("");
+}
+// Paskutinių 14 dienų grafikas su įprasta reikšme (punktyrinė linija)
+function renderSpark() {
+  const box = $("spark");
+  box.hidden = !sparkKey;
+  if (!sparkKey) return;
+  const data = HEALTH.series(sparkKey, 14), vals = data.filter(x => x.v != null).map(x => x.v);
+  if (vals.length < 2) { box.innerHTML = "<p>Kol kas per mažai duomenų grafikui.</p>"; return; }
+  const W = 280, H = 84, pad = 10, base = sparkKey === "steps" ? null : HEALTH.baseline(undefined, sparkKey);
+  let lo = Math.min(...vals, base ?? Infinity), hi = Math.max(...vals, base ?? -Infinity);
+  if (hi === lo) { hi += 1; lo -= 1; }
+  const X = i => pad + i * (W - 2 * pad) / (data.length - 1), Y = v => H - pad - (v - lo) * (H - 2 * pad) / (hi - lo);
+  const pts = data.map((x, i) => x.v == null ? null : [X(i), Y(x.v)]).filter(Boolean);
+  const last = data[data.length - 1].v != null ? pts[pts.length - 1] : null;
+  const show = v => sparkKey === "steps" ? HEALTH.fmtNum(Math.round(v)) : fmt1(v);
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Paskutinių 14 dienų grafikas">
+    ${base != null ? `<line class="sp-base" x1="${pad}" x2="${W - pad}" y1="${Y(base)}" y2="${Y(base)}"/>` : ""}
+    <polyline class="sp-line" points="${pts.map(p => p.join(",")).join(" ")}"/>
+    ${pts.map(p => `<circle class="sp-dot" cx="${p[0]}" cy="${p[1]}" r="2.5"/>`).join("")}
+    ${last ? `<circle class="sp-now" cx="${last[0]}" cy="${last[1]}" r="5"/>` : ""}
+  </svg><p class="sp-legend"><span>prieš 2 sav.</span><span>šiandien</span></p>
+  <p class="sp-info">${base != null ? `Punktyras – įprastai (${show(base)}). ` : ""}Mažiausia ${show(Math.min(...vals))}, didžiausia ${show(Math.max(...vals))}.</p>`;
+}
+$("tiles").addEventListener("click", ev => {
+  const b = ev.target.closest(".tile");
+  if (!b) return;
+  sparkKey = sparkKey === b.dataset.key ? null : b.dataset.key;
+  $("tiles").querySelectorAll(".tile").forEach(x => x.setAttribute("aria-pressed", x.dataset.key === sparkKey));
+  renderSpark();
+});
+$("readyactions").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-act]");
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === "easy") { easy = !easy; easyTouched = dayKey(new Date()); reset(); renderHello(); }
+  else if (act === "lvl1" || act === "lvl2") { setLevel(act === "lvl1" ? 0 : 1); renderHello(); }
+  else if (act === "relax") startWorkout("relax");
+});
 $("garminkey").onclick = () => {
   const k = prompt("Įklijuok Garmin duomenų raktą (DUOMENU_RAKTAS):");
   if (k && k.trim()) HEALTH.setGarminKey(k);
@@ -629,13 +727,16 @@ $("vyes").onclick = () => { SAY.force = true; SAY.on = true; $("vask").hidden = 
 $("vno").onclick = () => { voiceRefused = true; $("vask").hidden = true; renderHello(); };
 // Režimai: „hello“ – tik pasisveikinimas, „workout“ – vienas pratimas, „browse“ – visas puslapis
 function setMode(m) { document.body.dataset.mode = m; window.scrollTo(0, 0); }
-function goHome() { closeRate(); reset(); MEDIA.stop(); renderHello(); renderWeek(); setMode("hello"); }
-$("letsgo").onclick = () => {
+function goHome() { closeRate(); override = null; reset(); MEDIA.stop(); renderHello(); renderWeek(); setMode("hello"); }
+// type – „relax“ arba null (pagal savaitės planą)
+function startWorkout(type = null) {
   if (running) return;
   SAY.recheck();
   if (selDay !== weekday(new Date())) { selDay = weekday(new Date()); renderWeek(); }
+  override = type;
   reset(); setMode("workout"); start();
-};
+}
+$("letsgo").onclick = () => startWorkout(null);
 $("browse").onclick = () => setMode("browse");
 $("quit").onclick = () => {
   if (idx >= 0 && idx < steps.length && !confirm("Nutraukti treniruotę? Ji nebus įskaityta.")) return;
