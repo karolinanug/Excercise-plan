@@ -1,0 +1,43 @@
+# Kelis kartus per dieną parsiunčia Garmin duomenis į garmin/duomenys.enc (užšifruotus).
+# Reikia Secrets: GARMIN_EMAIL, GARMIN_PASSWORD, DUOMENU_RAKTAS. Žr. README.md „Garmin duomenys“.
+name: Garmin duomenys
+
+on:
+  schedule:
+    # UTC; Vilniuje vasarą +3 val. (~7:20, 13:20, 19:20), žiemą +2 val.
+    - cron: "20 4,10,16 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: garmin
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet "garminconnect==0.3.17" curl_cffi cryptography
+      - name: Parsiųsti
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          DUOMENU_RAKTAS: ${{ secrets.DUOMENU_RAKTAS }}
+          TZ: Europe/Vilnius
+        run: python tools/garmin_sync.py
+      - name: Įrašyti
+        run: |
+          git add garmin/
+          if git diff --cached --quiet; then echo "Nieko naujo"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Garmin duomenys atnaujinti"
+          for i in 1 2 3; do git pull --rebase -q && git push -q && exit 0; sleep 5; done
+          exit 1

@@ -48,13 +48,27 @@ Skriptas per `tools/frazes.js` (paleidžia tikrus `js/*.js` su netikru DOM) sure
 
 ## Garmin duomenys
 
-Garmin oficialaus API asmeniniam naudojimui neduoda, todėl duomenys keliauja per telefoną: Garmin Connect → Apple Health → iPhone „Shortcuts“ → svetainė. „Shortcut“ atidaro svetainę su nuoroda `…/#zingsniai=8400&miegas=7.2&pulsas=58`. Naudojama `#` dalis, kuri nesiunčiama į serverį, todėl duomenys lieka tik telefone (`localStorage` raktas `karolina-health`). Kodas – `js/health.js`.
+Garmin oficialaus API asmeniniam naudojimui neduoda, todėl naudojama neoficiali, aktyviai prižiūrima biblioteka [python-garminconnect](https://github.com/cyberjunky/python-garminconnect). GitHub Actions (`.github/workflows/garmin.yml`) tris kartus per dieną paleidžia `tools/garmin_sync.py`: šis prisijungia prie Garmin Connect ir parsiunčia miegą (trukmę ir įvertį), ramybės pulsą, Body Battery, HRV, stresą ir žingsnius. Pirmą kartą parsiunčiama 30 dienų, vėliau – paskutinės 4.
 
-Ką svetainė su jais daro:
+Repozitorija vieša, todėl duomenys (`garmin/duomenys.enc`) ir prisijungimo žetonas (`garmin/zetonas.enc`) saugomi tik užšifruoti (PBKDF2-SHA256 + AES-256-GCM), o į Actions žurnalą nerašomi jokie skaičiai. Svetainė (`js/health.js`) duomenis iššifruoja tik telefone raktu, kurį įvedi vieną kartą.
 
-- pasisveikinimo ekrane rodo šiandienos miegą, ramybės pulsą ir žingsnius;
-- jei miegota mažiau nei 6 val. arba ramybės pulsas bent 5 dūžiais aukštesnis nei įprastas (ankstesnių 14 dienų mediana), pataria daryti 1 lygį;
+### Įjungimas
+
+1. Mac'e atidaryk „Terminal“ ir sugeneruok raktą: `openssl rand -base64 24`.
+2. GitHub repozitorijoje: **Settings → Secrets and variables → Actions → New repository secret**. Sukurk tris:
+   - `GARMIN_EMAIL` – Garmin Connect el. paštas;
+   - `GARMIN_PASSWORD` – Garmin Connect slaptažodis;
+   - `DUOMENU_RAKTAS` – 1 žingsnyje sugeneruotas raktas.
+3. **Actions → Garmin duomenys → Run workflow**. Po minutės kitos repozitorijoje atsiras `garmin/duomenys.enc`.
+4. Telefone atidaryk svetainę, paspausk „Įvesti Garmin raktą“ ir įklijuok tą patį raktą.
+
+### Ką svetainė su jais daro
+
+- pasisveikinimo ekrane rodo šiandienos miegą, Body Battery, ramybės pulsą, HRV, stresą ir žingsnius;
+- pataria daryti 1 lygį, jei miegota mažiau nei 6 val., Body Battery ryte mažiau nei 35, ramybės pulsas bent 5 dūžiais aukštesnis nei įprastas (ankstesnių 14 dienų mediana) arba Garmin HRV būsena žema;
 - lengvą dieną pasivaikščiojimas laikomas atliktu, kai žingsnių yra bent 7 000;
 - išsaugant įsivertinimą prie įrašo prideda tos dienos Garmin duomenis, o „Kopijuoti įrašus“ prideda ir visų dienų Garmin duomenis kineziterapeutui.
 
-Ribas galima keisti `js/health.js` viršuje (`SLEEP_LOW`, `RHR_UP`, `WALK_STEPS`).
+Ribas galima keisti `js/health.js` viršuje (`SLEEP_LOW`, `BB_LOW`, `RHR_UP`, `WALK_STEPS`).
+
+Atsarginis kelias be GitHub Actions – iPhone „Shortcuts“, atidarantis svetainę su nuoroda `…/#zingsniai=8400&miegas=7.2&pulsas=58` (duomenys iš Apple Health). Abu šaltiniai sujungiami, Garmin duomenys svarbesni.

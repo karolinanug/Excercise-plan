@@ -496,7 +496,7 @@ function saveRate(ev) {
   const d = new FormData(f), pain = d.get("pain");
   const h = HEALTH.today();
   markDone(pending.type, { min: pending.min, rpe: +d.get("rpe"), feel: d.get("feel"), pain,
-    h: h ? { steps: h.steps, sleep: h.sleep, rhr: h.rhr } : undefined,
+    h: h ? { steps: h.steps, sleep: h.sleep, rhr: h.rhr, bb: h.bb, hrv: h.hrv } : undefined,
     where: pain !== "ne" ? String(d.get("where") || "").trim() : "", note: String(d.get("note") || "").trim() });
   pending = null; closeRate();
   $("rate").hidden = true;
@@ -592,20 +592,28 @@ function renderHello() {
 // Garmin duomenys (js/health.js): šiandienos skaičiai, patarimas lengviau, jei prastai pailsėta,
 // ir lengvą dieną – ar pasivaikščiojimas jau atliktas pagal žingsnius
 function renderHealth(type) {
-  const t = HEALTH.today(), a = HEALTH.advice(), p = [];
+  const t = HEALTH.today(), a = HEALTH.advice(), p = [], gs = HEALTH.garminState;
+  if (gs === "need-key") p.push("Garmin duomenys paruošti. Įvesk raktą, kad galėčiau juos parodyti.");
+  if (gs === "bad-key") p.push("Garmin raktas netinka. Įvesk jį iš naujo.");
   if (HEALTH.received && !t) p.push("Nuoroda iš telefono atėjo, bet joje nebuvo skaičių. Patikrink „Shortcut“ nustatymus.");
   if (HEALTH.badSleep != null) p.push(`Miego trukmė atėjo neteisinga (${String(HEALTH.badSleep).replace(".", ",")} val.), todėl jos neišsaugojau.`);
   if (t) {
     p.push(`Iš Garmin: ${HEALTH.text(t)}.`);
     if (a.tired) p.push(`Šiandien geriau lengviau: ${a.why}. ${level ? "Rinkis 1 lygį" : "Daryk 1 lygį"} ir judėk švelniai.`);
-    else if (t.sleep != null || (t.rhr != null && a.base != null)) p.push("Atrodo, gerai pailsėjai.");
+    else if (t.sleep != null || t.bb != null || (t.rhr != null && a.base != null)) p.push("Atrodo, gerai pailsėjai.");
     if (type === "light" && t.steps != null)
       p.push(HEALTH.walkDone() ? "Pasivaikščiojimas šiandien jau atliktas ✓"
         : `Pasivaikščiojimui: iki ${HEALTH.fmtNum(HEALTH.WALK_STEPS)} žingsnių trūksta ${HEALTH.fmtNum(HEALTH.WALK_STEPS - t.steps)}.`);
   }
   $("healthnote").textContent = p.join(" ");
   $("healthnote").hidden = !p.length;
+  $("garminkey").hidden = gs !== "need-key" && gs !== "bad-key";
 }
+$("garminkey").onclick = () => {
+  const k = prompt("Įklijuok Garmin duomenų raktą (DUOMENU_RAKTAS):");
+  if (k && k.trim()) HEALTH.setGarminKey(k);
+};
+HEALTH.onChange(() => renderHello());
 let voiceRefused = false;
 $("vtest").onclick = () => { SAY.test(); $("vask").hidden = false; };
 $("vyes").onclick = () => { SAY.force = true; SAY.on = true; $("vask").hidden = true; renderHello(); if (!(idx >= 0 && idx < steps.length)) reset(); };
@@ -650,6 +658,7 @@ document.addEventListener("visibilitychange", () => {
   lastToday = today;
   renderWeek();
   if (running) { tick(); lockScreen(); }
+  else HEALTH.syncGarmin();
 });
 renderSummary();
 renderVideos();
@@ -657,3 +666,4 @@ renderWeek();
 renderHistory();
 renderHello();
 setLevel(level);
+HEALTH.syncGarmin();

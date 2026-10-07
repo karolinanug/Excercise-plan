@@ -17,7 +17,7 @@ const ctx = vm.createContext({
   localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
   navigator: {}, document: stub, location: stub, alert() {}, confirm: () => false, matchMedia: () => stub
 });
-ctx.window = ctx;
+ctx.window = ctx; ctx.addEventListener = () => {};
 for (const f of ["js/anim.js", "js/voice.js", "js/health.js", "js/app.js"]) vm.runInContext(read(f), ctx, { filename: f });
 
 const out = vm.runInContext(`(() => {
