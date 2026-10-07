@@ -311,9 +311,10 @@ function syncBackup() {
   return backupBusy;
 }
 function renderBackup() {
-  const s = BACKUP.state, t = BACKUP.lastSync;
-  $("backupnote").textContent = s === "ok" ? "☁️ Įrašai saugomi ir GitHub'e (užšifruoti)."
-    + (t ? ` Paskutinė kopija ${new Date(t).toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" })}.` : "")
+  // Kai kopija veikia, nieko nerodoma – pranešama tik apie bėdas
+  const s = BACKUP.state;
+  $("backupnote").hidden = s === "ok";
+  $("backupnote").textContent = s === "ok" ? ""
     : s === "need-token" ? "Įrašai saugomi tik šiame telefone – išvalius naršyklę jie dings. Prijunk kopiją GitHub'e."
     : s === "bad-token" ? "GitHub šio rakto neatpažįsta: gal nukopijuotas ne visas, ištrintas ar baigėsi galiojimas. Įvesk naują."
     : s === "no-write" ? "GitHub neleidžia šiuo raktu įrašyti kopijos. Rakto nustatymuose patikrink: Repository access → Only select repositories → Excercise-plan ir Permissions → Contents → Read and write. Pakeitus nustatymus tas pats raktas tinka – spausk „Bandyti dar kartą“."
