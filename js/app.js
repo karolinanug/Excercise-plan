@@ -663,7 +663,7 @@ function finish() {
 function openRate() {
   if (!pending) return;
   const f = $("rateform");
-  f.reset(); $("wherebox").hidden = true;
+  f.reset(); $("wherebox").hidden = true; $("ratemiss").hidden = true;
   $("manualbox").hidden = !pending.manual;
   if (pending.manual) { $("rateday").value = $("rateday").max = dayKey(new Date()); $("ratetype").value = pending.type; }
   $("ratesub").textContent = `${DAYTYPE[pending.type].name}, ${level + 1} lygis${pending.easy ? ", lengvesnė versija" : ""}, apie ${pending.min} min.`;
@@ -674,7 +674,10 @@ function closeRate() { const box = $("ratebox"); if (box.close) box.close(); els
 function saveRate(ev) {
   ev.preventDefault();
   const f = $("rateform");
-  if (!f.reportValidity() || !pending) return;
+  const miss = ["rpe", "feel", "pain"].filter(n => !f.querySelector(`input[name=${n}]:checked`));
+  $("ratemiss").hidden = !miss.length;
+  if (miss.length) { $("ratemiss").textContent = "Dar pažymėk: " + miss.map(n => ({ rpe: "kaip sunku", feel: "kaip jautiesi", pain: "ar skaudėjo" })[n]).join(", ") + "."; return; }
+  if (!pending) { closeRate(); return; }
   const d = new FormData(f), pain = d.get("pain");
   const day = pending.manual && d.get("day") || dayKey(new Date()), isToday = day === dayKey(new Date());
   if (pending.manual && d.get("type") && d.get("type") !== pending.type) {
@@ -781,7 +784,8 @@ async function copyHistory() {
   setTimeout(() => { $("histcopy").textContent = "Kopijuoti įrašus (kineziterapeutui)"; }, 2000);
 }
 function reset() {
-  pause(); idx = -1; spokenIdx = -1; pending = null; $("rate").hidden = true; steps = buildSteps();
+  // Atidaryta įsivertinimo forma neprarandama, jei fone persikrauna planas ar balsai
+  pause(); idx = -1; spokenIdx = -1; if (!$("ratebox").open) { pending = null; $("rate").hidden = true; } steps = buildSteps();
   if (SAY.active) steps.unshift(introStep());
   $("start").textContent = "Pradėti"; $("kind").textContent = "Pasiruošk";
   $("now").textContent = "Patiesk kilimėlį ir paspausk „Pradėti“";
