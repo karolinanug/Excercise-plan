@@ -69,15 +69,25 @@ const BACKUP = (() => {
     },
     // Kopija jau sutampa su telefono įrašais
     synced() { state = "ok"; lastSync = Date.now(); },
-    // Naujas GitHub raktas: patikrinama, ar juo galima rašyti į šią repozitoriją; saugomas tik telefone
+    get token() { return token(); },
+    // Naujas GitHub raktas: patikrinama, ar juo galima skaityti ir rašyti šios repozitorijos failus; saugomas tik telefone.
+    // Grąžina "ok" arba priežastį: empty, bad (neteisingas / nevisas), repo (neduota prieiga prie repozitorijos),
+    // write (nėra Contents: Read and write), net (nėra ryšio)
     async setToken(tok) {
-      tok = String(tok || "").trim();
-      if (!tok) return false;
+      tok = String(tok || "").replace(/\s/g, "");
+      if (!tok) return "empty";
       try {
         const r = await fetch(`https://api.github.com/repos/${REPO}`, { cache: "no-store", headers: headers(tok) });
-        if (!r.ok || !((await r.json()).permissions || {}).push) return false;
-        setTok(tok); return true;
-      } catch (e) { return false; }
+        if (r.status === 401) return "bad";
+        if (!r.ok) return "repo";
+        const perm = (await r.json()).permissions;
+        if (perm && !perm.push) return "write";
+        // Rašymo teisė patikrinama tikru užklausimu: nuskaitomas kopijos failas (404 – dar nėra, tai gerai)
+        const f = await fetch(`${API}${FILE}?ref=${BRANCH}&t=${Date.now()}`, { cache: "no-store", headers: headers(tok) });
+        if (f.status === 401) return "bad";
+        if (f.status === 403) return "write";
+        setTok(tok); return "ok";
+      } catch (e) { return "net"; }
     }
   };
 })();

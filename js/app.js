@@ -1036,8 +1036,16 @@ $("backupbtn").onclick = async () => {
   const t = prompt("Įklijuok GitHub raktą (fine-grained, tik šiai repozitorijai, Contents: Read and write):");
   if (!t || !t.trim()) return;
   $("backupnote").textContent = "Tikrinu raktą…";
-  if (await BACKUP.setToken(t)) syncBackup();
-  else { renderBackup(); $("backupnote").textContent = "Raktas netinka: jis turi būti skirtas šiai repozitorijai ir turėti Contents: Read and write teisę."; }
+  const res = await BACKUP.setToken(t);
+  if (res === "ok") { syncBackup(); return; }
+  renderBackup();
+  $("backupnote").textContent = {
+    empty: "Raktas tuščias – įklijuok visą raktą (prasideda github_pat_ arba ghp_).",
+    bad: "GitHub šio rakto neatpažino: gal nukopijuotas ne visas arba jau ištrintas ar pasibaigęs.",
+    repo: "Raktui neduota prieiga prie šios repozitorijos: Repository access → Only select repositories → Excercise-plan.",
+    write: "Raktas neturi rašymo teisės: Permissions → Repository permissions → Contents → Read and write.",
+    net: "Nepavyko susisiekti su GitHub (nėra ryšio?). Pabandyk dar kartą."
+  }[res];
 };
 let voiceRefused = false;
 $("vtest").onclick = () => { SAY.test(); $("vask").hidden = false; };
