@@ -368,6 +368,13 @@ function stepBeep(type) {
 function highlight(ex) {
   document.querySelectorAll(".ex").forEach((el, i) => el.classList.toggle("active", i === ex));
 }
+// Katytė bėga visos treniruotės eigos linija: bėga dirbant, sėdi per poilsį ir pauzę
+function catRun(p, done = false) {
+  const el = $("catrun"), st = steps[idx];
+  el.style.setProperty("--p", Math.max(0, Math.min(1, p)));
+  el.classList.toggle("go", running && !holding && !done && !!st && st.type !== "rest");
+  el.classList.toggle("done", done);
+}
 function show() {
   const st = steps[idx];
   if (idx !== spokenIdx) { spokenIdx = idx; announce(st); }
@@ -380,6 +387,7 @@ function show() {
   $("player").classList.toggle("is-listen", holding);
   $("bar").style.width = holding ? "0" : (100 * (st.secs - left) / st.secs) + "%";
   const remaining = steps.slice(idx + 1).reduce((a, s) => a + s.secs, 0) + left;
+  catRun(1 - remaining / totalSecs());
   const list = [...new Set(steps.filter(s => s.type === "work").map(s => s.ex))];
   $("meta").textContent = `Pratimas ${list.indexOf(st.ex) + 1} iš ${list.length} · liko apie ${Math.ceil(remaining / 60)} min.`;
   highlight(steps[idx].ex);
@@ -581,6 +589,7 @@ function pause() {
   if (running) remainMs = Math.max(0, endAt - Date.now());
   running = false; clearInterval(timer); $("start").textContent = "Tęsti";
   clearTimeout(gateTimer); SAY.stop(); vKey = null;
+  $("catrun").classList.remove("go");
   unlockScreen();
 }
 // Pabaigus treniruotę atsiveria įsivertinimo forma; treniruotė pažymima atlikta tik ją išsaugojus
@@ -594,7 +603,7 @@ function finish() {
   $("kind").textContent = "Baigta";
   $("now").textContent = dayType() === "relax" ? "Puiku! Gero vakaro." : "Puiku, šiandienos mankšta baigta!";
   $("cue").textContent = "Išgerk vandens ir trumpai įsivertink, kaip sekėsi: taip matysi pažangą, o kineziterapeutui bus ką parodyti.";
-  $("clock").textContent = "0:00"; $("bar").style.width = "100%";
+  $("clock").textContent = "0:00"; $("bar").style.width = "100%"; catRun(1, true);
   $("restctl").hidden = true; $("player").classList.remove("is-rest");
   $("start").textContent = "Pradėti iš naujo"; highlight(-1); showAnim(-1);
   $("home").hidden = false; $("player").classList.remove("is-listen");
@@ -730,7 +739,7 @@ function reset() {
   $("start").textContent = "Pradėti"; $("kind").textContent = "Pasiruošk";
   $("now").textContent = "Patiesk kilimėlį ir paspausk „Pradėti“";
   $("cue").textContent = "Prieš kiekvieną seriją balsas pasako pratimą ir kaip atsigulti, tada 5 s atgalinis laikas ir „Pradedam“. Animacija rodo, kaip daroma. Viskas persijungia automatiškai.";
-  $("clock").textContent = fmt(totalSecs()); $("bar").style.width = "0";
+  $("clock").textContent = fmt(totalSecs()); $("bar").style.width = "0"; catRun(0);
   $("meta").textContent = `Visa treniruotė: apie ${Math.round(totalSecs() / 60)} min.`; highlight(-1); showAnim(-1);
   $("restctl").hidden = true; $("player").classList.remove("is-rest", "is-listen"); $("home").hidden = true;
 }

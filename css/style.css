@@ -393,3 +393,28 @@ body:not([data-mode="workout"]) #quit { display: none; }
 .done-cat .fur { fill: #8f969c; } .done-cat .fur2 { fill: #767d84; } .done-cat .eye { fill: #2b3a30; } .done-cat .nose { fill: #d99aa5; }
 .done-card > *:not(.sparkles):not(.done-cat) { position: relative; }
 @media (prefers-reduced-motion: reduce) { .sparkles i { animation: none; opacity: .8; } .milestone, .streak-pill.hot, .ready::before, .done-card::before, #letsgo::before { animation: none; } }
+
+/* Bėganti katytė – visos treniruotės eiga */
+.catrun { --p: 0; position: relative; height: 44px; margin: 2px 0 -4px; }
+.catrun-track { position: absolute; left: 0; right: 0; bottom: 4px; height: 6px; border-radius: 999px; background: repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 14px); }
+.catrun-track i { position: relative; display: block; height: 100%; width: calc(var(--p) * 100%); border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--lilac), var(--gold)); transition: width .3s linear; }
+.catrun-track i::after { content: ""; position: absolute; inset: 0; background: var(--glitter); background-size: 60px 40px; }
+.runcat { position: absolute; bottom: 6px; left: calc(var(--p) * (100% - 52px)); width: 52px; height: auto; transition: left .3s linear; overflow: visible; }
+.runcat .rc-fur { fill: #8f969c; } .runcat .rc-ear { fill: #767d84; }
+.runcat .rc-leg path, .runcat .rc-tail { stroke: #767d84; stroke-width: 4.5; stroke-linecap: round; fill: none; }
+.runcat .rc-b1 path, .runcat .rc-f1 path { stroke: #686f76; }
+.runcat .rc-eye { stroke: #2b3a30; stroke-width: 1.6; fill: none; stroke-linecap: round; } .runcat .rc-nose { fill: #d99aa5; }
+.rc-leg { transform-box: fill-box; transform-origin: 50% 0; }
+.rc-tail { transform-box: fill-box; transform-origin: 100% 100%; animation: tailsway 2.4s ease-in-out infinite; }
+@keyframes tailsway { 50% { transform: rotate(-14deg); } }
+@keyframes gallopA { 0%, 100% { transform: rotate(38deg); } 50% { transform: rotate(-38deg); } }
+@keyframes gallopB { 0%, 100% { transform: rotate(-38deg); } 50% { transform: rotate(38deg); } }
+@keyframes bounce { 50% { transform: translateY(-3px); } }
+.catrun.go .runcat { animation: bounce .35s ease-in-out infinite; }
+.catrun.go .rc-f1, .catrun.go .rc-b2 { animation: gallopA .35s ease-in-out infinite; }
+.catrun.go .rc-f2, .catrun.go .rc-b1 { animation: gallopB .35s ease-in-out infinite; }
+.catrun.go .rc-tail { animation: tailsway .35s ease-in-out infinite; }
+.catrun.done .runcat { animation: bounce .6s ease-in-out 3; }
+.catrun.done .catrun-track i { animation: glint 1.6s ease-in-out infinite; }
+.is-rest .catrun-track i { background: linear-gradient(90deg, var(--accent), var(--warn)); }
+@media (prefers-reduced-motion: reduce) { .catrun *, .catrun.go * , .catrun.go .runcat { animation: none !important; transition: none !important; } }
