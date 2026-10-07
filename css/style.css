@@ -418,3 +418,4 @@ body:not([data-mode="workout"]) #quit { display: none; }
 .catrun.done .catrun-track i { animation: glint 1.6s ease-in-out infinite; }
 .is-rest .catrun-track i { background: linear-gradient(90deg, var(--accent), var(--warn)); }
 @media (prefers-reduced-motion: reduce) { .catrun *, .catrun.go * , .catrun.go .runcat { animation: none !important; transition: none !important; } }
+.done-card .again { color: inherit; opacity: .85; margin-top: 4px; }

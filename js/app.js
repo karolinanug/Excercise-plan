@@ -368,6 +368,7 @@ function stepBeep(type) {
 function highlight(ex) {
   document.querySelectorAll(".ex").forEach((el, i) => el.classList.toggle("active", i === ex));
 }
+let againDay = null;
 // Katytė bėga visos treniruotės eigos linija: bėga dirbant, sėdi per poilsį ir pauzę
 function catRun(p, done = false) {
   const el = $("catrun"), st = steps[idx];
@@ -783,8 +784,9 @@ function renderHello() {
   renderWeek();
   // Šiandien jau atlikta – tik pagyrimas
   const doneEntry = log.filter(x => x.d === dayKey(now) && x.t !== "relax").pop();
-  $("donecard").hidden = !doneEntry; $("todo").hidden = !!doneEntry;
-  if (doneEntry) {
+  const praise = !!doneEntry && againDay !== dayKey(now);
+  $("donecard").hidden = !praise; $("todo").hidden = praise;
+  if (praise) {
     const left = Math.max(0, WEEK_GOAL - s.thisWeek);
     $("donetitle").textContent = PRAISE[(now.getDate() + now.getMonth()) % PRAISE.length];
     $("donetext").textContent = `${TYPE_NAME(doneEntry.t).replace(/ \(.*\)/, "")} atlikta.` + (s.day > 1 ? ` 🔥 ${s.day} d. iš eilės.` : "") +
@@ -991,6 +993,8 @@ function setMode(m) {
 }
 document.querySelectorAll("[data-tab]").forEach(b => { b.onclick = () => setMode(b.dataset.tab); });
 $("streakpill").onclick = () => setMode("stats");
+// Jau atlikus šiandienos mankštą galima ją pakartoti – vėl parodoma treniruotės kortelė
+$("again").onclick = () => { againDay = dayKey(new Date()); renderHello(); };
 function goHome() { closeRate(); override = null; reset(); MEDIA.stop(); renderHello(); setMode("today"); }
 // type – „relax“ arba null (pagal savaitės planą)
 function startWorkout(type = null) {
