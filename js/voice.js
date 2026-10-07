@@ -199,8 +199,10 @@ const VOICE = {
   child: () => ({ beat: [["Įkvėpk į nugarą", 4], ["Iškvėpk ir atsipalaiduok", 6]] }),
   // Pratimai iš korekcinės programos
   kneelpush: (l, s) => ({ beat: fit(s, [10, 12][l], [["Stumk dubenį pirmyn ir aukštyn. Laikyk", 3.5, "Pirmyn, laikyk"], ["Grįžk ant kulnų", 1.5, "Grįžk"]]) }),
-  childcobra: (l, s) => ({ beat: fit(s, [10, 12][l], [["Slink pirmyn, krūtinė aukštyn", 2.2, "Pirmyn"], ["Atgal ant kulnų", 2.2, "Atgal"]]) }),
-  squat: () => ({ start: "Pritūpk kuo giliau, kulnai prie grindų", remind: ["Rankos aukštyn", "Rankos žemyn", "Kvėpuok ramiai", "Krūtinė aukštyn"], every: 5 }),
+  // Lėtai: kiekvienas judesys ~4 s ir trumpas išlaikymas
+  childcobra: (l, s) => ({ beat: fit(s, [6, 7][l], [["Lėtai slink pirmyn, krūtinė aukštyn", 4, "Lėtai pirmyn"], ["Palaikyk", 1.5], ["Lėtai atgal ant kulnų", 4, "Lėtai atgal"], ["Pailsėk", 1.5]]) }),
+  // Pritūpime rankos kyla ir leidžiasi kas 4 s – balsas sako kiekvieną kartą
+  squat: () => ({ beat: [["Pritūpk kuo giliau, kulnai prie grindų. Rankos aukštyn", 4, "Rankos aukštyn"], ["Rankos žemyn", 4]] }),
   crabreach: (l, s) => ({ beat: fit(s, [6, 8][l], [["Kelk dubenį ir siek ranka už galvos. Laikyk", 3.5, "Kelk ir siek"], ["Lėtai žemyn", 2, "Žemyn"]]) }),
   plank: () => ({ start: "Kūnas tiesia linija, alkūnės po pečiais", remind: ["Stumk grindis dilbiais", "Pilvas įtemptas, juosmens neįlenk", "Kvėpuok"], every: 6 }),
   slbridge: (l, s) => ({ beat: fit(s, [8, 12][l], [["Spausk kulnu ir kelk dubenį. Laikyk", 3.5, "Kelk, laikyk"], ["Lėtai žemyn", 1.5, "Žemyn"]]) }),

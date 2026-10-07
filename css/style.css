@@ -40,17 +40,11 @@ h3 { font-size: 1.25rem; font-weight: 700; }
 p { margin: 0; }
 .eyebrow { font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); font-weight: 700; }
 .lead { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
-.hello { background: var(--accent); color: var(--bg); border-radius: 20px; padding: 26px 22px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
-.hello h1 { color: var(--bg); }
-.hello-text { font-size: 1.08rem; max-width: 60ch; }
-.hello-note { font-size: .88rem; opacity: .85; max-width: 60ch; }
-.hello-health { font-size: .95rem; max-width: 60ch; border-left: 3px solid var(--bg); padding-left: 12px; }
+.hello-note { font-size: .86rem; color: var(--muted); max-width: 60ch; }
+.hello-health { font-size: .92rem; color: var(--muted); border-left: 3px solid var(--accent); padding-left: 12px; }
 .btn.big { font-size: 1.15rem; padding: 14px 30px; border-radius: 14px; }
-.hello .btn.primary { background: var(--bg); color: var(--accent); border-color: var(--bg); }
-.hello .btn.ghost { color: var(--bg); border-color: var(--bg); background: transparent; padding: 8px 16px; }
 .vtest { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .vask { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-weight: 700; }
-.hello .btn:focus-visible { outline-color: var(--bg); }
 h2.title { font-size: clamp(1.6rem, 5vw, 2.1rem); }
 header { display: flex; flex-direction: column; gap: 10px; }
 .facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
@@ -209,29 +203,11 @@ footer { color: var(--muted); font-size: .88rem; }
 .history p { font-size: .9rem; color: var(--muted); margin: 10px 0; }
 #rate { align-self: flex-start; }
 
-/* Režimai: pradžioje tik pasisveikinimas; treniruotės metu – tik vienas pratimas */
-body[data-mode="hello"] .wrap > :not(.hello):not(dialog),
-body[data-mode="workout"] .wrap > :not(#player):not(dialog) { display: none !important; }
-body[data-mode="hello"] .wrap { min-height: 100dvh; justify-content: center; }
-body[data-mode="hello"] .hello { padding: 40px 24px; gap: 16px; }
-body[data-mode="hello"] .hello h1 { font-size: clamp(2.3rem, 9vw, 3.2rem); }
-.hello-level { display: flex; gap: 6px; }
-.hello .seg { color: var(--bg); border-color: color-mix(in srgb, var(--bg) 60%, transparent); }
-.hello .seg[aria-pressed="true"] { background: var(--bg); color: var(--accent); border-color: var(--bg); }
-.linkbtn { font: inherit; font-size: .92rem; background: none; border: 0; padding: 4px 0; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; opacity: .9; }
-body[data-mode="workout"] .wrap { min-height: 100dvh; padding-block: 18px 32px; }
-body[data-mode="workout"] #player { border: 0; background: transparent; padding: 0; gap: 14px; }
-body[data-mode="workout"] #player > h2, body[data-mode="workout"] .days, body[data-mode="workout"] .legend,
-body[data-mode="workout"] .dayinfo, body[data-mode="workout"] #player .level, body[data-mode="workout"] #history,
-body[data-mode="workout"] #reset { display: none !important; }
-body[data-mode="workout"] .stage { min-height: 0; }
-body:not([data-mode="workout"]) #quit { display: none; }
-.is-listen .clock { font-size: clamp(2rem, 9vw, 2.8rem); color: var(--muted); }
 /* Kai veda balsas, animacijos užrašas (savo ritmu) nerodomas, kad nesipainiotų su balsu */
 body.voice-on[data-mode="workout"] .anim-say { display: none; }
 
 /* Pasiruošimo kortelė (Garmin): žiedas su balu, plytelės, 14 dienų grafikas */
-.ready { width: 100%; max-width: 560px; background: color-mix(in srgb, var(--bg) 13%, transparent); border: 1px solid color-mix(in srgb, var(--bg) 28%, transparent); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.ready, .card.accent { background: var(--accent); color: var(--bg); border: 0; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .ready-top { display: flex; align-items: center; gap: 16px; }
 .ring { position: relative; width: 104px; height: 104px; flex: none; }
 .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
@@ -286,10 +262,99 @@ body.voice-on[data-mode="workout"] .anim-say { display: none; }
 .ov-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: .85rem; }
 .ov-sum { font-size: .95rem; }
 @media (max-width: 360px) { .ov-cols { grid-template-columns: 1fr; } }
-/* Serijos */
-.streak { display: flex; flex-wrap: wrap; gap: 6px; }
-.streak .st { font-size: .85rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--bg) 16%, transparent); border: 1px solid color-mix(in srgb, var(--bg) 30%, transparent); }
-.streak .st.hot { background: var(--bg); color: var(--accent); }
-.milestone { font-weight: 800; font-size: 1rem; background: var(--bg); color: var(--accent); border-radius: 12px; padding: 8px 12px; animation: pop .5s cubic-bezier(.2, 1.4, .4, 1); }
 @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .milestone { animation: none; } }
+
+/* ===== Programėlės išdėstymas: ekranai ir apatinė juosta ===== */
+.wrap { padding-block: 12px calc(96px + env(safe-area-inset-bottom)); gap: 16px; }
+.screen, .player { display: none; flex-direction: column; gap: 16px; }
+body[data-mode="today"] #scr-today, body[data-mode="stats"] #scr-stats, body[data-mode="ex"] #scr-ex { display: flex; animation: screen-in .22s ease-out; }
+body[data-mode="workout"] #player { display: flex; }
+body[data-mode="workout"] .wrap { min-height: 100dvh; padding-block: 18px 32px; }
+body[data-mode="workout"] .tabbar { display: none; }
+body[data-mode="workout"] #player { border: 0; background: transparent; padding: 0; gap: 14px; }
+body:not([data-mode="workout"]) #quit { display: none; }
+@keyframes screen-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.top { display: flex; flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 12px; padding-top: 8px; }
+.top > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.linkbtn { font: inherit; font-size: .92rem; background: none; border: 0; padding: 4px 0; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.card.accent .legend { color: inherit; opacity: .75; font-size: .8rem; }
+.top h1 { font-size: clamp(1.8rem, 7.5vw, 2.4rem); }
+.top-date { font-size: .85rem; color: var(--muted); font-weight: 700; }
+.streak-pill { font: inherit; font-weight: 800; font-size: 1rem; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 6px 14px; cursor: pointer; flex: none; }
+.streak-pill.hot { color: var(--ink); border-color: color-mix(in srgb, #f08a24 50%, var(--line)); background: color-mix(in srgb, #f08a24 12%, var(--surface)); }
+
+.tabbar { position: fixed; inset: auto 0 0 0; z-index: 20; display: grid; grid-template-columns: repeat(3, 1fr); background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); }
+.tabbar button { font: inherit; font-size: .74rem; font-weight: 700; background: none; border: 0; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; cursor: pointer; border-radius: 12px; }
+.tabbar svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tabbar button[aria-current="page"] { color: var(--accent); }
+.tabbar button[aria-current="page"] svg { fill: color-mix(in srgb, var(--accent) 18%, transparent); }
+.tabbar button:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.card-head h2 { font-size: 1.15rem; }
+.card.info { gap: 10px; }
+.card.info > summary { cursor: pointer; font-weight: 800; font-family: var(--display); font-size: 1.05rem; list-style: none; display: flex; justify-content: space-between; }
+.card.info > summary::after { content: "+"; color: var(--accent); font-size: 1.3rem; line-height: 1; }
+.card.info[open] > summary::after { content: "–"; }
+.card.info > summary::-webkit-details-marker { display: none; }
+.card .safety { border: 0; padding: 0; background: none; }
+
+/* Šiandien: pasiruošimas, treniruotės kortelė */
+.ready-top { gap: 14px; }
+.ready .ring { width: 76px; height: 76px; }
+.ready .ring-label b { font-size: 1.6rem; }
+.ready-title { font-size: 1.15rem; }
+.ready-tip { font-size: .92rem; opacity: .92; }
+.day-ov { border-top: 1px solid color-mix(in srgb, var(--bg) 25%, transparent); padding-top: 10px; }
+.day-ov > summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-weight: 800; font-size: .95rem; }
+.day-ov > summary::-webkit-details-marker { display: none; }
+.day-ov > summary::after { content: "›"; margin-left: auto; font-size: 1.3rem; line-height: 1; transition: transform .2s; }
+.day-ov[open] > summary::after { transform: rotate(90deg); }
+.day-ov[open] { display: flex; flex-direction: column; gap: 10px; }
+.plan-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.kicker { font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); font-weight: 800; }
+.plan-title { font-size: 1.6rem; }
+.plan-meta { color: var(--muted); font-weight: 700; }
+.plan-why { font-size: .92rem; background: var(--accent-soft); border-radius: 12px; padding: 8px 12px; }
+.plan-ex > summary { cursor: pointer; font-weight: 700; color: var(--accent); }
+.plan-ex ol { margin: 8px 0 0; padding-left: 22px; display: grid; gap: 4px; }
+.plan-ex li span { font-weight: 600; }
+.plan-ex li small { color: var(--muted); margin-left: 6px; }
+.seg-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.plan-card #letsgo { width: 100%; margin-top: 4px; }
+.plan-ex { border-top: 1px solid var(--line); padding-top: 10px; }
+.opts-body { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.opt-label { font-size: .8rem; font-weight: 700; color: var(--muted); }
+.todo { display: flex; flex-direction: column; gap: 16px; }
+.todo > .linkbtn { align-self: center; color: var(--muted); }
+
+/* Atlikta šiandien */
+.done-card { background: var(--accent); color: var(--bg); border-radius: 24px; padding: 36px 22px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; min-height: 52vh; justify-content: center; }
+.done-card h2 { font-size: clamp(2rem, 9vw, 2.6rem); }
+.done-card p { font-size: 1.08rem; max-width: 34ch; }
+.done-check svg { width: 96px; height: 96px; fill: none; stroke: var(--bg); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.done-check circle { stroke-dasharray: 151; stroke-dashoffset: 151; animation: draw .7s ease-out forwards; opacity: .5; }
+.done-check path { stroke-dasharray: 40; stroke-dashoffset: 40; animation: draw .45s .55s ease-out forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.milestone { font-weight: 800; font-size: 1rem; background: var(--bg); color: var(--accent); border-radius: 12px; padding: 8px 12px; animation: pop .5s cubic-bezier(.2, 1.4, .4, 1); }
+
+/* Pažanga */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 2px; }
+.stat-ico { font-size: 1.2rem; }
+.stat b { font-family: var(--display); font-size: 2rem; line-height: 1.1; }
+.stat span:not(.stat-ico) { font-weight: 700; font-size: .9rem; }
+.stat small { color: var(--muted); font-size: .8rem; }
+.stat-bar { display: block; height: 6px; border-radius: 3px; background: var(--accent-soft); margin-top: 6px; overflow: hidden; }
+.stat-bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.stats .days { margin: 0; }
+.day { cursor: default; }
+.history ul { color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen, .done-check circle, .done-check path, .milestone { animation: none !important; stroke-dashoffset: 0 !important; }
+}

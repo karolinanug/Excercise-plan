@@ -68,12 +68,12 @@ const EX = [
   { name: "Išsirietimas iš vaiko pozos", en: "Child's pose to cobra", why: "Švelniai judina juosmenį ir krūtinės ląstą į abi puses, ilgina pilvo ir klubo priekio raumenis.",
     steps: ["Atsisėsk ant kulnų, rankas ištiesk į priekį ant grindų, krūtinė arti grindų.", "Delnų nejudindama slink pirmyn: dubuo leidžiasi prie grindų, krūtinė kyla aukštyn.", "Išsirietime pečiai nuleisti, žvilgsnis į priekį.", "Pilna amplitude grįžk atgal ant kulnų."],
     mistakes: ["Pečiai pakyla prie ausų.", "Juosmenyje jauti spaudimą ar skausmą. Kelk krūtinę mažiau.", "Skubi. Judesys sklandus, be trūkčiojimų."],
-    dose: ["2 serijos × 10 kartų", "2 serijos × 12 kartų"], sets: [2,2], secs: [45,55], sides: false, cue: "Iš vaiko pozos slink pirmyn, krūtinė aukštyn, ir grįžk atgal.",
+    dose: ["2 serijos × 6 lėti kartai", "2 serijos × 7 lėti kartai"], sets: [2,2], secs: [66,77], sides: false, cue: "Lėtai iš vaiko pozos slink pirmyn, krūtinė aukštyn, palaikyk ir lėtai grįžk atgal.",
     group: "mob", setup: "Atsisėsk ant kulnų, rankas ištiesk į priekį ant grindų.", anim: "childcobra" },
   { name: "Gilus pritūpimas", en: "Deep squat hold", why: "Didina klubų, kelių ir čiurnų paslankumą, švelniai ištempia dubens sritį.",
-    steps: ["Atsistok, pėdos pečių plotyje, pirštai šiek tiek į šonus.", "Pritūpk kuo giliau, kulnai lieka ant grindų.", "Išbūk pritūpime, ramiai kvėpuok.", "Jei patogu, pakaitomis kelk tiesias rankas aukštyn."],
+    steps: ["Atsistok, pėdos pečių plotyje, pirštai šiek tiek į šonus.", "Pritūpk kuo giliau, kulnai lieka ant grindų.", "Išbūk pritūpime, ramiai kvėpuok.", "Balso ritmu kelk tiesias rankas aukštyn ir nuleisk (kas 4 sekundes)."],
     mistakes: ["Kulnai kyla nuo grindų. Pasidėk po kulnais sulankstytą rankšluostį arba tupk mažiau.", "Nugara stipriai apvalėja. Krūtinė aukštyn.", "Keliai krenta į vidų."],
-    dose: ["2 kartai × 30 s", "2 kartai × 45 s, su rankų kėlimu"], sets: [2,2], secs: [30,45], sides: false, cue: "Pritūpk kuo giliau, kulnai prie grindų, kvėpuok, kelk rankas.",
+    dose: ["2 kartai × 32 s, su rankų kėlimu", "2 kartai × 48 s, su rankų kėlimu"], sets: [2,2], secs: [32,48], sides: false, cue: "Pritūpk kuo giliau, kulnai prie grindų. Rankos aukštyn ir žemyn pagal balsą.",
     group: "mob", setup: "Atsistok, pėdos pečių plotyje.", anim: "squat" },
   { name: "Tiltelis su pasisukimu", en: "Crab reach", why: "Atveria krūtinę ir pečius, judina krūtininę stuburo dalį ir kartu įjungia sėdmenis.",
     steps: ["Atsisėsk, kelius sulenk, pėdos ant grindų, rankomis atsiremk už nugaros.", "Lėtai kelk dubenį ir viena ranka siek per viršų kuo toliau už galvos, liemuo šiek tiek pasisuka.", "Palaikyk 3 sekundes ir lėtai grįžk į sėdimą padėtį.", "Atlikusi kartojimus viena ranka, kartok kita."],
@@ -304,17 +304,14 @@ function weekStats() {
 }
 function renderWeek() {
   const log = loadLog(), dates = weekDates(), today = weekday(new Date()), w = weekStats();
-  $("week").textContent = `Šią savaitę: ${w.total}/${WEEK_GOAL}`;
+  $("week").textContent = `${w.total}/${WEEK_GOAL}`;
   $("days").innerHTML = WEEKDAYS.map((name, i) => {
     const done = log.filter(x => x.d === dates[i] && x.t !== "relax");
     const marks = done.map(x => (DAYTYPE[x.t] || {}).mark || "✓").join("");
     return `<span class="day${i === today ? " today" : ""}${done.length ? " done" : ""}" title="${name}${done.length ? ": " + done.map(x => TYPE_NAME(x.t)).join(", ") : ""}">
-      <b>${WD_SHORT[i]}</b><i aria-hidden="true">${marks || (i === today ? "•" : "·")}</i></span>`;
+      <b>${WD_SHORT[i]}</b><i aria-hidden="true">${marks || (i < today ? "–" : "")}</i></span>`;
   }).join("");
-  const list = sessionList(dayType()), min = Math.round(buildSteps(level, list).reduce((a, s) => a + s.secs, 0) / 60);
-  $("dayinfo").innerHTML = `<b>Šiandien${override ? "" : " siūloma"}:</b> ${DAYTYPE[dayType()].name.toLowerCase()} – ${plural(list.length, "pratimas", "pratimai", "pratimų")}, apie ${min} min.${easy ? " Lengvesnė versija." : ""}
-    <br><span class="wk">Per savaitę: pilvas ${w.by.core}, sėdmenys ${w.by.glute}, atsigavimas ${w.by.recovery}.</span>`;
-  document.querySelectorAll("[data-type]").forEach(b => b.setAttribute("aria-pressed", b.dataset.type === dayType()));
+  $("weekby").textContent = `P – pilvo diena (${w.by.core}) · S – sėdmenų (${w.by.glute}) · A – atsigavimo (${w.by.recovery})`;
 }
 // Kito tipo pasirinkimas (pasisveikinimo ekrane ir laikmatyje)
 function chooseType(t) {
@@ -680,15 +677,19 @@ function milestones(a, b) {
   return m;
 }
 function renderStreak() {
-  const s = streaks(), left = Math.max(0, WEEK_GOAL - s.thisWeek);
-  const parts = [`🔥 ${s.day} ${s.day === 1 ? "diena" : s.day % 10 === 0 || (s.day % 100 > 10 && s.day % 100 < 20) ? "dienų" : "dienos"} iš eilės`,
-    `${s.week} sav. su tikslu iš eilės`, left ? `šią savaitę dar ${left} iki tikslo` : "šios savaitės tikslas pasiektas ✓"];
-  $("streak").innerHTML = parts.map((p, i) => `<span class="st${i === 0 && s.day ? " hot" : ""}">${p}</span>`).join("");
-  $("streakbest").textContent = s.total ? `Rekordai: ${s.dayBest} d. iš eilės, ${s.weekBest} sav. su tikslu iš eilės. Iš viso treniruočių: ${s.total}.` : "";
-  const today = loadLog().find(x => x.d === dayKey(new Date()) && x.m && x.m.length);
-  $("milestone").textContent = today ? "🏅 " + today.m.join(" ") : "";
-  $("milestone").hidden = !today;
+  const s = streaks(), left = Math.max(0, WEEK_GOAL - s.thisWeek), pill = $("streakpill");
+  pill.innerHTML = `<span aria-hidden="true">🔥</span> <b>${s.day}</b>`;
+  pill.title = `${s.day} d. iš eilės`;
+  pill.classList.toggle("hot", s.day > 0);
+  const tile = (ico, val, label, sub, extra = "") => `<div class="stat"><span class="stat-ico" aria-hidden="true">${ico}</span><b>${val}</b><span>${label}</span>${sub ? `<small>${sub}</small>` : ""}${extra}</div>`;
+  $("statgrid").innerHTML =
+    tile("🔥", s.day, "d. iš eilės", `rekordas ${s.dayBest}`) +
+    tile("⭐", s.week, "sav. su tikslu iš eilės", `rekordas ${s.weekBest}`) +
+    tile("🎯", `${s.thisWeek}/${WEEK_GOAL}`, "šią savaitę", left ? `dar ${left} iki tikslo` : "tikslas pasiektas ✓",
+      `<i class="stat-bar"><i style="width:${Math.min(100, 100 * s.thisWeek / WEEK_GOAL)}%"></i></i>`) +
+    tile("💪", s.total, "treniruočių iš viso", "");
   $("markdone").hidden = s.doneToday;
+  return s;
 }
 // Treniruotė padaryta be laikmačio (arba neužpildytas įsivertinimas) – pažymima ranka
 $("markdone").onclick = () => {
@@ -736,8 +737,8 @@ function reset() {
 function setLevel(l) {
   level = l;
   try { localStorage.setItem("karolina-level", String(l)); } catch (e) {}
-  ["lvl1", "hl1"].forEach(b => $(b).setAttribute("aria-pressed", l === 0));
-  ["lvl2", "hl2"].forEach(b => $(b).setAttribute("aria-pressed", l === 1));
+  $("hl1").setAttribute("aria-pressed", l === 0);
+  $("hl2").setAttribute("aria-pressed", l === 1);
   renderCards(); reset(); renderWeek();
 }
 $("videolist").addEventListener("click", ev => {
@@ -758,6 +759,8 @@ $("rateform").addEventListener("change", ev => {
 });
 $("histcopy").onclick = copyHistory;
 // Pasisveikinimas: šiandienos planas ir mygtukas „Pradėkime“ (paleidžia balsą ir treniruotę)
+const PRAISE = ["Šaunuolė!", "Puikiai padirbėta!", "Taip ir toliau!", "Nuostabu!", "Dar vienas žingsnis pirmyn!"];
+const MONTHS = ["sausio", "vasario", "kovo", "balandžio", "gegužės", "birželio", "liepos", "rugpjūčio", "rugsėjo", "spalio", "lapkričio", "gruodžio"];
 function renderHello() {
   // Šiandienos pasiūlymas perskaičiuojamas (pvz., atėjus Garmin duomenims), jei treniruotė nevyksta
   if (!(idx >= 0 && idx < steps.length)) {
@@ -765,22 +768,38 @@ function renderHello() {
     refreshPlan();
     if (before !== dayType() + easy) reset();
   }
-  const log = loadLog(), w = weekStats(), type = dayType();
-  const doneToday = log.some(x => x.d === dayKey(new Date()) && x.t !== "relax");
-  const list = sessionList(type), min = Math.round(buildSteps(level, list).reduce((a, s) => a + s.secs, 0) / 60);
-  const why = override ? "" : plan.why === "garmin" ? " Garmin rodo, kad kūnui šiandien reikia daugiau poilsio."
-    : plan.why === "rotation" ? " Po stiprinimo dienų – atsigavimas." : "";
-  $("hellotext").textContent = (doneToday ? "Šiandienos mankšta jau atlikta, šaunuolė! Jei nori, gali pakartoti. " : "") +
-    `Šiandien ${override ? "" : "siūlau: "}${DAYTYPE[type].name.toLowerCase()}, ${plural(list.length, "pratimas", "pratimai", "pratimų")}, apie ${min} min.${easy ? " Lengvesnė versija." : ""}${why}` +
-    ` Šią savaitę jau atlikai ${w.total} iš ${WEEK_GOAL} treniruočių.`;
+  const now = new Date(), log = loadLog(), type = dayType();
+  $("todaydate").textContent = `${WEEKDAYS[weekday(now)]}, ${MONTHS[now.getMonth()]} ${now.getDate()} d.`;
+  const s = renderStreak();
+  renderWeek();
+  // Šiandien jau atlikta – tik pagyrimas
+  const doneEntry = log.filter(x => x.d === dayKey(now) && x.t !== "relax").pop();
+  $("donecard").hidden = !doneEntry; $("todo").hidden = !!doneEntry;
+  if (doneEntry) {
+    const left = Math.max(0, WEEK_GOAL - s.thisWeek);
+    $("donetitle").textContent = PRAISE[(now.getDate() + now.getMonth()) % PRAISE.length];
+    $("donetext").textContent = `${TYPE_NAME(doneEntry.t).replace(/ \(.*\)/, "")} atlikta.` + (s.day > 1 ? ` 🔥 ${s.day} d. iš eilės.` : "") +
+      (left ? ` Iki savaitės tikslo liko ${left}.` : " Savaitės tikslas pasiektas!") + " Dabar ilsėkis – rytoj tęsim.";
+    const m = log.find(x => x.d === dayKey(now) && x.m && x.m.length);
+    $("milestone").textContent = m ? "🏅 " + m.m.join(" ") : "";
+    $("milestone").hidden = !m;
+  }
+  // Šiandienos treniruotės kortelė
+  const list = sessionList(type), min = Math.round(buildSteps(level, list).reduce((a, x) => a + x.secs, 0) / 60);
+  $("plantitle").textContent = DAYTYPE[type].name.replace(" (paslankumas ir tempimai)", "");
+  $("planmeta").textContent = `${plural(list.length, "pratimas", "pratimai", "pratimų")} · apie ${min} min. · ${level + 1} lygis${easy ? " · lengvesnė" : ""}`;
+  const why = override ? "" : plan.why === "garmin" ? "Garmin rodo, kad kūnui šiandien reikia daugiau poilsio."
+    : plan.why === "rotation" ? "Po stiprinimo dienų – atsigavimas." : "";
+  $("planwhy").textContent = why; $("planwhy").hidden = !why;
+  $("planexsum").textContent = `Pratimai (${list.length})`;
+  $("planlist").innerHTML = list.map(i => `<li><span>${esc(EX[i].name)}</span><small>${GROUPS[EX[i].group]}</small></li>`).join("");
   document.querySelectorAll("[data-type]").forEach(b => b.setAttribute("aria-pressed", b.dataset.type === type));
-  renderWeek(); renderStreak();
   renderHealth(type);
   $("voicenote").textContent = !SAY.supported ? "Ši naršyklė nemoka kalbėti, todėl instrukcijos bus rodomos ekrane."
-    : voiceRefused ? "Lietuviško balso nėra, instrukcijos bus rodomos ekrane. iPhone: Nustatymai → Prieinamumas → Šnekamas turinys → Balsai → Lietuvių → atsisiųsk balsą ir atnaujink puslapį. Android: Nustatymai → Sistema → Kalbos ir įvestis → Teksto į kalbą išvestis → lietuvių kalba."
-    : !SAY.available ? `Puslapis nerado lietuviško balso sąraše (naršyklė mato balsų: ${SAY.count}). Paspausk „Išbandyti balsą“ – jei išgirsi lietuviškai, balsą įjungsiu.`
-    : SAY.on ? "Įsijunk garsą: vesiu tave balsu per visą mankštą, nereikės nei skaičiuoti, nei žiūrėti į ekraną."
-    : "Balsas išjungtas – instrukcijos bus rodomos ekrane. Įjungti galima laikmatyje.";
+    : voiceRefused ? "Lietuviško balso nėra, instrukcijos bus rodomos ekrane."
+    : !SAY.available ? `Puslapis nerado lietuviško balso (naršyklė mato balsų: ${SAY.count}). Paspausk „Išbandyti balsą“.`
+    : SAY.on ? "Įsijunk garsą – vesiu balsu per visą treniruotę."
+    : "Balsas išjungtas – instrukcijos bus rodomos ekrane.";
   document.body.classList.toggle("voice-on", SAY.active);
   $("vtestbox").hidden = !SAY.supported || SAY.available || voiceRefused;
   $("voice").hidden = !SAY.available;
@@ -803,11 +822,11 @@ function renderHealth(type) {
   $("healthnote").hidden = !p.length;
   $("garminkey").hidden = gs !== "need-key" && gs !== "bad-key";
   renderReady(t, r, type);
-  $("letsgo").textContent = easy ? "Pradėkime · lengvesnė versija" : "Pradėkime";
+  $("letsgo").textContent = easy ? "Pradėti · lengvesnė versija" : "Pradėti";
 }
 function renderReady(t, r, type) {
   const box = $("ready");
-  box.hidden = !r;
+  box.hidden = !r; $("trends").hidden = !r;
   if (!r) return;
   const sc = r.score, fg = $("ringfg");
   $("readyscore").textContent = sc;
@@ -837,9 +856,9 @@ function renderReady(t, r, type) {
   // Pasiūlymas ir mygtukai
   const tip = [], acts = [];
   const weak = r.parts.filter(p => p.s < 45).map(p => `${{ sleep: "miegas", rhr: "ramybės pulsas" }[p.key] || p.label} ${p.value}`);
-  if (sc < 45) tip.push(`${weak.length ? weak.join(", ") + ". " : ""}Šiandien siūlau atsigavimo dieną: paslankumas ir tempimai.`);
-  else if (!override && plan.type === "recovery") tip.push("Vakar buvo įtempta diena, todėl šiandien siūlau atsigavimo dieną: paslankumas ir tempimai.");
-  else if (sc < 70) tip.push(`Stiprinimas šiandien lengvesnis: viena serija mažiau ir ilgesnis poilsis.${level ? " Geriau ir 1 lygis." : ""}`);
+  if (sc < 45) tip.push(weak.length ? weak.join(", ") + "." : "Kūnui reikia poilsio.");
+  else if (!override && plan.type === "recovery") tip.push("Vakar buvo įtempta diena.");
+  else if (sc < 70) tip.push(`Stiprinimas šiandien lengvesnis.${level ? " Geriau 1 lygis." : ""}`);
   else tip.push("Puiki diena treniruotei.");
   if (sc < 70 && level) acts.push(`<button class="btn ghost" type="button" data-act="lvl1">Rinktis 1 lygį</button>`);
   if (sc >= 70 && !level) {
@@ -850,7 +869,6 @@ function renderReady(t, r, type) {
   const ov = HEALTH.overview();
   if (new Date().getHours() >= 17 || (ov && ov.load === "stress")) {
     const min = Math.max(1, Math.round(buildSteps(level, sessionList("relax"), false).reduce((a, s) => a + s.secs, 0) / 60));
-    if (ov && ov.load === "stress") tip.push("Vakare skirk kelias minutes atsipalaidavimui.");
     acts.push(`<button class="btn ghost" type="button" data-act="relax">Atsipalaidavimas · ${min} min.</button>`);
   }
   acts.push(`<button class="seg" type="button" data-act="easy" aria-pressed="${easy}">Lengvesnė versija</button>`);
@@ -957,9 +975,14 @@ let voiceRefused = false;
 $("vtest").onclick = () => { SAY.test(); $("vask").hidden = false; };
 $("vyes").onclick = () => { SAY.force = true; SAY.on = true; $("vask").hidden = true; renderHello(); if (!(idx >= 0 && idx < steps.length)) reset(); };
 $("vno").onclick = () => { voiceRefused = true; $("vask").hidden = true; renderHello(); };
-// Režimai: „hello“ – tik pasisveikinimas, „workout“ – vienas pratimas, „browse“ – visas puslapis
-function setMode(m) { document.body.dataset.mode = m; window.scrollTo(0, 0); }
-function goHome() { closeRate(); override = null; reset(); MEDIA.stop(); renderHello(); renderWeek(); setMode("hello"); }
+// Ekranai: „today“, „stats“, „ex“ (apatinė juosta) ir „workout“ – treniruotė per visą ekraną
+function setMode(m) {
+  document.body.dataset.mode = m; window.scrollTo(0, 0);
+  document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === m) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+}
+document.querySelectorAll("[data-tab]").forEach(b => { b.onclick = () => setMode(b.dataset.tab); });
+$("streakpill").onclick = () => setMode("stats");
+function goHome() { closeRate(); override = null; reset(); MEDIA.stop(); renderHello(); setMode("today"); }
 // type – „relax“ arba null (pagal savaitės planą)
 function startWorkout(type = null) {
   if (running) return;
@@ -968,7 +991,6 @@ function startWorkout(type = null) {
   reset(); setMode("workout"); start();
 }
 $("letsgo").onclick = () => startWorkout(null);
-$("browse").onclick = () => setMode("browse");
 $("quit").onclick = () => {
   if (idx >= 0 && idx < steps.length && !confirm("Nutraukti treniruotę? Ji nebus įskaityta.")) return;
   goHome();
@@ -988,8 +1010,6 @@ $("skip").onclick = () => { if (idx >= 0 && idx < steps.length) next(); };
 $("reset").onclick = reset;
 $("restplus").onclick = extendRest;
 $("restend").onclick = endRest;
-$("lvl1").onclick = () => setLevel(0);
-$("lvl2").onclick = () => setLevel(1);
 // Jei svetainė jau atidaryta, „Shortcut“ nuoroda gali pakeisti tik # dalį – puslapis neperkraunamas
 window.addEventListener("hashchange", () => { if (HEALTH.readLink()) renderHello(); });
 document.addEventListener("visibilitychange", () => {

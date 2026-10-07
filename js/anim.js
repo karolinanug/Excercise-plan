@@ -159,8 +159,8 @@ const ANIM = (() => {
       const cobra = { hip: [116, 93], sh: [150, 74], hd: [163, 61], a1: [158, 98, 1], b: 5,
         l1: { k: [90, 98], a: [64, 98], t: [56, 97] } };
       return [
-        [child, 1800, 800, "Sėdmenys ant kulnų", 0.3],
-        [cobra, 2200, 1200, "Slink pirmyn, krūtinė aukštyn", 1]
+        [child, 4000, 1500, "Lėtai atgal ant kulnų", 0.3],
+        [cobra, 4000, 1500, "Lėtai pirmyn, krūtinė aukštyn", 1]
       ];
     },
     // Gilus pritūpimas, pėdos visu padu ant grindų; rankos kyla aukštyn
@@ -168,8 +168,8 @@ const ANIM = (() => {
       const base = { hip: [88, 86], sh: [104, 52], hd: [110, 35], l1: [100, 98, -1, 0], l2: [98, 98, -1, 0], b: -1,
         a1: [118, 72, -1], a2: [116, 73, -1] };
       return [
-        [base, 1500, 1500, "Gilus pritūpimas · kulnai prie grindų", 0.6],
-        [k(base, { a1: [110, 19, 1], a2: [108, 19, 1], b: 1 }), 1800, 1000, "Rankos aukštyn", 1]
+        [base, 1500, 2500, "Rankos žemyn · kulnai prie grindų", 0.6],
+        [k(base, { a1: [110, 19, 1], a2: [108, 19, 1], b: 1 }), 1500, 2500, "Rankos aukštyn", 1]
       ];
     },
     // Sėdint, rankos už nugaros: dubuo kyla, laisva ranka siekia už galvos

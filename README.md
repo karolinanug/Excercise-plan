@@ -2,6 +2,16 @@
 
 Statinė svetainė su namų mankštos planu: 21 pratimas (paslankumas, pilvas, sėdmenys, tempimas), laikmatis, kuris pats veda per treniruotę, instrukcijos, dažnos klaidos ir YouTube video.
 
+## Ekranai
+
+Svetainė veikia kaip programėlė su apatine juosta:
+
+- **Šiandien** – pasiruošimo kortelė (Garmin balas, „Praeita para“ išskleidžiama), šiandienos treniruotė su mygtuku „Pradėti“; pratimų sąrašas ir „Keisti treniruotę“ (tipas, lygis, lengvesnė versija, atsipalaidavimas) paslėpti po išskleidžiamais skyreliais. Atlikus treniruotę rodomas tik pagyrimas.
+- **Pažanga** – serijos ir rekordai, ši savaitė, Garmin tendencijos (14 dienų grafikai), įrašai ir jų kopijavimas kineziterapeutui.
+- **Pratimai** – visi pratimai su animacijomis, kaip veikia programa, saugumas, video.
+
+Treniruotė rodoma per visą ekraną, be apatinės juostos.
+
 ## Failai
 
 - `index.html` – puslapis

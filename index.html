@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Karolinos mankštos planas</title>
-<meta name="description" content="Namų mankštos planas su laikmačiu: 10 saugių pratimų liemeniui, sėdmenims ir dubens padėčiai, su instrukcijomis, klaidomis, animacijomis ir video.">
+<meta name="description" content="Namų mankštos planas su laikmačiu: 21 pratimas liemeniui, sėdmenims ir dubens padėčiai, dienų ratas pagal Garmin, su instrukcijomis, klaidomis, animacijomis ir video.">
 <meta name="theme-color" content="#23676b">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2323676b'/%3E%3Cpath d='M9 22c4-1 6-4 7-6s3-5 7-6' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://www.youtube-nocookie.com">
@@ -13,76 +13,128 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Manrope:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-mode="hello">
+<body data-mode="today">
 <div class="wrap">
-  <section class="hello" aria-labelledby="helloh">
-    <h1 id="helloh">Labas, Karolina!</h1>
-    <p class="hello-text" id="hellotext"></p>
-    <div class="streak" id="streak" aria-live="polite"></div>
-    <p class="hello-note" id="streakbest"></p>
-    <p class="milestone" id="milestone" hidden></p>
-    <div class="ready" id="ready" hidden>
-      <div class="ready-top">
-        <div class="ring">
-          <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fg" id="ringfg" cx="60" cy="60" r="52"/></svg>
-          <div class="ring-label"><b id="readyscore">–</b><span>iš 100</span></div>
+
+  <!-- ===== ŠIANDIEN ===== -->
+  <section class="screen today" id="scr-today" aria-labelledby="helloh">
+    <header class="top">
+      <div><p class="top-date" id="todaydate"></p><h1 id="helloh">Labas, Karolina!</h1></div>
+      <button class="streak-pill" id="streakpill" type="button" aria-label="Serija – atidaryti pažangą"></button>
+    </header>
+
+    <!-- Šiandien jau atlikta: tik pagyrimas -->
+    <div class="done-card" id="donecard" hidden>
+      <div class="done-check" aria-hidden="true"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27l8 8 15-17"/></svg></div>
+      <h2 id="donetitle">Šaunuolė!</h2>
+      <p id="donetext"></p>
+      <p class="milestone" id="milestone" hidden></p>
+    </div>
+
+    <div class="todo" id="todo">
+      <p class="hello-health" id="healthnote" hidden></p>
+      <button class="btn ghost" id="garminkey" type="button" hidden>Įvesti Garmin raktą</button>
+
+      <div class="ready" id="ready" hidden>
+        <div class="ready-top">
+          <div class="ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fg" id="ringfg" cx="60" cy="60" r="52"/></svg>
+            <div class="ring-label"><b id="readyscore">–</b></div>
+          </div>
+          <div class="ready-head">
+            <p class="ready-kicker">Pasiruošimas</p>
+            <p class="ready-title" id="readytitle"></p>
+            <p class="ready-tip" id="readytip"></p>
+          </div>
         </div>
-        <div class="ready-head">
-          <p class="ready-kicker">Šiandienos pasiruošimas</p>
-          <p class="ready-title" id="readytitle"></p>
+        <details class="day-ov" id="dayov" hidden>
+          <summary><span>Praeita para</span><span class="ov-chip" id="loadchip"></span><span class="ov-chip" id="restchip"></span></summary>
+          <p class="ov-sum" id="ovsum"></p>
+          <div class="bbchart" id="bbchart"></div>
+          <div class="ov-cols">
+            <div class="ov-col"><p class="ov-h">Vakar diena</p><ul id="ovday"></ul></div>
+            <div class="ov-col"><p class="ov-h">Naktis</p><ul id="ovnight"></ul></div>
+          </div>
           <p class="ready-when" id="readywhen"></p>
+        </details>
+      </div>
+
+      <div class="plan-card">
+        <p class="kicker">Šiandienos treniruotė</p>
+        <h2 class="plan-title" id="plantitle"></h2>
+        <p class="plan-meta" id="planmeta"></p>
+        <p class="plan-why" id="planwhy" hidden></p>
+        <button class="btn primary big" id="letsgo" type="button">Pradėti</button>
+        <details class="plan-ex">
+          <summary id="planexsum">Pratimai</summary>
+          <ol id="planlist"></ol>
+        </details>
+        <details class="plan-ex plan-opts">
+          <summary>Keisti treniruotę</summary>
+          <div class="opts-body">
+            <p class="opt-label">Dienos tipas</p>
+            <div class="seg-row" role="group" aria-label="Treniruotės tipas">
+              <button class="seg" type="button" data-type="core" aria-pressed="false">Pilvas</button>
+              <button class="seg" type="button" data-type="glute" aria-pressed="false">Sėdmenys</button>
+              <button class="seg" type="button" data-type="recovery" aria-pressed="false">Atsigavimas</button>
+            </div>
+            <p class="opt-label">Lygis</p>
+            <div class="seg-row" role="group" aria-label="Lygis">
+              <button class="seg" id="hl1" type="button" aria-pressed="true">1 lygis</button>
+              <button class="seg" id="hl2" type="button" aria-pressed="false">2 lygis</button>
+            </div>
+            <div class="ready-actions" id="readyactions"></div>
+          </div>
+        </details>
+        <p class="hello-note" id="voicenote"></p>
+        <div class="vtest" id="vtestbox" hidden>
+          <button class="btn ghost" id="vtest" type="button">Išbandyti balsą</button>
+          <span class="vask" id="vask" hidden>Ar girdėjai lietuviškai?
+            <button class="btn ghost" id="vyes" type="button">Taip</button>
+            <button class="btn ghost" id="vno" type="button">Ne</button>
+          </span>
         </div>
       </div>
-      <section class="day-ov" id="dayov" aria-labelledby="dayovh" hidden>
-        <h3 id="dayovh">Praeita para</h3>
-        <div class="bbchart" id="bbchart"></div>
-        <div class="ov-cols">
-          <div class="ov-col"><p class="ov-h">Vakar diena <span class="ov-chip" id="loadchip"></span></p><ul id="ovday"></ul></div>
-          <div class="ov-col"><p class="ov-h">Naktis <span class="ov-chip" id="restchip"></span></p><ul id="ovnight"></ul></div>
-        </div>
-        <p class="ov-sum" id="ovsum"></p>
-      </section>
-      <div class="tiles" id="tiles"></div>
-      <div class="spark" id="spark" hidden></div>
-      <p class="ready-tip" id="readytip"></p>
-      <div class="ready-actions" id="readyactions"></div>
+      <button class="linkbtn" id="markdone" type="button">Šiandien jau mankštinausi – pažymėti</button>
     </div>
-    <p class="hello-health" id="healthnote" hidden></p>
-    <button class="btn ghost" id="garminkey" type="button" hidden>Įvesti Garmin raktą</button>
-<div class="hello-level" role="group" aria-label="Treniruotės tipas">
-      <button class="seg" type="button" data-type="core" aria-pressed="false">Pilvas</button>
-      <button class="seg" type="button" data-type="glute" aria-pressed="false">Sėdmenys</button>
-      <button class="seg" type="button" data-type="recovery" aria-pressed="false">Atsigavimas</button>
-    </div>
-    <div class="hello-level" role="group" aria-label="Lygis">
-      <button class="seg" id="hl1" type="button" aria-pressed="true">1 lygis</button>
-      <button class="seg" id="hl2" type="button" aria-pressed="false">2 lygis</button>
-    </div>
-    <button class="btn primary big" id="letsgo" type="button">Pradėkime</button>
-    <button class="btn ghost" id="markdone" type="button">Šiandien jau mankštinausi – pažymėti</button>
-    <p class="hello-note" id="voicenote"></p>
-    <div class="vtest" id="vtestbox" hidden>
-      <button class="btn ghost" id="vtest" type="button">Išbandyti balsą</button>
-      <span class="vask" id="vask" hidden>Ar girdėjai lietuviškai?
-        <button class="btn ghost" id="vyes" type="button">Taip</button>
-        <button class="btn ghost" id="vno" type="button">Ne</button>
-      </span>
-    </div>
-    <button class="linkbtn" id="browse" type="button">Peržiūrėti visą planą, pratimus ir įrašus</button>
   </section>
 
-  <header>
-    <p class="eyebrow">Namų mankšta · tik kilimėlis</p>
-    <h2 class="title">Karolinos mankštos planas</h2>
-    <p class="lead">Apie <span data-dur="0">24</span> minučių programa (2 lygyje apie <span data-dur="1">36</span> min.) liemens, sėdmenų ir laikysenos raumenims stiprinti. Paspausk „Pradėti“, ir puslapis pats ves per visus pratimus: prieš kiekvieną parodys, kaip jis daromas, tada skaičiuos laiką ir pereis prie kito. Nieko spaudinėti nereikia.</p>
-    <div class="facts">
-      <span class="chip">4 treniruotės per savaitę</span>
-      <span class="chip">1 lygis ~<span data-dur="0">24</span> min. · 2 lygis ~<span data-dur="1">36</span> min.</span>
-      <span class="chip">Pradedančiajai</span>
-      <span class="chip">Abi pusės vienodai</span>
-    </div>
-  </header>
+  <!-- ===== PAŽANGA ===== -->
+  <section class="screen stats" id="scr-stats" aria-labelledby="statsh">
+    <header class="top"><h1 id="statsh">Pažanga</h1></header>
+    <div class="stat-grid" id="statgrid"></div>
+    <section class="card" aria-labelledby="weekh">
+      <div class="card-head"><h2 id="weekh">Ši savaitė</h2><span class="week" id="week"></span></div>
+      <div class="days" id="days" aria-label="Savaitės dienos"></div>
+      <p class="legend" id="weekby"></p>
+    </section>
+    <section class="card accent" id="trends" aria-labelledby="trendh" hidden>
+      <div class="card-head"><h2 id="trendh">Garmin tendencijos</h2><span class="legend">paspausk – 14 d. grafikas</span></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="spark" id="spark" hidden></div>
+    </section>
+    <section class="card history" id="history" aria-labelledby="histh">
+      <div class="card-head"><h2 id="histh">Mano įrašai</h2></div>
+      <div id="histlist"></div>
+      <button class="btn ghost" id="histcopy" type="button">Kopijuoti įrašus (kineziterapeutui)</button>
+    </section>
+  </section>
 
+  <!-- ===== PRATIMAI ===== -->
+  <section class="screen library" id="scr-ex" aria-labelledby="exlist">
+    <header class="top"><h1 id="exlist">Pratimai</h1></header>
+    <p class="lead">Kiekvienos treniruotės trukmė – apie <span data-dur="0">24</span> min. (2 lygyje apie <span data-dur="1">36</span> min.). Animaciją sustabdysi ar paleisi ją paspaudusi.</p>
+    <details class="card info">
+      <summary>Kaip veikia programa</summary>
+    <div class="schedule">
+      <div><b>Kiekviena treniruotė</b><span>Kvėpavimas → paslankumas → stiprinimas → tempimas. Prieš kiekvieną seriją balsas pasako pratimą ir kaip atsigulti, suskaičiuoja 5 sekundes ir sako „Pradedam“.</span></div>
+      <div><b>Dienų ratas</b><span>Pilvo ir liemens diena → sėdmenų diena → atsigavimo diena (paslankumas ir tempimai). Paslankumo, sėdmenų ir tempimo pratimai kas kartą keičiasi, kad per savaitę visi būtų atlikti panašiai dažnai. Tikslas – 4 treniruotės per savaitę.</span></div>
+      <div><b>Pagal Garmin</b><span>Prastai pailsėjus (pasiruošimas žemiau 45) arba po įtemptos dienos siūloma atsigavimo diena, vidutiniškai pailsėjus – lengvesnis stiprinimas. Dienos tipą visada gali pasirinkti pati.</span></div>
+      <div><b>Pirmos 1–2 savaitės · 1 lygis</b><span>Naujus pratimus pirmą savaitę tik išbandyk ir stebėk, kaip reaguoja kūnas. 2 lygis – kai 1 lygis lengvas ir be skausmo.</span></div>
+    </div>
+    </details>
+    <details class="card info">
+      <summary>Prieš pradedant: saugumas</summary>
   <div class="safety" role="note">
     <h2>Prieš pradedant</h2>
     <ul>
@@ -92,38 +144,45 @@
       <li>Kvėpuok visą laiką, nesulaikyk kvapo. Geriau mažiau kartų, bet taisyklingai.</li>
     </ul>
   </div>
-
-  <section aria-labelledby="sched">
-    <h2 id="sched">Kaip kartoti</h2>
-    <div class="schedule">
-      <div><b>Kiekviena treniruotė</b><span>Kvėpavimas → paslankumas → stiprinimas → tempimas. Prieš kiekvieną seriją balsas pasako pratimą ir kaip atsigulti, suskaičiuoja 5 sekundes ir sako „Pradedam“.</span></div>
-      <div><b>Dienų ratas</b><span>Pilvo ir liemens diena → sėdmenų diena → atsigavimo diena (paslankumas ir tempimai). Paslankumo, sėdmenų ir tempimo pratimai kas kartą keičiasi, kad per savaitę visi būtų atlikti panašiai dažnai. Tikslas – 4 treniruotės per savaitę.</span></div>
-      <div><b>Pagal Garmin</b><span>Prastai pailsėjus (pasiruošimas žemiau 45) arba po įtemptos dienos siūloma atsigavimo diena, vidutiniškai pailsėjus – lengvesnis stiprinimas. Dienos tipą visada gali pasirinkti pati.</span></div>
-      <div><b>Pirmos 1–2 savaitės · 1 lygis</b><span>Naujus pratimus pirmą savaitę tik išbandyk ir stebėk, kaip reaguoja kūnas. 2 lygis – kai 1 lygis lengvas ir be skausmo.</span></div>
+    </details>
+    <div id="cards" class="cards"></div>
+    <details class="card info" id="videos">
+      <summary>Video: kaip daromi pratimai</summary>
+      <p class="lead">Trumpi kineziterapeutų ir trenerių video anglų kalba. Spausk paveikslėlį, ir video pasileis čia pat.</p>
+      <div id="videolist" class="videos"></div>
+    </details>
+    <details class="card info">
+      <summary>Kasdieniai įpročiai ir klausimai kineziterapeutui</summary>
+  <section class="two" aria-label="Kasdieniai įpročiai">
+    <div>
+      <h3>Kasdien, ne tik mankštos metu</h3>
+      <ul>
+        <li>Sėdint kas 30–40 min. atsistok ir pajudėk 1–2 min. Ilgas sėdėjimas trumpina klubo lenkiamuosius raumenis ir didina dubens pasvirimą į priekį.</li>
+        <li>Stovint neužsirakink kelių ir „neįkrisk“ į juosmenį: švelniai įtempk sėdmenis ir pilvą, tarsi užsisagstytum kelnes.</li>
+        <li>Rankinę ar kuprinę nešiok pakaitomis ant abiejų pečių.</li>
+        <li>Miegok ant nugaros arba ant šono, kaitaliodama puses.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Ko paklausti kineziterapeuto</h3>
+      <ul>
+        <li>Ar šie pratimai tinka mano kreivei ir dubens padėčiai?</li>
+        <li>Ar reikia man vienpusių (asimetrinių) korekcinių pratimų? Kurių ir į kurią pusę?</li>
+        <li>Ar yra pratimų, kurių turėčiau vengti?</li>
+        <li>Kaip derinti namų mankštą su reabilitacijos dienomis?</li>
+      </ul>
     </div>
   </section>
+    </details>
+  <footer>Video nuorodos patikrintos 2026-10-05: visos veda į esamus YouTube įrašus, kurių pavadinimai atitinka pratimą. Jei kurio nors video nebebūtų, YouTube paieškoje įvesk pratimo pavadinimą anglų kalba (pateiktas po lietuvišku). Balsas – „Reginutė“ (<a href="https://huggingface.co/RobertasTa/lt_LT-reginute1-medium" target="_blank" rel="noopener">lt_LT-reginute1-medium</a>, CC BY 4.0, apmokyta VU LIEPA korpusu).</footer>
+  </section>
 
-  <section class="player" id="player" aria-labelledby="ptitle">
-    <h2 id="ptitle">Treniruotė su laikmačiu</h2>
-    <div class="days" id="days" role="group" aria-label="Savaitės diena"></div>
-    <p class="legend" aria-hidden="true">P – pilvo diena · S – sėdmenų diena · A – atsigavimo diena</p>
-    <p class="dayinfo" id="dayinfo"></p>
-    <div class="level" role="group" aria-label="Treniruotės tipas">
-      <span>Diena:</span>
-      <button class="seg" type="button" data-type="core" aria-pressed="false">Pilvas</button>
-      <button class="seg" type="button" data-type="glute" aria-pressed="false">Sėdmenys</button>
-      <button class="seg" type="button" data-type="recovery" aria-pressed="false">Atsigavimas</button>
-    </div>
-    <div class="level" role="group" aria-label="Lygis">
-      <span>Lygis:</span>
-      <button class="seg" id="lvl1" data-level="0" aria-pressed="true">1 lygis</button>
-      <button class="seg" id="lvl2" data-level="1" aria-pressed="false">2 lygis</button>
-      <span class="week" id="week" aria-live="polite"></span>
-    </div>
+  <!-- ===== TRENIRUOTĖ ===== -->
+  <section class="player" id="player" aria-label="Treniruotė">
     <div class="stage" aria-live="polite">
       <p class="kind" id="kind">Pasiruošk</p>
-      <p class="now" id="now">Patiesk kilimėlį ir paspausk „Pradėti“</p>
-      <p class="cue" id="cue">Prieš kiekvieną pratimą rodoma animacija, kaip jis daromas. Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.</p>
+      <p class="now" id="now"></p>
+      <p class="cue" id="cue"></p>
     </div>
     <figure class="anim player-anim" id="panim" hidden></figure>
     <div class="clock" id="clock">0:00</div>
@@ -135,19 +194,14 @@
     <div class="controls">
       <button class="btn primary" id="start">Pradėti</button>
       <button class="btn ghost" id="back" title="Pradėti žingsnį iš naujo; paspaudus žingsnio pradžioje – grįžti į ankstesnį">Atgal</button>
-      <button class="btn ghost" id="skip">Praleisti žingsnį</button>
-      <button class="btn ghost" id="reset">Iš naujo</button>
+      <button class="btn ghost" id="skip">Praleisti</button>
+      <button class="btn ghost" id="reset" hidden>Iš naujo</button>
       <button class="btn ghost" id="voice" type="button" aria-pressed="true" hidden>Balsas: įjungtas</button>
       <button class="btn ghost" id="quit" type="button">Baigti</button>
       <button class="btn primary" id="home" type="button" hidden>Į pradžią</button>
     </div>
     <p class="meta" id="meta"></p>
     <button class="btn primary" id="rate" hidden>Įsivertinti ir pažymėti atlikta</button>
-    <details class="history" id="history">
-      <summary>Mano įrašai</summary>
-      <div id="histlist"></div>
-      <button class="btn ghost" id="histcopy" type="button">Kopijuoti įrašus (kineziterapeutui)</button>
-    </details>
   </section>
 
   <dialog class="rate" id="ratebox" aria-labelledby="rateh">
@@ -192,42 +246,13 @@
       </div>
     </form>
   </dialog>
-
-  <section aria-labelledby="exlist">
-    <h2 id="exlist">Pratimai</h2>
-    <p class="lead">Prieš pirmą kartą pažiūrėk kiekvieno pratimo animaciją ir perskaityk dažniausias klaidas. Animaciją sustabdysi ar paleisi ją paspaudusi. Jei nori pamatyti gyvai, kiekvienam pratimui yra video skiltyje „Video“ žemiau.</p>
-    <div id="cards" class="cards"></div>
-  </section>
-
-  <section aria-labelledby="vidh" id="videos">
-    <h2 id="vidh">Video: kaip daromi pratimai</h2>
-    <p class="lead">Trumpi kineziterapeutų ir trenerių video anglų kalba, bet judesys aiškiai matosi. Spausk paveikslėlį, ir video pasileis čia pat.</p>
-    <div id="videolist" class="videos"></div>
-  </section>
-
-  <section class="two" aria-label="Kasdieniai įpročiai">
-    <div>
-      <h3>Kasdien, ne tik mankštos metu</h3>
-      <ul>
-        <li>Sėdint kas 30–40 min. atsistok ir pajudėk 1–2 min. Ilgas sėdėjimas trumpina klubo lenkiamuosius raumenis ir didina dubens pasvirimą į priekį.</li>
-        <li>Stovint neužsirakink kelių ir „neįkrisk“ į juosmenį: švelniai įtempk sėdmenis ir pilvą, tarsi užsisagstytum kelnes.</li>
-        <li>Rankinę ar kuprinę nešiok pakaitomis ant abiejų pečių.</li>
-        <li>Miegok ant nugaros arba ant šono, kaitaliodama puses.</li>
-      </ul>
-    </div>
-    <div>
-      <h3>Ko paklausti kineziterapeuto</h3>
-      <ul>
-        <li>Ar šie pratimai tinka mano kreivei ir dubens padėčiai?</li>
-        <li>Ar reikia man vienpusių (asimetrinių) korekcinių pratimų? Kurių ir į kurią pusę?</li>
-        <li>Ar yra pratimų, kurių turėčiau vengti?</li>
-        <li>Kaip derinti namų mankštą su reabilitacijos dienomis?</li>
-      </ul>
-    </div>
-  </section>
-
-  <footer>Video nuorodos patikrintos 2026-10-05: visos veda į esamus YouTube įrašus, kurių pavadinimai atitinka pratimą. Jei kurio nors video nebebūtų, YouTube paieškoje įvesk pratimo pavadinimą anglų kalba (pateiktas po lietuvišku). Balsas – „Reginutė“ (<a href="https://huggingface.co/RobertasTa/lt_LT-reginute1-medium" target="_blank" rel="noopener">lt_LT-reginute1-medium</a>, CC BY 4.0, apmokyta VU LIEPA korpusu).</footer>
 </div>
+
+<nav class="tabbar" aria-label="Skiltys">
+  <button type="button" data-tab="today" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-4.5v-5.5h-5V21H5a1 1 0 0 1-1-1z"/></svg><span>Šiandien</span></button>
+  <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg><span>Pažanga</span></button>
+  <button type="button" data-tab="ex"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><path d="M12 8v6m0 0-4 6m4-6 4 6M6 10.5h12"/></svg><span>Pratimai</span></button>
+</nav>
 <script src="js/anim.js"></script>
 <script src="audio/frazes.js"></script>
 <script src="js/voice.js"></script>
