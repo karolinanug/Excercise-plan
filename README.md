@@ -6,7 +6,7 @@ Statinė svetainė su namų mankštos planu: 10 pratimų, laikmatis, kuris pats 
 
 - `index.html` – puslapis
 - `css/style.css` – stiliai (šviesi ir tamsi tema, prisitaiko prie telefono)
-- `js/app.js` – pratimų sąrašas (`EX` masyvas viršuje) ir laikmatis. Prieš kiekvieną pratimą 30 s (`PREP`) rodoma jo animacija (arba YouTube video, jei pasirinkta), ji lieka rodoma, kol darai serijas.
+- `js/app.js` – pratimų sąrašas (`EX` masyvas viršuje) ir laikmatis. Prieš pirmą pratimą 15 s (`PREP`), prieš kitus 10 s (`PREP_NEXT`) rodoma jo animacija (arba YouTube video, jei pasirinkta), ji lieka rodoma, kol darai serijas.
 - `js/voice.js` – lietuviškas balsas (įrašytos frazės iš `audio/`, atsarginis – naršyklės kalbos sintezė) ir kiekvieno pratimo ritmo nurodymai (`VOICE`): ką ir po kiek sekundžių pasakyti. Trukmės automatiškai pritaikomos prie serijos ilgio.
 - `js/anim.js` – schematinės pratimų animacijos (SVG). Kiekvienas pratimas `EX` masyve nurodo savo animaciją lauku `anim`, o pozos aprašytos `DEF` objekte sąnarių taškais: `[poza, perėjimo ms, laikymo ms, užuomina, įtampa 0–1]`. `FOCUS` nurodo, kuri kūno vieta paryškinama (dirbantys raumenys) ir kaip ji pavadinta po animacija; spalvos – CSS kintamieji `--fig-*`.
 
@@ -30,9 +30,9 @@ Jokio kompiliavimo nereikia. Lokaliai galima tiesiog atidaryti `index.html` nar�
 
 Paspaudus „Pradėkime“ lietuviškas balsas pasisveikina, papasakoja apie mankštą ir veda per visus pratimus: pasako, kokį pratimą daryti ir kaip atsigulti, kada įkvėpti, kelti, laikyti, grįžti ar keisti pusę.
 
-Ilgi aprašymai (įžanga apie mankštos tikslą ir kiekvieno pratimo žingsniai) sakomi tik tol, kol bus išklausyti iki galo. Vėliau balsas pasako tik pratimo pavadinimą ir pagrindinį nurodymą. Norint vėl išgirsti visą aprašymą, kol balsas jį trumpai sako, reikia paspausti „Atgal“. Išklausyti aprašymai įsimenami naršyklėje (`localStorage` raktas `karolina-heard`); jį ištrynus, aprašymai vėl bus sakomi pilnai.
+Prieš pratimą aprašymas neskaitomas: pasiruošimo laikas (pirmam pratimui 15 s, kitiems 10 s) paskutines 3 s pypsi, pratimui prasidėjus balsas pasako „Pradedam“ ir toliau veda ritmo nurodymais (įkvėpk, kelk, laikyk, grįžk…). Pratimo pavadinimą balsas pasako poilsio metu („Toliau – …“), o pirmojo – pasiruošimo pradžioje. Ilga įžanga apie mankštos tikslą sakoma, kol bus išklausyta iki galo, vėliau – trumpa (`localStorage` raktas `karolina-heard`).
 
-Visos frazės iš anksto įrašytos į `audio/*.mp3` (~12 MB; iš anksto parsiunčiamos tik trumpos, ~3 MB), todėl balsas skamba vienodai visuose įrenginiuose, ir iPhone, kuriame lietuviško balso nėra. Failo pavadinimas – frazės teksto maiša, sąrašas – `audio/frazes.js`. Jei kurios nors frazės įrašo nėra, ji sakoma naršyklės kalbos sinteze (jei įrenginyje yra lietuviškas balsas).
+Visos frazės iš anksto įrašytos į `audio/*.mp3` (~9 MB; iš anksto parsiunčiamos tik trumpos, ~3 MB), todėl balsas skamba vienodai visuose įrenginiuose, ir iPhone, kuriame lietuviško balso nėra. Failo pavadinimas – frazės teksto maiša, sąrašas – `audio/frazes.js`. Jei kurios nors frazės įrašo nėra, ji sakoma naršyklės kalbos sinteze (jei įrenginyje yra lietuviškas balsas).
 
 Balsas – [„Reginutė“ (lt_LT-reginute1-medium)](https://huggingface.co/RobertasTa/lt_LT-reginute1-medium), Piper/VITS modelis, apmokytas Vilniaus universiteto LIEPA korpusu, licencija CC BY 4.0. Meta MMS lietuvių kalbos sintezės modelio neturi (yra tik latvių), todėl naudojamas šis.
 

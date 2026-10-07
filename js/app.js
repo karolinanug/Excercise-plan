@@ -53,7 +53,7 @@ const EX = [
 
 // Sekundės: poilsis tarp serijų, pusės keitimas, pirmo pratimo apžiūra, poilsis tarp pratimų,
 // pasiruošimas po poilsio, poilsio pratęsimas mygtuku
-const REST_SETS = 20, SIDE_SWITCH = 8, PREP = 30, REST_BETWEEN = 30, PREP_NEXT = 10, REST_PLUS = 15;
+const REST_SETS = 20, SIDE_SWITCH = 8, PREP = 15, REST_BETWEEN = 30, PREP_NEXT = 10, REST_PLUS = 15;
 let level = 0;
 try { const s = localStorage.getItem("karolina-level"); if (s === "1") level = 1; } catch (e) {}
 
@@ -283,9 +283,8 @@ function showAnim(ex) {
 }
 // ---- Balsas: pranešimai žingsnio pradžioje ir ritmo nurodymai jo metu ----
 const INTRO_SECS = 28;
-// Ilgi aprašymai (įžanga ir pratimų žingsniai) sakomi, kol bus išklausyti iki galo; vėliau –
-// trumpai: pavadinimas ir pagrindinis nurodymas. „Atgal“ pasiruošimo metu vėl paskaito visą.
-// Išklausyti aprašymai saugomi localStorage (karolina-heard).
+// Ilga įžanga sakoma, kol bus išklausyta iki galo; vėliau – trumpa. „Atgal“ įžangos metu vėl
+// paskaito visą. Išklausymas saugomas localStorage (karolina-heard).
 const HEARD_KEY = "karolina-heard";
 let heard = new Set(), fullIdx = -1;
 try { heard = new Set(JSON.parse(localStorage.getItem(HEARD_KEY) || "[]")); } catch (e) {}
@@ -310,16 +309,13 @@ function introStep(full = !heard.has("intro")) {
   return { type: "intro", ex: list[0], title: "Įžanga", sub: "", cue: text, secs: INTRO_SECS };
 }
 let spokenIdx = -1, vKey = null, vFlags = {};
-// Kol balsas skaito įžangą ar pratimo aprašymą, laikmatis stovi („holding“). Kai baigia –
-// pypsi ir prasideda pratimas. Jei naršyklė nepraneša apie kalbos pabaigą, po apskaičiuoto
-// laiko tęsiama vis tiek.
+// Kol balsas skaito įžangą, laikmatis stovi („holding“). Kai baigia – pypsi ir prasideda
+// pirmas pratimas. Jei naršyklė nepraneša apie kalbos pabaigą, po apskaičiuoto laiko tęsiama
+// vis tiek. Prieš pratimą aprašymas nebeskaitomas: pasiruošimo laikas pypsi paskutines 3 s,
+// o pratimui prasidėjus balsas pasako „Pradedam“ ir veda ritmo nurodymais.
 let holding = false, gateId = 0, gateTimer = null;
-const isGated = st => SAY.active && (st.type === "intro" || st.type === "prep");
-const heardKey = st => st.type === "intro" ? "intro" : EX[st.ex].anim;
-function descText(st, full = !heard.has(heardKey(st))) {
-  const e = EX[st.ex];
-  return `${st.pos ? "Kitas pratimas" : "Pirmas pratimas"}: ${e.name}. ${full ? e.steps.join(" ") : e.cue}${e.sides ? " Pradėk kaire puse." : ""} Pasiruošk.`;
-}
+const isGated = st => SAY.active && st.type === "intro";
+const heardKey = () => "intro";
 // key – kurį aprašymą pažymėti išklausytu, kai jis pasakomas iki galo (ne praleistas)
 function gate(text, key) {
   const id = ++gateId;
@@ -338,8 +334,10 @@ function announce(st) {
   const e = EX[st.ex];
   if (isGated(st)) {
     const full = fullIdx === idx || !heard.has(heardKey(st));
-    return gate(st.type === "intro" ? introStep(full).cue : descText(st, full), heardKey(st));
+    return gate(introStep(full).cue, heardKey(st));
   }
+  // Pirmo pratimo pavadinimas (kitus pasako poilsis prieš juos: „Toliau – …“)
+  if (st.type === "prep") return st.pos ? SAY.stop() : SAY.say(`Pirmas pratimas: ${e.name}.`);
   if (st.type === "rest") {
     if (st.between) return SAY.say(`Poilsis. Atsikvėpk. Toliau – ${e.name}.`);
     if (st.sw) return SAY.say(VOICE_SWITCH[e.anim] || "Keisk pusę.");
@@ -348,9 +346,12 @@ function announce(st) {
   if (st.type === "work") {
     const pre = (st.sets > 1 ? `${ORD[st.set] || ""} serija. ` : "") + (st.side === 0 ? "Kairė pusė. " : st.side === 1 ? "Dešinė pusė. " : "");
     const v = VOICE[e.anim](level, st.secs);
-    vFlags.pre = pre || "Pradėk. ";
-    if (v.start) { SAY.say(vFlags.pre + v.start); vKey = "start"; }
-    else SAY.stop(); // pirmą ritmo frazę pasakys voiceTick; ankstesnio žingsnio kalba nutraukiama
+    const fromPrep = idx > 0 && steps[idx - 1].type === "prep";
+    vFlags.pre = pre;
+    // Po pasiruošimo – „Pradedam“; pirmą ritmo frazę voiceTick pasakys, kai ji baigsis
+    if (fromPrep) SAY.say("Pradedam.");
+    else SAY.stop();
+    if (v.start) { SAY.say(pre + v.start, !fromPrep); vKey = "start"; }
   }
 }
 // Kviečiama kas 250 ms: pagal praėjusį žingsnio laiką pasako einamą ritmo nurodymą

@@ -33,14 +33,14 @@ const out = vm.runInContext(`(() => {
     for (const type of Object.keys(DAYTYPE)) {
       for (const st of buildSteps(l, DAYTYPE[type].list(), ez)) {
         const e = EX[st.ex];
-        if (st.type === "prep") { add(descText(st, true)); add(descText(st, false)); }
+        if (st.type === "prep" && !st.pos) add(\`Pirmas pratimas: \${e.name}.\`);
         if (st.type === "rest") {
           if (st.between) add(\`Poilsis. Atsikvėpk. Toliau – \${e.name}.\`);
           else if (st.sw) add(VOICE_SWITCH[e.anim] || "Keisk pusę.");
           else add(\`Poilsis. Paskui \${ORD[st.nextSet] ? ORD[st.nextSet].toLowerCase() : ""} serija.\`);
         }
         if (st.type === "work") {
-          const pre = (st.sets > 1 ? \`\${ORD[st.set] || ""} serija. \` : "") + (st.side === 0 ? "Kairė pusė. " : st.side === 1 ? "Dešinė pusė. " : "") || "Pradėk. ";
+          const pre = (st.sets > 1 ? \`\${ORD[st.set] || ""} serija. \` : "") + (st.side === 0 ? "Kairė pusė. " : st.side === 1 ? "Dešinė pusė. " : "");
           const v = VOICE[e.anim](l, st.secs);
           if (v.start) { add(pre + v.start); v.remind.forEach(add); }
           else { add(pre + v.beat[0][0]); v.beat.forEach(b => { add(b[0]); add(b[2]); }); }
