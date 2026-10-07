@@ -7,6 +7,11 @@ on:
     # UTC; Vilniuje vasarą +3 val. (~7:20, 13:20, 19:20), žiemą +2 val.
     - cron: "20 4,10,16 * * *"
   workflow_dispatch:
+    inputs:
+      greitai:
+        description: "Tik šiandien ir vakar (paleidžia svetainė)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -32,6 +37,7 @@ jobs:
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
           DUOMENU_RAKTAS: ${{ secrets.DUOMENU_RAKTAS }}
           TZ: Europe/Vilnius
+          GREITAI: ${{ inputs.greitai }}
           GITHUB_TOKEN: ${{ github.token }}
         run: python tools/garmin_sync.py
       - name: Įrašyti

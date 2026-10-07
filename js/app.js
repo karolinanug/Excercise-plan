@@ -597,8 +597,12 @@ function renderHealth(type) {
   if (gs === "bad-key") p.push("Garmin raktas netinka. Įvesk jį iš naujo.");
   if (HEALTH.received && !t) p.push("Nuoroda iš telefono atėjo, bet joje nebuvo skaičių. Patikrink „Shortcut“ nustatymus.");
   if (HEALTH.badSleep != null) p.push(`Miego trukmė atėjo neteisinga (${String(HEALTH.badSleep).replace(".", ",")} val.), todėl jos neišsaugojau.`);
+  if (HEALTH.refreshing) p.push("Garmin duomenys atnaujinami, palauk 1–2 min.");
+  if (HEALTH.refreshErr) p.push(HEALTH.refreshErr + ".");
   if (t) {
-    p.push(`Iš Garmin: ${HEALTH.text(t)}.`);
+    const up = HEALTH.garminUpdated ? new Date(HEALTH.garminUpdated * 1000) : null;
+    const when = up && dayKey(up) === dayKey(new Date()) ? ` (${String(up.getHours()).padStart(2, "0")}:${String(up.getMinutes()).padStart(2, "0")})` : "";
+    p.push(`Iš Garmin${when}: ${HEALTH.text(t)}.`);
     if (a.tired) p.push(`Šiandien geriau lengviau: ${a.why}. ${level ? "Rinkis 1 lygį" : "Daryk 1 lygį"} ir judėk švelniai.`);
     else if (t.sleep != null || t.bb != null || (t.rhr != null && a.base != null)) p.push("Atrodo, gerai pailsėjai.");
     if (type === "light" && t.steps != null)
@@ -608,7 +612,12 @@ function renderHealth(type) {
   $("healthnote").textContent = p.join(" ");
   $("healthnote").hidden = !p.length;
   $("garminkey").hidden = gs !== "need-key" && gs !== "bad-key";
+  $("ghkey").hidden = gs !== "ok" || (HEALTH.hasGitHubKey && !/raktas/.test(HEALTH.refreshErr || ""));
 }
+$("ghkey").onclick = () => {
+  const k = prompt("Įklijuok GitHub raktą (prasideda github_pat_):");
+  if (k && k.trim()) HEALTH.setGitHubKey(k);
+};
 $("garminkey").onclick = () => {
   const k = prompt("Įklijuok Garmin duomenų raktą (DUOMENU_RAKTAS):");
   if (k && k.trim()) HEALTH.setGarminKey(k);
@@ -658,7 +667,7 @@ document.addEventListener("visibilitychange", () => {
   lastToday = today;
   renderWeek();
   if (running) { tick(); lockScreen(); }
-  else HEALTH.syncGarmin();
+  else HEALTH.syncGarmin().then(HEALTH.refreshGarmin);
 });
 renderSummary();
 renderVideos();
@@ -666,4 +675,4 @@ renderWeek();
 renderHistory();
 renderHello();
 setLevel(level);
-HEALTH.syncGarmin();
+HEALTH.syncGarmin().then(HEALTH.refreshGarmin);

@@ -1,6 +1,9 @@
 // Garmin duomenys. Du šaltiniai:
 // 1. garmin/duomenys.enc – kelis kartus per dieną parsiunčia GitHub Actions (tools/garmin_sync.py),
 //    užšifruota raktu, kurį telefone įvedi vieną kartą; iššifruojama tik naršyklėje.
+//    Jei telefone įvestas ir GitHub raktas (fine-grained, tik šiai repozitorijai: Actions – rašyti,
+//    Contents – skaityti), kiekvienas svetainės atidarymas paleidžia parsisiuntimą ir po ~1–2 min.
+//    parodo naujus duomenis (ne dažniau kaip kas MIN_GAP).
 // 2. iPhone „Shortcuts“ nuoroda …/#zingsniai=8400&miegas=7.2&pulsas=58 (Apple Health).
 //    Naudojama # dalis, nes ji nesiunčiama į serverį.
 // Abu saugomi tik telefone (localStorage karolina-garmin ir karolina-health); Garmin svarbesnis.
@@ -12,6 +15,8 @@ const HEALTH = (() => {
   const WALK_STEPS = 7000;   // lengvą dieną: tiek žingsnių – pasivaikščiojimas laikomas atliktu
   const BB_LOW = 35;         // Body Battery ryte mažiau – patariama lengviau
   const GARMIN_URL = "garmin/duomenys.enc", G_KEY = "karolina-garmin", G_PASS = "karolina-garmin-raktas";
+  const REPO = "karolinanug/Excercise-plan", WORKFLOW = "garmin.yml", G_GH = "karolina-garmin-gh";
+  const MIN_GAP = 10 * 60 * 1000, WAIT = 4 * 60 * 1000;
   const pad = n => String(n).padStart(2, "0");
   const dayKey = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   // „8 400“, „7,2 hr“, „58 count/min“ -> skaičius
@@ -42,6 +47,18 @@ const HEALTH = (() => {
     const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(blob.iv) }, key, b64(blob.data));
     return JSON.parse(new TextDecoder().decode(pt));
   }
+  const stored = k => { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } };
+  // Iššifruoja ir pritaiko duomenis; senesnių už jau turimus nepritaiko
+  async function apply(blob) {
+    const pass = stored(G_PASS);
+    if (!pass) { gState = "need-key"; return; }
+    try {
+      const data = await decrypt(blob, pass);
+      if (gUpdated && (data.updated || 0) < gUpdated) return;
+      garmin = Array.isArray(data.days) ? data.days : []; gUpdated = data.updated || null; gState = "ok";
+      try { localStorage.setItem(G_KEY, JSON.stringify({ days: garmin, updated: gUpdated })); } catch (e) {}
+    } catch (e) { gState = "bad-key"; }
+  }
   async function syncGarmin() {
     let blob;
     try {
@@ -49,15 +66,36 @@ const HEALTH = (() => {
       if (!r.ok) return;              // Garmin dar neprijungtas – lieka tai, kas jau buvo
       blob = await r.json();
     } catch (e) { return; }
-    let pass = null;
-    try { pass = localStorage.getItem(G_PASS); } catch (e) {}
-    if (!pass) { gState = "need-key"; return notify(); }
-    try {
-      const data = await decrypt(blob, pass);
-      garmin = Array.isArray(data.days) ? data.days : []; gUpdated = data.updated || null; gState = "ok";
-      try { localStorage.setItem(G_KEY, JSON.stringify({ days: garmin, updated: gUpdated })); } catch (e) {}
-    } catch (e) { gState = "bad-key"; }
+    await apply(blob);
     notify();
+  }
+  // --- Atnaujinimas atidarius svetainę (per GitHub API) ---
+  let refreshing = false, refreshErr = null;
+  const gh = (path, opts = {}) => fetch("https://api.github.com/repos/" + REPO + path, Object.assign({}, opts, {
+    cache: "no-store",
+    headers: Object.assign({ Authorization: "Bearer " + stored(G_GH), Accept: "application/vnd.github+json" }, opts.headers || {})
+  }));
+  async function refreshGarmin() {
+    if (refreshing || !stored(G_GH) || !stored(G_PASS) || gState === "bad-key") return;
+    if (gUpdated && Date.now() - gUpdated * 1000 < MIN_GAP) return;
+    refreshing = true; refreshErr = null; notify();
+    const before = gUpdated || 0;
+    try {
+      const r = await gh(`/actions/workflows/${WORKFLOW}/dispatches`, { method: "POST", body: JSON.stringify({ ref: "main", inputs: { greitai: "true" } }) });
+      if ([401, 403, 404].includes(r.status)) throw new Error("GitHub raktas netinka");
+      if (!r.ok) throw new Error(`GitHub klaida ${r.status}`);
+      // Pages persikrauna lėtai, todėl naujas failas skaitomas tiesiai per GitHub API
+      const end = Date.now() + WAIT;
+      while (Date.now() < end && !(gUpdated > before)) {
+        await new Promise(f => setTimeout(f, 15000));
+        try {
+          const f = await gh("/contents/garmin/duomenys.enc?ref=main&t=" + Date.now(), { headers: { Accept: "application/vnd.github.raw+json" } });
+          if (f.ok) await apply(await f.json());
+        } catch (e) {}
+      }
+      if (!(gUpdated > before)) refreshErr = "Garmin duomenų atnaujinti nepavyko, rodomi ankstesni";
+    } catch (e) { refreshErr = e.message; }
+    refreshing = false; notify();
   }
   // Abu šaltiniai vienoje lentelėje pagal dieną: Garmin reikšmės svarbesnės, žingsnių – didesnė
   function merged() {
@@ -112,8 +150,13 @@ const HEALTH = (() => {
     // Garmin būsena: off (neprijungta), need-key, bad-key, ok
     get garminState() { return gState; },
     get garminUpdated() { return gUpdated; },
-    setGarminKey(p) { try { localStorage.setItem(G_PASS, String(p || "").trim()); } catch (e) {} return syncGarmin(); },
+    setGarminKey(p) { try { localStorage.setItem(G_PASS, String(p || "").trim()); } catch (e) {} gState = "off"; return syncGarmin().then(refreshGarmin); },
     syncGarmin,
+    refreshGarmin,
+    get refreshing() { return refreshing; },
+    get refreshErr() { return refreshErr; },
+    get hasGitHubKey() { return !!stored(G_GH); },
+    setGitHubKey(t) { try { localStorage.setItem(G_GH, String(t || "").trim()); } catch (e) {} refreshErr = null; return refreshGarmin(); },
     onChange(f) { listeners.push(f); },
     today() { return this.get(dayKey(new Date())); },
     // Įprastas ramybės pulsas – ankstesnių 14 dienų mediana (reikia bent 3 dienų)

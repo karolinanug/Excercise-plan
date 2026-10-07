@@ -38,6 +38,9 @@ TOKEN = ROOT / "garmin" / "zetonas.enc"
 ITER = 310_000
 FIRST_DAYS = 30   # pirmą kartą parsiunčiama tiek dienų atgal
 DAYS = 4          # vėliau – tik paskutinės dienos (vakar dar gali pasikeisti)
+# Paleista iš svetainės (GREITAI=true): tik šiandien ir vakar, failas įrašomas visada, kad
+# svetainė pagal „updated“ matytų, jog atnaujinta
+QUICK = os.environ.get("GREITAI", "").lower() == "true"
 KEEP_DAYS = 180
 
 
@@ -183,7 +186,7 @@ def main():
             days = decrypt(DATA, key).get("days", [])
         except Exception:
             print("Ankstesni duomenys neiššifruojami (pasikeitė raktas?) – pradedama iš naujo")
-    n = DAYS if days else FIRST_DAYS
+    n = (2 if QUICK else DAYS) if days else FIRST_DAYS
     today = date.today()
     by_day = {x["d"]: x for x in days}
     got = 0
@@ -206,7 +209,7 @@ def main():
             old = decrypt(DATA, key).get("days")
         except Exception:
             pass
-    if old != days:
+    if old != days or QUICK:
         DATA.write_text(encrypt({"updated": int(time.time()), "days": days}, key))
         print("garmin/duomenys.enc atnaujintas")
     new_token = api.client.dumps()
