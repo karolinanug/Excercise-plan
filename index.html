@@ -46,6 +46,11 @@
     </div>
     <p class="hello-health" id="healthnote" hidden></p>
     <button class="btn ghost" id="garminkey" type="button" hidden>Įvesti Garmin raktą</button>
+<div class="hello-level" role="group" aria-label="Treniruotės tipas">
+      <button class="seg" type="button" data-type="core" aria-pressed="false">Pilvas</button>
+      <button class="seg" type="button" data-type="glute" aria-pressed="false">Sėdmenys</button>
+      <button class="seg" type="button" data-type="recovery" aria-pressed="false">Atsigavimas</button>
+    </div>
     <div class="hello-level" role="group" aria-label="Lygis">
       <button class="seg" id="hl1" type="button" aria-pressed="true">1 lygis</button>
       <button class="seg" id="hl2" type="button" aria-pressed="false">2 lygis</button>
@@ -67,7 +72,7 @@
     <h2 class="title">Karolinos mankštos planas</h2>
     <p class="lead">Apie <span data-dur="0">24</span> minučių programa (2 lygyje apie <span data-dur="1">36</span> min.) liemens, sėdmenų ir laikysenos raumenims stiprinti. Paspausk „Pradėti“, ir puslapis pats ves per visus pratimus: prieš kiekvieną parodys, kaip jis daromas, tada skaičiuos laiką ir pereis prie kito. Nieko spaudinėti nereikia.</p>
     <div class="facts">
-      <span class="chip">4–5 dienos per savaitę</span>
+      <span class="chip">4 treniruotės per savaitę</span>
       <span class="chip">1 lygis ~<span data-dur="0">24</span> min. · 2 lygis ~<span data-dur="1">36</span> min.</span>
       <span class="chip">Pradedančiajai</span>
       <span class="chip">Abi pusės vienodai</span>
@@ -87,17 +92,24 @@
   <section aria-labelledby="sched">
     <h2 id="sched">Kaip kartoti</h2>
     <div class="schedule">
-      <div><b>1–2 savaitė · 1 lygis</b><span>4 dienas per savaitę: pirm., trečd., penkt. ir sekm. Mokaisi technikos. Laikmatis pats parodo tos dienos rutiną.</span></div>
-      <div><b>3–4 savaitė · 2 lygis</b><span>4–5 dienas. Penktą kartą gali daryti šeštadienį: laikmačio savaitės juostoje pasirink bet kurią treniruotės dieną (●). Daugiau kartojimų ir ilgesnis laikymas, jei 1 lygis jau lengvas ir be skausmo.</span></div>
-      <div><b>Poilsio dienomis (antr., ketv., šešt.)</b><span>30 min. pasivaikščiojimas sparčiu žingsniu ir lengva rutina: kvėpavimas ir tempimai: <span id="restlist">1, 3, 9, 10</span>.</span></div>
+      <div><b>Kiekviena treniruotė</b><span>Kvėpavimas → paslankumas → stiprinimas → tempimas. Prieš kiekvieną seriją balsas pasako pratimą ir kaip atsigulti, suskaičiuoja 5 sekundes ir sako „Pradedam“.</span></div>
+      <div><b>Dienų ratas</b><span>Pilvo ir liemens diena → sėdmenų diena → atsigavimo diena (paslankumas ir tempimai). Paslankumo, sėdmenų ir tempimo pratimai kas kartą keičiasi, kad per savaitę visi būtų atlikti panašiai dažnai. Tikslas – 4 treniruotės per savaitę.</span></div>
+      <div><b>Pagal Garmin</b><span>Prastai pailsėjus (pasiruošimas žemiau 45) arba po įtemptos dienos siūloma atsigavimo diena, vidutiniškai pailsėjus – lengvesnis stiprinimas. Dienos tipą visada gali pasirinkti pati.</span></div>
+      <div><b>Pirmos 1–2 savaitės · 1 lygis</b><span>Naujus pratimus pirmą savaitę tik išbandyk ir stebėk, kaip reaguoja kūnas. 2 lygis – kai 1 lygis lengvas ir be skausmo.</span></div>
     </div>
   </section>
 
   <section class="player" id="player" aria-labelledby="ptitle">
     <h2 id="ptitle">Treniruotė su laikmačiu</h2>
     <div class="days" id="days" role="group" aria-label="Savaitės diena"></div>
-    <p class="legend" aria-hidden="true">● treniruotė · ○ lengva diena · ✓ atlikta</p>
+    <p class="legend" aria-hidden="true">P – pilvo diena · S – sėdmenų diena · A – atsigavimo diena</p>
     <p class="dayinfo" id="dayinfo"></p>
+    <div class="level" role="group" aria-label="Treniruotės tipas">
+      <span>Diena:</span>
+      <button class="seg" type="button" data-type="core" aria-pressed="false">Pilvas</button>
+      <button class="seg" type="button" data-type="glute" aria-pressed="false">Sėdmenys</button>
+      <button class="seg" type="button" data-type="recovery" aria-pressed="false">Atsigavimas</button>
+    </div>
     <div class="level" role="group" aria-label="Lygis">
       <span>Lygis:</span>
       <button class="seg" id="lvl1" data-level="0" aria-pressed="true">1 lygis</button>

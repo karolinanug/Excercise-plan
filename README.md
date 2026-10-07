@@ -1,20 +1,24 @@
 # Karolinos mankštos planas
 
-Statinė svetainė su namų mankštos planu: 10 pratimų, laikmatis, kuris pats veda per treniruotę, instrukcijos, dažnos klaidos ir YouTube video.
+Statinė svetainė su namų mankštos planu: 21 pratimas (paslankumas, pilvas, sėdmenys, tempimas), laikmatis, kuris pats veda per treniruotę, instrukcijos, dažnos klaidos ir YouTube video.
 
 ## Failai
 
 - `index.html` – puslapis
 - `css/style.css` – stiliai (šviesi ir tamsi tema, prisitaiko prie telefono)
-- `js/app.js` – pratimų sąrašas (`EX` masyvas viršuje) ir laikmatis. Prieš pirmą pratimą 15 s (`PREP`), prieš kitus 10 s (`PREP_NEXT`) rodoma jo animacija (arba YouTube video, jei pasirinkta), ji lieka rodoma, kol darai serijas.
+- `js/app.js` – pratimų sąrašas (`EX` masyvas viršuje), dienų ratas ir laikmatis. Pasiruošimo ir darbo metu rodoma pratimo animacija.
 - `js/voice.js` – lietuviškas balsas (įrašytos frazės iš `audio/`, atsarginis – naršyklės kalbos sintezė) ir kiekvieno pratimo ritmo nurodymai (`VOICE`): ką ir po kiek sekundžių pasakyti. Trukmės automatiškai pritaikomos prie serijos ilgio.
 - `js/anim.js` – schematinės pratimų animacijos (SVG). Kiekvienas pratimas `EX` masyve nurodo savo animaciją lauku `anim`, o pozos aprašytos `DEF` objekte sąnarių taškais: `[poza, perėjimo ms, laikymo ms, užuomina, įtampa 0–1]`. `FOCUS` nurodo, kuri kūno vieta paryškinama (dirbantys raumenys) ir kaip ji pavadinta po animacija; spalvos – CSS kintamieji `--fig-*`.
 
 Pabaigus treniruotę atsiveria trumpas įsivertinimas (sunkumas, savijauta, skausmas, pastabos); treniruotė pažymima atlikta tik jį išsaugojus. Įrašus galima peržiūrėti laikmačio skiltyje „Mano įrašai“ ir nukopijuoti tekstu kineziterapeutui.
 
-Savaitės planas – `WEEK` masyvas `js/app.js` faile (kurią dieną visa treniruotė, kurią lengva diena). Pasirinktas lygis, balso nustatymas ir atliktų treniruočių žurnalas saugomi naršyklės `localStorage` (raktai `karolina-level`, `karolina-voice`, `karolina-log`), todėl skaitliukas „Šią savaitę: X/4“ veikia tik tame pačiame įrenginyje ir naršyklėje.
+Pratimai paimti iš dviejų šaltinių: pradinio plano ir kineziterapeuto korekcinės programos pasvirusiam į priekį dubeniui (kineziterapija24.lt). Programos tekstai ir video į svetainę nekopijuoti (jie saugomi autorių teisių) – pratimai aprašyti savais žodžiais, animacijos nupieštos pačių.
 
-Pratimus, kartojimus ar trukmes keisk `js/app.js` faile, `EX` masyve. `secs` yra vienos serijos trukmė sekundėmis `[1 lygis, 2 lygis]`, `sets` – serijų skaičius, `rest: true` – pratimas siūlomas poilsio dienoms. Bendra trukmė (~24/~36 min.) ir poilsio dienų sąrašas puslapyje sugeneruojami iš `EX` automatiškai.
+**Dienų ratas.** Kiekviena treniruotė eina programos tvarka: kvėpavimas → paslankumas → stiprinimas → tempimas. Dienos akcentas keičiasi ratu: pilvo ir liemens diena (2 paslankumo, 4 pilvo, 2 tempimo pratimai), sėdmenų diena (2 + 4 sėdmenų + 2) ir atsigavimo diena (4 paslankumo + 4 tempimo). Paslankumo, sėdmenų ir tempimo pratimai parenkami rečiausiai darytieji per 14 dienų (žurnale saugoma, kurie pratimai daryti), kad per savaitę visi būtų atlikti panašiai dažnai. Kita stiprinimo diena – ta, kuri daryta seniau. Pagal Garmin: pasiruošimas žemiau 45 arba vakar įtempta diena – atsigavimo diena; 45–69 – stiprinimas lengvesnis (serija mažiau, poilsis +10 s). Be Garmin duomenų po dviejų stiprinimo dienų siūlomas atsigavimas. Dienos tipą galima pasirinkti ir pačiai (`DAYTYPE`, `sessionList`, `suggestPlan` faile `js/app.js`). Tikslas – 4 treniruotės per savaitę.
+
+Pasirinktas lygis, balso nustatymas ir atliktų treniruočių žurnalas saugomi naršyklės `localStorage` (raktai `karolina-level`, `karolina-voice`, `karolina-log`), todėl skaitliukas „Šią savaitę: X/4“ veikia tik tame pačiame įrenginyje ir naršyklėje.
+
+Pratimus, kartojimus ar trukmes keisk `js/app.js` faile, `EX` masyve. `secs` yra vienos serijos trukmė sekundėmis `[1 lygis, 2 lygis]`, `sets` – serijų skaičius, `group` – grupė (`breath`, `mob`, `core`, `glute`, `stretch`), `setup` – ką balsas pasako prieš seriją (kaip atsigulti), `video` neprivalomas. Pakeitus tekstus, įrašus reikia sugeneruoti iš naujo (`python3 tools/garsas.py`).
 
 ## Paskelbimas per GitHub Pages
 
@@ -30,9 +34,9 @@ Jokio kompiliavimo nereikia. Lokaliai galima tiesiog atidaryti `index.html` nar�
 
 Paspaudus „Pradėkime“ lietuviškas balsas pasisveikina, papasakoja apie mankštą ir veda per visus pratimus: pasako, kokį pratimą daryti ir kaip atsigulti, kada įkvėpti, kelti, laikyti, grįžti ar keisti pusę.
 
-Prieš pratimą aprašymas neskaitomas: pasiruošimo laikas (pirmam pratimui 15 s, kitiems 10 s) paskutines 3 s pypsi, pratimui prasidėjus balsas pasako „Pradedam“ ir toliau veda ritmo nurodymais (įkvėpk, kelk, laikyk, grįžk…). Pratimo pavadinimą balsas pasako poilsio metu („Toliau – …“), o pirmojo – pasiruošimo pradžioje. Ilga įžanga apie mankštos tikslą sakoma, kol bus išklausyta iki galo, vėliau – trumpa (`localStorage` raktas `karolina-heard`).
+Prieš kiekvieną seriją (ir po kiekvieno poilsio) balsas pasako pratimo pavadinimą ir kaip atsigulti (laikmatis tuo metu stovi), tada 5 s atgalinis laikas pypsi kas sekundę ir balsas sako „Pradedam“; toliau veda ritmo nurodymais (įkvėpk, kelk, laikyk, grįžk…). Poilsio metu pasako, kas bus toliau („Poilsis. Atsikvėpk. Toliau – …“). Antrai pusei – „Dešinė pusė. Keisk koją.“ ir vėl 5 s. Ilga įžanga apie mankštos tikslą sakoma, kol bus išklausyta iki galo, vėliau – trumpa (`localStorage` raktas `karolina-heard`).
 
-Visos frazės iš anksto įrašytos į `audio/*.mp3` (~9 MB; iš anksto parsiunčiamos tik trumpos, ~3 MB), todėl balsas skamba vienodai visuose įrenginiuose, ir iPhone, kuriame lietuviško balso nėra. Failo pavadinimas – frazės teksto maiša, sąrašas – `audio/frazes.js`. Jei kurios nors frazės įrašo nėra, ji sakoma naršyklės kalbos sinteze (jei įrenginyje yra lietuviškas balsas).
+Visos frazės iš anksto įrašytos į `audio/*.mp3` (~6 MB; iš anksto parsiunčiamos tik trumpos), todėl balsas skamba vienodai visuose įrenginiuose, ir iPhone, kuriame lietuviško balso nėra. Failo pavadinimas – frazės teksto maiša, sąrašas – `audio/frazes.js`. Jei kurios nors frazės įrašo nėra, ji sakoma naršyklės kalbos sinteze (jei įrenginyje yra lietuviškas balsas).
 
 Balsas – [„Reginutė“ (lt_LT-reginute1-medium)](https://huggingface.co/RobertasTa/lt_LT-reginute1-medium), Piper/VITS modelis, apmokytas Vilniaus universiteto LIEPA korpusu, licencija CC BY 4.0. Meta MMS lietuvių kalbos sintezės modelio neturi (yra tik latvių), todėl naudojamas šis.
 

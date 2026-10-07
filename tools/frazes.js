@@ -22,32 +22,23 @@ for (const f of ["js/anim.js", "js/voice.js", "js/health.js", "js/app.js"]) vm.r
 
 const out = vm.runInContext(`(() => {
   const all = new Set(), add = t => { if (t) all.add(t); };
-  // Įžanga (ilga ir trumpa): kiekviena savaitės diena, abu lygiai
-  // (ir lengvesnė versija, ir vakarinis atsipalaidavimas)
-  for (const ov of [null, "relax"]) for (const ez of [false, true]) for (let l = 0; l < 2; l++) for (let d = 0; d < 7; d++) {
-    override = ov; easy = ez; level = l; selDay = d; add(introStep(true).cue); add(introStep(false).cue);
-  }
-  override = null; easy = false;
-  for (let l = 0; l < 2; l++) for (const ez of [false, true]) {
+  // Įžanga: kiekvienas dienos tipas, ilga ir trumpa, su lengvesnės versijos ar atsigavimo priežastimi
+  for (const type of Object.keys(DAYTYPE)) for (const ez of [false, true]) for (const why of ["", "garmin", "rotation"])
+    for (const full of [true, false]) add(introStep(full, type, ez, why).cue);
+  // Kiekvienas pratimas atskirai, abiem lygiais, įprasta ir lengvesnė versija
+  for (let l = 0; l < 2; l++) for (const ez of [false, true]) EX.forEach((e, i) => {
     level = l;
-    for (const type of Object.keys(DAYTYPE)) {
-      for (const st of buildSteps(l, DAYTYPE[type].list(), ez)) {
-        const e = EX[st.ex];
-        if (st.type === "prep" && !st.pos) add(\`Pirmas pratimas: \${e.name}.\`);
-        if (st.type === "rest") {
-          if (st.between) add(\`Poilsis. Atsikvėpk. Toliau – \${e.name}.\`);
-          else if (st.sw) add(VOICE_SWITCH[e.anim] || "Keisk pusę.");
-          else add(\`Poilsis. Paskui \${ORD[st.nextSet] ? ORD[st.nextSet].toLowerCase() : ""} serija.\`);
-        }
-        if (st.type === "work") {
-          const pre = (st.sets > 1 ? \`\${ORD[st.set] || ""} serija. \` : "") + (st.side === 0 ? "Kairė pusė. " : st.side === 1 ? "Dešinė pusė. " : "");
-          const v = VOICE[e.anim](l, st.secs);
-          if (v.start) { add(pre + v.start); v.remind.forEach(add); }
-          else { add(pre + v.beat[0][0]); v.beat.forEach(b => { add(b[0]); add(b[2]); }); }
-        }
+    for (const st of buildSteps(l, [i], ez)) {
+      if (st.type === "prep") add(st.say);
+      if (st.type === "rest") add(\`Poilsis. Paskui \${ORD[st.nextSet] ? ORD[st.nextSet].toLowerCase() : ""} serija.\`);
+      if (st.type === "work") {
+        const v = VOICE[e.anim](l, st.secs);
+        if (v.start) { add(v.start); v.remind.forEach(add); }
+        else v.beat.forEach(b => { add(b[0]); add(b[2]); });
       }
     }
-  }
+    add(\`Poilsis. Atsikvėpk. Toliau – \${e.name}.\`);
+  });
   return [...all];
 })()`, ctx);
 

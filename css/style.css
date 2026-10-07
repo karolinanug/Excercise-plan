@@ -70,11 +70,13 @@ section { display: flex; flex-direction: column; gap: 14px; }
 /* Player */
 .player { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 16px; }
 .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-.day { font: inherit; border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 12px; padding: 6px 0 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 0; line-height: 1.2; }
+.day { font: inherit; border: 1px solid var(--line); background: transparent; color: var(--ink); border-radius: 12px; padding: 6px 0 4px; display: flex; flex-direction: column; align-items: center; gap: 0; line-height: 1.2; }
 .day b { font-size: .85rem; }
 .day i { font-style: normal; font-size: .8rem; color: var(--muted); }
 .day.full i { color: var(--accent); }
 .day.today { border-color: var(--accent); }
+.day.done { background: var(--accent-soft); }
+.dayinfo .wk { color: var(--muted); font-size: .9rem; }
 .day.done i { color: var(--accent); font-weight: 700; }
 .day[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .day[aria-pressed="true"] i { color: var(--bg); }
@@ -107,6 +109,7 @@ section { display: flex; flex-direction: column; gap: 14px; }
 /* Exercise cards */
 .ex { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-margin-top: 16px; }
 .ex.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.ex-group { font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); font-weight: 800; }
 .ex-head { display: flex; gap: 14px; align-items: baseline; }
 .num { font-family: var(--display); font-weight: 700; color: var(--accent); font-size: 1.1rem; font-variant-numeric: tabular-nums; min-width: 1.6em; }
 .ex-head > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

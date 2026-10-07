@@ -3,53 +3,122 @@ const EX = [
     steps: ["Atsigulk ant nugaros, kelius sulenk, pėdos ant grindų klubų plotyje.", "Vieną delną padėk ant krūtinės, kitą ant pilvo.", "Įkvėpk pro nosį per 4 sekundes, kad kiltų delnas ant pilvo ir šonai, o krūtinė liktų beveik rami.", "Iškvėpk pro šiek tiek pravertas lūpas per 6 sekundes. Pabaigoje švelniai įtrauk bambą link stuburo."],
     mistakes: ["Kilnoji pečius ir krūtinę vietoj pilvo.", "Išpuši pilvą per jėgą ir išriesti juosmenį.", "Kvėpuoji per greitai."],
     dose: ["8–10 lėtų įkvėpimų", "8–10 lėtų įkvėpimų"], sets: [1,1], secs: [90,90], sides: false, cue: "Įkvėpk 4 s pro nosį, iškvėpk 6 s pro lūpas. Krūtinė rami, kyla pilvas.",
-    rest: true, anim: "breath", video: { id: "9jpchJcKivk", title: "How to do Diaphragmatic Breathing Exercises for Beginners", by: "Michelle Kenway, kineziterapeutė" } },
+    group: "breath", setup: "Atsigulk ant nugaros, kelius sulenk, vieną delną padėk ant krūtinės, kitą ant pilvo.",
+    anim: "breath", video: { id: "9jpchJcKivk", title: "How to do Diaphragmatic Breathing Exercises for Beginners", by: "Michelle Kenway, kineziterapeutė" } },
   { name: "Dubens pakreipimas gulint", en: "Posterior pelvic tilt", why: "Tiesiogiai treniruoja priešingą judesį tavo dubens pasvirimui į priekį (anterior pelvic tilt): išmoksti valdyti dubenį pilvo ir sėdmenų raumenimis.",
     steps: ["Gulėk ant nugaros, keliai sulenkti, pėdos ant grindų.", "Iškvėpdama švelniai įtrauk pilvo apačią ir prispausk juosmenį prie kilimėlio, tarsi „pastumtum“ bambą link stuburo. Dubuo truputį pasisuka link tavęs.", "Išlaikyk 3 sekundes ir kvėpuok.", "Atpalaiduok į neutralią padėtį."],
     mistakes: ["Keli sėdmenis nuo grindų. Tai jau tiltelis, ne šis pratimas.", "Spaudi kojomis ar kaklu vietoj pilvo.", "Sulaikai kvapą."],
     dose: ["2 serijos × 10 kartų, laikyti 3 s", "2 serijos × 12 kartų, laikyti 5 s"], sets: [2,2], secs: [45,70], sides: false, cue: "Iškvėpk ir prispausk juosmenį prie kilimėlio, laikyk 3 s, atleisk.",
+    group: "core", setup: "Atsigulk ant nugaros, kelius sulenk, pėdos ant grindų.",
     anim: "tilt", video: { id: "n8DU1desCy8", title: "How to do a Pelvic Tilt Lying Down", by: "Rehab My Patient" } },
   { name: "Katė–karvė", en: "Cat-cow stretch", why: "Švelniai judina visą stuburą slankstelis po slankstelio ir padeda pajausti dubens padėtį.",
     steps: ["Atsistok keturpėsčia: delnai po pečiais, keliai po klubais.", "Iškvėpdama apvalink nugarą į viršų, smakrą prie krūtinės, uodegikaulį pakišk po savimi (katė).", "Įkvėpdama lėtai išlenk nugarą žemyn, žvilgsnis į priekį (karvė).", "Judėk lėtai, kiekvieną padėtį palaikyk 2 sekundes."],
     mistakes: ["Karvės padėtyje per stipriai įlenki juosmenį. Su tavo dubens pasvirimu riesk tik tiek, kiek patogu, daugiau dėmesio katei.", "Judi greitai ir „metiesi“ į padėtis.", "Lenki alkūnes."],
     dose: ["8 lėti kartai", "10 lėtų kartų"], sets: [1,1], secs: [60,75], sides: false, cue: "Iškvėpk ir apvalink nugarą, įkvėpk ir švelniai išlenk. Lėtai.",
-    rest: true, anim: "catcow", video: { id: "1Y0YjXS9sKI", title: "How to Do a Cat Cow Stretch: A Guide from Physical Therapists", by: "Hinge Health" } },
+    group: "mob", setup: "Atsistok keturpėsčia: delnai po pečiais, keliai po klubais.",
+    anim: "catcow", video: { id: "1Y0YjXS9sKI", title: "How to Do a Cat Cow Stretch: A Guide from Physical Therapists", by: "Hinge Health" } },
   { name: "Negyvas vabalas", en: "Dead bug", why: "Vienas geriausių giliųjų pilvo raumenų pratimų: stiprina liemenį, kai juosmuo laikomas stabilus. Labai tinka dubens pasvirimui į priekį.",
     steps: ["Gulėk ant nugaros, rankas ištiesk į lubas, kelius sulenk 90° kampu virš klubų.", "Prispausk juosmenį prie kilimėlio (kaip 2 pratime). Jis turi likti prispaustas visą laiką.", "Iškvėpdama lėtai nuleisk dešinę koją žemyn, kad kulnas beveik paliestų grindis. Pradžioje gali leisti tik pėdą, kelią palikus sulenktą.", "Grįžk ir pakartok kita koja. Kai įvaldysi, kartu su koja nuleisk priešingą ranką už galvos."],
     mistakes: ["Juosmuo atsikelia nuo grindų. Tada leisk koją mažiau žemyn.", "Skubi. Kiekvienas judesys bent 3 s žemyn.", "Įtempi kaklą ir keli galvą."],
     dose: ["2 serijos × 6 kartai kiekviena koja, pakaitomis", "3 serijos × 8 kartai kiekviena koja, su ranka"], sets: [2,3], secs: [50,65], sides: false, cue: "Juosmuo prispaustas. Lėtai nuleisk vieną koją, grįžk, keisk koją.",
+    group: "core", setup: "Atsigulk ant nugaros, rankas ištiesk į lubas, kelius sulenk virš klubų.",
     anim: "deadbug", video: { id: "psOZS-sVDww", title: "Dead Bug Exercise Beginner - Strengthen and Stabilize Your Core", by: "Brian Abelson" } },
   { name: "Sėdmenų tiltelis", en: "Glute bridge", why: "Stiprina sėdmenis, kurie esant dubens pasvirimui į priekį dažnai būna silpni ir „išsijungę“. Stiprūs sėdmenys padeda laikyti dubenį tiesiau.",
     steps: ["Gulėk ant nugaros, keliai sulenkti, pėdos klubų plotyje, kulnai apie 20–25 cm nuo sėdmenų.", "Pirmiausia padaryk dubens pakreipimą (prispausk juosmenį), tada spausdama kulnais kelk dubenį.", "Kilk, kol keliai, klubai ir pečiai bus vienoje linijoje. Viršuje stipriai suspausk sėdmenis 2 sekundes.", "Lėtai nusileisk, slankstelis po slankstelio."],
     mistakes: ["Keli per aukštai ir išrieti juosmenį. Viršuje turi jaustis sėdmenys, ne nugara.", "Daugiausia dirba šlaunų užpakalis (traukia mėšlungis). Pastumk pėdas arčiau.", "Keliai krenta į vidų. Laikyk juos klubų plotyje."],
     dose: ["2 serijos × 10 kartų, viršuje 2 s", "3 serijos × 12 kartų, viršuje 3 s"], sets: [2,3], secs: [45,60], sides: false, cue: "Pakreipk dubenį, kelk spausdama kulnais, viršuje suspausk sėdmenis 2 s.",
+    group: "glute", setup: "Atsigulk ant nugaros, kelius sulenk, kulnai netoli sėdmenų.",
     anim: "bridge", video: { id: "WtilA9IJX1c", title: "Glute Bridges Exercise for Hips & Butt", by: "Release Physical Therapy" } },
   { name: "Paukštis–šuo", en: "Bird dog", why: "Moko išlaikyti stuburą stabilų, kai juda rankos ir kojos. Stiprina nugaros tiesiamuosius, sėdmenis ir pilvo raumenis simetriškai.",
     steps: ["Keturpėsčia: delnai po pečiais, keliai po klubais, nugara tiesi kaip stalas.", "Švelniai įtempk pilvą. Pradžioje tik slysk viena koja atgal, neatkeldama nuo grindų.", "Kai jauti stabilumą, ištiesk koją atgal klubo aukštyje ir kartu priešingą ranką į priekį.", "Palaikyk 3 sekundes, grįžk ir keisk puses."],
     mistakes: ["Keli koją per aukštai ir įlenki juosmenį.", "Dubuo pasisuka į šoną. Įsivaizduok stiklinę vandens ant juosmens.", "Galva nusvyra arba atsilošia. Žiūrėk į grindis."],
     dose: ["2 serijos × 6 kartai kiekviena pusė, pakaitomis, laikyti 3 s", "3 serijos × 8 kartai, laikyti 5 s"], sets: [2,3], secs: [60,90], sides: false, cue: "Ištiesk koją ir priešingą ranką, laikyk 3 s, keisk pusę. Juosmuo neįlinksta.",
+    group: "glute", setup: "Atsistok keturpėsčia, nugara tiesi kaip stalas.",
     anim: "birddog", video: { id: "LaLKNS7mxrk", title: "Bird Dog Exercise for Beginners", by: "Margaret Martin, kineziterapeutė" } },
   { name: "Kriauklė", en: "Clamshell", why: "Stiprina šoninius sėdmenų raumenis, kurie stabilizuoja dubenį. Daroma abiem pusėm vienodai.",
     steps: ["Gulėk ant šono, galvą pasidėk ant ištiestos rankos, kelius sulenk apie 45°, pėdos kartu.", "Klubai vienas virš kito, dubuo statmenas grindims. Viršutinę ranką padėk ant klubo.", "Pėdas laikydama kartu, kelk viršutinį kelį, kiek gali nepasukant dubens atgal.", "Viršuje 1 s pauzė, lėtai nuleisk."],
     mistakes: ["Dubuo rieda atgal kartu su keliu. Kelk mažiau.", "Pėdos atsiskiria.", "Judi greitai ir „mėtai“ kelį."],
     dose: ["2 serijos × 12 kartų kiekviena pusė", "3 serijos × 15 kartų kiekviena pusė"], sets: [2,3], secs: [40,45], sides: true, cue: "Pėdos kartu, kelk kelį nepasukdama dubens, lėtai nuleisk.",
+    group: "glute", setup: "Atsigulk ant šono, kelius sulenk, pėdos kartu.",
     anim: "clam", video: { id: "2c5xiz4q7ow", title: "Clam Shell Exercise: Strengthen Your Hip & Knees", by: "Margaret Martin, kineziterapeutė" } },
   { name: "Šoninė lenta ant kelių", en: "Modified side plank", why: "Stiprina šoninius liemens raumenis (įstrižinius ir keturkampį juosmens raumenį), kurie palaiko stuburą iš šonų. Abi pusės vienodu laiku.",
     steps: ["Gulėk ant šono, atsiremk į dilbį: alkūnė tiksliai po petimi. Keliai sulenkti, pėdos už nugaros.", "Kelk klubus, kol nuo galvos iki kelių bus tiesi linija.", "Laikyk, kvėpuok ramiai.", "Nusileisk ir pakartok kita puse tiek pat laiko."],
     mistakes: ["Klubai nusvyra žemyn arba išsikiša atgal.", "Petys „kabo“: stumk grindis dilbiu.", "Vienai pusei duodi daugiau laiko, nes ji lengvesnė. Abi pusės vienodai."],
     dose: ["2 serijos × 15 s kiekviena pusė", "2 serijos × 25 s kiekviena pusė"], sets: [2,2], secs: [15,25], sides: true, cue: "Alkūnė po petimi, klubai aukštyn, tiesi linija nuo galvos iki kelių.",
+    group: "core", setup: "Atsigulk ant šono ir atsiremk dilbiu, alkūnė po petimi, keliai sulenkti.",
     anim: "sideplank", video: { id: "lvpPNjRQONQ", title: "How to Do a Modified Side Plank", by: "NASM" } },
   { name: "Klubo lenkiamųjų tempimas klūpant", en: "Half-kneeling hip flexor stretch", why: "Esant dubens pasvirimui į priekį, klubo priekio raumenys dažniausiai sutrumpėję ir tempia dubenį žemyn. Šis tempimas juos ilgina.",
     steps: ["Atsiklaupk ant vieno kelio (po keliu sulankstyk kilimėlį), kita pėda priekyje, kelias 90°.", "Pirmiausia pakreipk dubenį (uodegikaulis po savimi) ir suspausk užpakalinės kojos sėdmenį.", "Tik tada švelniai pasislink kūnu į priekį, kol pajusi tempimą klubo priekyje.", "Liemuo tiesus, kvėpuok ramiai, laikyk."],
     mistakes: ["Pasislenki į priekį įlenkdama juosmenį. Tada tempiasi nugara, ne klubas.", "Priekinis kelias išeina gerokai už pėdos pirštų.", "Spyruokliuoji. Laikyk ramiai."],
     dose: ["2 kartai × 30 s kiekviena pusė", "2 kartai × 45 s kiekviena pusė"], sets: [2,2], secs: [30,45], sides: true, cue: "Uodegikaulis po savimi, suspausk sėdmenį, tik tada pasislink į priekį.",
-    rest: true, anim: "hipflex", video: { id: "F55tzqJggAY", title: "Half Kneeling Hip Flexor Stretch", by: "Cara Giusti, PT, DPT (B3 Physical Therapy)" } },
+    group: "stretch", setup: "Atsiklaupk ant vieno kelio, kita pėda priekyje.",
+    anim: "hipflex", video: { id: "F55tzqJggAY", title: "Half Kneeling Hip Flexor Stretch", by: "Cara Giusti, PT, DPT (B3 Physical Therapy)" } },
   { name: "Vaiko poza", en: "Child's pose", why: "Atpalaiduoja nugarą ir juosmenį po treniruotės, ramina kvėpavimą.",
     steps: ["Atsiklaupk, kelius šiek tiek praskėsk, sėdmenis nuleisk ant kulnų.", "Ištiesk rankas į priekį ir padėk kaktą ant kilimėlio.", "Kvėpuok į nugarą ir šonus, leisk jai atsipalaiduoti.", "Atsikeldama pirmiausia remkis rankomis."],
     mistakes: ["Prievarta spaudi sėdmenis prie kulnų. Jei nepatogu, pasidėk pagalvėlę.", "Įtempi pečius prie ausų."],
     dose: ["45–60 s", "60 s"], sets: [1,1], secs: [50,60], sides: false, cue: "Sėdmenys link kulnų, kakta ant kilimėlio, ramiai kvėpuok į nugarą.",
-    rest: true, anim: "child", video: { id: "HBdNHrt0A7Y", title: "Child's Pose Stretch for Lower Back Pain Relief", by: "Anand Physical Therapy Academy" } }
+    group: "stretch", setup: "Atsiklaupk, sėdmenis nuleisk ant kulnų, rankas ištiesk į priekį.",
+    anim: "child", video: { id: "HBdNHrt0A7Y", title: "Child's Pose Stretch for Lower Back Pain Relief", by: "Anand Physical Therapy Academy" } },
+  // ---- Pratimai iš kineziterapeuto korekcinės programos (aprašymai savais žodžiais) ----
+  { name: "Dubens stūmimas klūpint", en: "Kneeling hip thrust (hip flexor and chest opener)", why: "Atpalaiduoja ir ilgina šlaunų priekį bei klubo lenkiamuosius, atveria krūtinę. Tai priešingas judesys ilgam sėdėjimui.",
+    steps: ["Atsiklaupk, sėskis ant kulnų ir rankomis atsiremk į grindis už savęs.", "Pečius atitrauk atgal, žvilgsnis į priekį.", "Stumk dubenį pirmyn ir aukštyn, kol pajusi tempimą šlaunų priekyje ir krūtinėje. Palaikyk 3 sekundes.", "Lėtai grįžk ant kulnų ir kartok."],
+    mistakes: ["Galva atkrenta atgal. Kaklas tęsia stuburą.", "Judi staigiai. Kiekvieną kartą lėtai ir su pauze viršuje.", "Kelia skausmą keliuose. Pasidėk po keliais sulankstytą kilimėlį."],
+    dose: ["2 serijos × 10 kartų, laikyti 3 s", "2 serijos × 12 kartų, laikyti 3 s"], sets: [2,2], secs: [50,60], sides: false, cue: "Rankos už nugaros, stumk dubenį pirmyn ir aukštyn, palaikyk 3 s.",
+    group: "mob", setup: "Atsiklaupk, sėskis ant kulnų ir atsiremk rankomis už savęs.", anim: "kneelpush" },
+  { name: "Išsirietimas iš vaiko pozos", en: "Child's pose to cobra", why: "Švelniai judina juosmenį ir krūtinės ląstą į abi puses, ilgina pilvo ir klubo priekio raumenis.",
+    steps: ["Atsisėsk ant kulnų, rankas ištiesk į priekį ant grindų, krūtinė arti grindų.", "Delnų nejudindama slink pirmyn: dubuo leidžiasi prie grindų, krūtinė kyla aukštyn.", "Išsirietime pečiai nuleisti, žvilgsnis į priekį.", "Pilna amplitude grįžk atgal ant kulnų."],
+    mistakes: ["Pečiai pakyla prie ausų.", "Juosmenyje jauti spaudimą ar skausmą. Kelk krūtinę mažiau.", "Skubi. Judesys sklandus, be trūkčiojimų."],
+    dose: ["2 serijos × 10 kartų", "2 serijos × 12 kartų"], sets: [2,2], secs: [45,55], sides: false, cue: "Iš vaiko pozos slink pirmyn, krūtinė aukštyn, ir grįžk atgal.",
+    group: "mob", setup: "Atsisėsk ant kulnų, rankas ištiesk į priekį ant grindų.", anim: "childcobra" },
+  { name: "Gilus pritūpimas", en: "Deep squat hold", why: "Didina klubų, kelių ir čiurnų paslankumą, švelniai ištempia dubens sritį.",
+    steps: ["Atsistok, pėdos pečių plotyje, pirštai šiek tiek į šonus.", "Pritūpk kuo giliau, kulnai lieka ant grindų.", "Išbūk pritūpime, ramiai kvėpuok.", "Jei patogu, pakaitomis kelk tiesias rankas aukštyn."],
+    mistakes: ["Kulnai kyla nuo grindų. Pasidėk po kulnais sulankstytą rankšluostį arba tupk mažiau.", "Nugara stipriai apvalėja. Krūtinė aukštyn.", "Keliai krenta į vidų."],
+    dose: ["2 kartai × 30 s", "2 kartai × 45 s, su rankų kėlimu"], sets: [2,2], secs: [30,45], sides: false, cue: "Pritūpk kuo giliau, kulnai prie grindų, kvėpuok, kelk rankas.",
+    group: "mob", setup: "Atsistok, pėdos pečių plotyje.", anim: "squat" },
+  { name: "Tiltelis su pasisukimu", en: "Crab reach", why: "Atveria krūtinę ir pečius, judina krūtininę stuburo dalį ir kartu įjungia sėdmenis.",
+    steps: ["Atsisėsk, kelius sulenk, pėdos ant grindų, rankomis atsiremk už nugaros.", "Lėtai kelk dubenį ir viena ranka siek per viršų kuo toliau už galvos, liemuo šiek tiek pasisuka.", "Palaikyk 3 sekundes ir lėtai grįžk į sėdimą padėtį.", "Atlikusi kartojimus viena ranka, kartok kita."],
+    mistakes: ["Dubuo kyla per mažai. Spausk pėdomis ir suspausk sėdmenis.", "Atraminė ranka sulinksta. Laikyk ją tiesią, petys virš delno.", "Judi greitai."],
+    dose: ["2 serijos × 6 kartai kiekviena ranka", "2 serijos × 8 kartai kiekviena ranka"], sets: [2,2], secs: [35,45], sides: true, cue: "Kelk dubenį, ranka siek toli už galvos, palaikyk 3 s.",
+    group: "mob", setup: "Atsisėsk, kelius sulenk, rankomis atsiremk už nugaros.", anim: "crabreach" },
+  { name: "Lenta ant dilbių", en: "Forearm plank", why: "Stiprina visą liemenį ir pečių juostą. Mokaisi išlaikyti dubenį neutralų, kai kūnas apkrautas.",
+    steps: ["Atsiremk dilbiais, alkūnės tiesiai po pečiais, kojos ištiestos pečių plotyje.", "Įtempk pilvą ir sėdmenis: kūnas tiesia linija nuo galvos iki kulnų.", "Stumk grindis dilbiais, kad mentės nesusmegtų. Žvilgsnis į grindis tarp delnų.", "Laikyk ir ramiai kvėpuok. Jei per sunku, nuleisk kelius ant grindų."],
+    mistakes: ["Dubuo nusvyra ir juosmuo įlinksta. Tai ką tik išmoktą dubens pakreipimą daryk ir čia.", "Sėdmenys per aukštai.", "Galva atlošta. Kaklas tęsia stuburą."],
+    dose: ["2 kartai × 20 s", "2 kartai × 35 s"], sets: [2,2], secs: [20,35], sides: false, cue: "Alkūnės po pečiais, kūnas tiesus, stumk grindis dilbiais.",
+    group: "core", setup: "Atsigulk ant pilvo ir atsiremk dilbiais, alkūnės po pečiais.", anim: "plank" },
+  { name: "Tiltelis viena koja", en: "Single-leg glute bridge", why: "Sunkesnis tiltelio variantas: stiprina kiekvieno šono sėdmenis ir šlaunies užpakalį atskirai, gerina dubens stabilumą.",
+    steps: ["Atsigulk ant nugaros, viena pėda ant grindų, kitą koją pakelk sulenktą per kelį.", "Pakreipk dubenį ir spausdama atremtos kojos kulnu kelk dubenį.", "Viršuje palaikyk 3 sekundes, dubuo lygus, nekrypsta į šoną.", "Lėtai nusileisk. Atlikusi kartojimus, keisk koją."],
+    mistakes: ["Dubuo pasvyra į pakeltos kojos pusę.", "Viršuje išsirieti juosmenį.", "Sulaikai kvapą. Iškvėpk keldama."],
+    dose: ["2 serijos × 8 kartai kiekviena koja", "2 serijos × 12 kartų kiekviena koja"], sets: [2,2], secs: [40,60], sides: true, cue: "Spausk kulnu, kelk dubenį, viršuje palaikyk 3 s. Dubuo lygus.",
+    group: "glute", setup: "Atsigulk ant nugaros, viena pėda ant grindų, kitą koją pakelk sulenktą.", anim: "slbridge" },
+  { name: "Žingsniavimas kulnais", en: "Bridge walk-outs", why: "Stiprina šlaunies užpakalį ir sėdmenis, kai dubuo laikomas pakeltas.",
+    steps: ["Atsigulk ant nugaros, kelius sulenk, rankas pakelk į lubas (lengviau – padėk ant grindų).", "Pakelk dubenį kaip tiltelyje.", "Mažais žingsneliais kulnais eik tolyn, kiek gali išlaikyti dubenį aukštai.", "Tokiais pat žingsneliais grįžk atgal ir nusileisk."],
+    mistakes: ["Dubuo krenta. Neik per toli.", "Traukia mėšlungis. Trumpesni žingsniai, rankos ant grindų.", "Juosmuo įlinksta."],
+    dose: ["2 serijos × 3 nuėjimai", "2 serijos × 4 nuėjimai"], sets: [2,2], secs: [36,48], sides: false, cue: "Dubuo aukštai, mažais žingsneliais kulnais tolyn ir atgal.",
+    group: "glute", setup: "Atsigulk ant nugaros, kelius sulenk, rankas pakelk į lubas.", anim: "heelwalk" },
+  { name: "Dubens išlaikymas klūpint", en: "Kneeling hip extension hold", why: "Statinis šlaunų priekio, pilvo ir krūtinės tempimas.",
+    steps: ["Atsiklaupk, rankomis atsiremk į grindis už savęs.", "Pakelk dubenį kuo aukščiau ir išplėsk krūtinę.", "Išlaikyk padėtį ir ramiai kvėpuok.", "Lėtai grįžk ant kulnų."],
+    mistakes: ["Kaklas atloštas. Žiūrėk į priekį ar į lubas, bet neatmesk galvos.", "Skauda kelius. Pasidėk minkštą pagrindą."],
+    dose: ["2 kartai × 20 s", "2 kartai × 30 s"], sets: [2,2], secs: [20,30], sides: false, cue: "Dubuo aukštyn, krūtinė atverta, kvėpuok.",
+    group: "stretch", setup: "Atsiklaupk, rankomis atsiremk už savęs.", anim: "camel" },
+  { name: "Lankas gulint ant pilvo", en: "Prone quad and front body stretch", why: "Ištempia šlaunų priekį, pilvą ir krūtinę, kurie esant dubens pasvirimui į priekį būna sutrumpėję.",
+    steps: ["Atsigulk ant pilvo, šlaunys kartu.", "Sulenk kelius ir rankomis suimk pėdas.", "Pečius atitrauk atgal ir švelniai kilstelk krūtinę. Pėdas trauk prie sėdmenų.", "Laikyk ir kvėpuok. Jei per stipru, laikyk tik pėdas, krūtinės nekelk."],
+    mistakes: ["Juosmenyje jauti spaudimą. Nekelk krūtinės, palik tik kelių sulenkimą.", "Sulaikai kvapą.", "Keliai prasiskiria į šonus."],
+    dose: ["2 kartai × 30 s", "2 kartai × 45 s"], sets: [2,2], secs: [30,45], sides: false, cue: "Suimk pėdas, pečiai atgal, švelniai kilstelk krūtinę.",
+    group: "stretch", setup: "Atsigulk ant pilvo ir sulenk kelius.", anim: "bow" },
+  { name: "Krūtinės nuleidimas", en: "Puppy pose", why: "Ištempia krūtinę, pečius ir juosmenį.",
+    steps: ["Atsistok keturpėsčia.", "Rankas ištiesk toli pirmyn, dubuo lieka virš kelių.", "Leisk krūtinę žemyn link grindų. Nesėsk ant kulnų.", "Laikyk ir kvėpuok į nugarą."],
+    mistakes: ["Sėdi ant kulnų. Tada tai jau vaiko poza.", "Pečiai įsitempę prie ausų.", "Skauda petį. Pakeisk rankų plotį."],
+    dose: ["1 kartas × 45 s", "2 kartai × 45 s"], sets: [1,2], secs: [45,45], sides: false, cue: "Rankos toli pirmyn, dubuo virš kelių, krūtinė žemyn.",
+    group: "stretch", setup: "Atsistok keturpėsčia.", anim: "puppy" },
+  { name: "Šlaunies priekio tempimas klūpint", en: "Half-kneeling quad stretch", why: "Tempia ir klubo lenkiamuosius, ir keturgalvį šlaunies raumenį: abu tempia dubenį į priekį.",
+    steps: ["Atsiklaupk ant vieno kelio (po keliu sulankstyk kilimėlį), kita pėda priekyje.", "Ranka suimk užpakalinės kojos pėdą ir švelniai trauk prie sėdmens.", "Suspausk sėdmenį ir stumk dubenį pirmyn, liemuo tiesus.", "Laikyk, tada keisk koją."],
+    mistakes: ["Juosmuo įlinksta. Uodegikaulis po savimi.", "Traukia kelį. Trauk pėdą mažiau arba naudok rankšluostį.", "Prarandi pusiausvyrą. Laisva ranka atsiremk į sieną ar kėdę."],
+    dose: ["1 kartas × 30 s kiekviena koja", "2 kartai × 45 s kiekviena koja"], sets: [1,2], secs: [30,45], sides: true, cue: "Suimk pėdą, suspausk sėdmenį, dubuo pirmyn.",
+    group: "stretch", setup: "Atsiklaupk ant vieno kelio, kita pėda priekyje, ranka suimk užpakalinės kojos pėdą.", anim: "kneelquad" }
 ];
+// Pratimai išrikiuojami pagal grupes: kvėpavimas, paslankumas, pilvas, sėdmenys, tempimas
+const GROUPS = { breath: "Kvėpavimas", mob: "Paslankumas", core: "Pilvas ir liemuo", glute: "Sėdmenys ir šlaunies užpakalis", stretch: "Tempimas" };
+EX.sort((a, b) => Object.keys(GROUPS).indexOf(a.group) - Object.keys(GROUPS).indexOf(b.group));
 
 // Sekundės: poilsis tarp serijų, pusės keitimas, pirmo pratimo apžiūra, poilsis tarp pratimų,
 // pasiruošimas po poilsio, poilsio pratęsimas mygtuku
@@ -69,6 +138,7 @@ function renderCards() {
   const box = document.getElementById("cards");
   box.innerHTML = EX.map((e, i) => `
     <article class="ex" id="ex${i}">
+      ${i === 0 || EX[i - 1].group !== e.group ? `<p class="ex-group">${GROUPS[e.group]}</p>` : ""}
       <div class="ex-head"><span class="num">${i + 1}.</span><div><h3>${esc(e.name)}</h3><span class="alias">${esc(e.en)}</span></div></div>
       <div class="dose"><span class="chip">${esc(e.dose[level])}</span>${e.sides ? '<span class="chip">pradėk kaire, po to dešine</span>' : ""}</div>
       <p class="why">${esc(e.why)}</p>
@@ -77,7 +147,7 @@ function renderCards() {
       <ol>${e.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
       <h4>Dažnos klaidos</h4>
       <ul class="mist">${e.mistakes.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
-      <a class="video" href="#vid${i}" data-play="${i}"><i class="play" aria-hidden="true"></i><span>Žiūrėti video<small>${esc(e.video.by)} · skiltyje „Video“</small></span></a>
+      ${e.video ? `<a class="video" href="#vid${i}" data-play="${i}"><i class="play" aria-hidden="true"></i><span>Žiūrėti video<small>${esc(e.video.by)} · skiltyje „Video“</small></span></a>` : ""}
     </article>`).join("");
   cardAnims.forEach(c => c.destroy());
   cardAnims = [...box.querySelectorAll(".anim")].map(f => ANIM.mount(f, f.dataset.anim, level));
@@ -85,7 +155,7 @@ function renderCards() {
 
 // Atskira video skiltis: miniatiūra, paspaudus – įterptas YouTube (nocookie) grotuvas
 function renderVideos() {
-  $("videolist").innerHTML = EX.map((e, i) => `
+  $("videolist").innerHTML = EX.map((e, i) => !e.video ? "" : `
     <article class="vcard" id="vid${i}">
       <h3><span class="num">${i + 1}.</span> ${esc(e.name)}</h3>
       <div class="embed" data-id="${e.video.id}" data-title="${esc(e.video.title)}">
@@ -102,62 +172,103 @@ function playVideo(box) {
   box.innerHTML = ytEmbed(box.dataset.id, "autoplay=1&rel=0&playsinline=1", box.dataset.title);
 }
 
-// Savaitės planas (0 = pirmadienis). „full“ – visi pratimai, „light“ – poilsio dienos
-// pratimai (rest: true) ir pasivaikščiojimas.
-const WEEK = [
-  ["Pirmadienis", "Pr", "full"], ["Antradienis", "An", "light"], ["Trečiadienis", "Tr", "full"],
-  ["Ketvirtadienis", "Kt", "light"], ["Penktadienis", "Pn", "full"], ["Šeštadienis", "Št", "light"],
-  ["Sekmadienis", "Sk", "full"]
-].map(([name, short, type]) => ({ name, short, type }));
+// Dienų ratas pagal kineziterapeuto programą: kiekviena treniruotė – kvėpavimas → paslankumas →
+// stiprinimas → tempimas. Dienos akcentas keičiasi ratu (pilvas → sėdmenys → atsigavimas), o
+// Garmin pasiruošimas nusprendžia, ar šiandien stiprinimas, ar atsigavimas (žr. suggestPlan).
+// Paslankumo, sėdmenų ir tempimo pratimai parenkami rečiausiai darytieji per 14 dienų, kad per
+// savaitę visi būtų atlikti panašiai dažnai. „relax“ – vakarinis atsipalaidavimas.
+const WEEKDAYS = ["Pirmadienis", "Antradienis", "Trečiadienis", "Ketvirtadienis", "Penktadienis", "Šeštadienis", "Sekmadienis"];
+const WD_SHORT = ["Pr", "An", "Tr", "Kt", "Pn", "Št", "Sk"];
 const DAYTYPE = {
-  full: { name: "Visa treniruotė", list: () => EX.map((e, i) => i), extra: "" },
-  light: { name: "Lengva diena (kvėpavimas ir tempimai)", list: () => EX.map((e, i) => (e.rest ? i : -1)).filter(i => i >= 0), extra: "Plius 30 min. pasivaikščiojimas sparčiu žingsniu." },
-  // Vakare po įtemptos dienos (Garmin stresas) siūlomas trumpas atsipalaidavimas
-  relax: { name: "Atsipalaidavimas (kvėpavimas ir vaiko poza)", list: () => EX.map((e, i) => (["breath", "child"].includes(e.anim) ? i : -1)).filter(i => i >= 0), extra: "" }
+  core: { name: "Pilvo ir liemens diena", short: "Pilvas", say: "pilvo ir liemens diena", mark: "P", plan: { mob: 2, core: 4, stretch: 2 } },
+  glute: { name: "Sėdmenų diena", short: "Sėdmenys", say: "sėdmenų diena", mark: "S", plan: { mob: 2, glute: 4, stretch: 2 } },
+  recovery: { name: "Atsigavimo diena (paslankumas ir tempimai)", short: "Atsigavimas", say: "atsigavimo diena: paslankumas ir tempimai", mark: "A", plan: { mob: 4, stretch: 4 } },
+  relax: { name: "Atsipalaidavimas (kvėpavimas ir vaiko poza)", short: "Atsipalaidavimas", mark: "R", fixed: ["breath", "child"] }
 };
+const STRENGTH = ["core", "glute"];
+const byGroup = g => EX.map((e, i) => (e.group === g ? i : -1)).filter(i => i >= 0);
+// Kiek kartų kiekvienas pratimas darytas per 14 dienų (žurnalo laukas „ex“ – animacijų pavadinimai)
+function usage() {
+  const since = dayKey(new Date(Date.now() - 14 * 864e5)), c = {};
+  loadLog().filter(x => x.d >= since).forEach(x => (x.ex || []).forEach(a => { c[a] = (c[a] || 0) + 1; }));
+  return c;
+}
+function sessionList(type) {
+  const t = DAYTYPE[type];
+  if (t.fixed) return t.fixed.map(a => EX.findIndex(e => e.anim === a));
+  const u = usage();
+  const pick = (g, n) => byGroup(g).map((i, o) => [i, (u[EX[i].anim] || 0) * 100 + o]).sort((x, y) => x[1] - y[1]).slice(0, n).map(x => x[0]).sort((x, y) => x - y);
+  return [...byGroup("breath"), ...["mob", "core", "glute", "stretch"].flatMap(g => t.plan[g] ? pick(g, t.plan[g]) : [])];
+}
+// Šiandienos pasiūlymas: { type, easy, why } – kita rato diena, pakoreguota pagal Garmin
+function suggestPlan() {
+  const log = loadLog().filter(x => x.t !== "relax").reverse();
+  const lastOf = t => (log.find(x => x.t === t) || {}).d || "";
+  const strength = lastOf("core") <= lastOf("glute") ? "core" : "glute";
+  const r = HEALTH.readiness(), ov = HEALTH.overview();
+  if ((r && r.score < 45) || (ov && ov.load === "stress"))
+    return { type: "recovery", easy: false, why: "garmin" };
+  // Be Garmin duomenų: po dviejų stiprinimo dienų iš eilės (per paskutines 3 d.) – atsigavimas
+  const recent = log.filter(x => x.d >= dayKey(new Date(Date.now() - 3 * 864e5)));
+  if (!r && recent.length >= 2 && recent.slice(0, 2).every(x => x.t !== "recovery")) return { type: "recovery", easy: false, why: "rotation" };
+  if (!r && log.length && log[0].t !== "recovery" && lastOf("recovery") < lastOf("core") && lastOf("recovery") < lastOf("glute") && lastOf("core") && lastOf("glute"))
+    return { type: "recovery", easy: false, why: "rotation" };
+  return { type: strength, easy: !!r && r.score < 70, why: "" };
+}
 // Lietuviškas daugiskaitos linksnis: 1 minutė, 2 minutės, 10 minučių, 21 minutė...
 function plural(n, one, few, many) {
   const t = n % 100, u = n % 10;
   return n + " " + (u === 0 || (t >= 11 && t <= 19) ? many : u === 1 ? one : few);
 }
 const weekday = d => (d.getDay() + 6) % 7;
-let selDay = weekday(new Date()), lastToday = selDay;
-// override – kitas treniruotės tipas nei pagal savaitės planą (pvz., „relax“);
-// easy – lengvesnė versija pavargus: viena serija mažiau, ilgesnis poilsis
-let override = null, easy = false;
+let lastToday = weekday(new Date());
+// plan – šiandienos pasiūlymas; override – naudotojos pasirinktas kitas tipas;
+// easy – lengvesnė versija: viena serija mažiau, ilgesnis poilsis
+let plan = { type: "core", easy: false, why: "" }, override = null, easy = false, easyTouched = null;
 const EASY_REST = 10;
-const dayType = () => override || WEEK[selDay].type;
+const dayType = () => override || plan.type;
+function refreshPlan() {
+  plan = suggestPlan();
+  if (easyTouched !== dayKey(new Date())) easy = plan.easy && STRENGTH.includes(dayType());
+}
 
-function buildSteps(lvl = level, list = DAYTYPE[dayType()].list(), ez = easy) {
+// Pasiruošimas prieš kiekvieną seriją: balsas pasako pratimą ir kaip atsigulti (laikmatis stovi),
+// tada COUNTDOWN s atgalinis laikas, pypsi kas sekundę, ir „Pradedam“
+const COUNTDOWN = 5, COUNTDOWN_SILENT = 10;
+function prepText(e, set, sets, side) {
+  if (side === 1) return `Dešinė pusė. ${VOICE_SWITCH[e.anim] || "Keisk pusę."}`;
+  return `${sets > 1 ? `${ORD[set]} serija. ` : ""}${e.name}. ${e.setup}${side === 0 ? " Pradėk kaire puse." : ""}`;
+}
+function buildSteps(lvl = level, list = sessionList(dayType()), ez = easy) {
   const steps = [], REST = ez ? REST_SETS + EASY_REST : REST_SETS;
   list.forEach((i, pos) => {
     const e = EX[i];
     const sets = ez ? Math.max(1, e.sets[lvl] - 1) : e.sets[lvl], secs = e.secs[lvl];
-    // Tarp pratimų – poilsis (jau rodoma kito pratimo animacija), po jo trumpas pasiruošimas
-    if (pos > 0) steps.push({ type: "rest", between: true, ex: i, title: "Poilsis", sub: "", cue: `Atsikvėpk ir atsigerk vandens. Toliau: ${i + 1}. ${e.name}. ${e.cue}`, secs: REST_BETWEEN });
-    steps.push({ type: "prep", pos, ex: i, title: pos ? "Pasiruošk" : "Žiūrėk ir pasiruošk", sub: "", cue: `${i + 1}. ${e.name}. ${pos ? "Užimk pradinę padėtį." : "Pažiūrėk, kaip daroma, ir užimk pradinę padėtį."} ${e.cue}`, secs: pos ? PREP_NEXT : PREP });
+    // Tarp pratimų – poilsis (jau rodoma kito pratimo animacija)
+    if (pos > 0) steps.push({ type: "rest", between: true, ex: i, title: "Poilsis", sub: "", cue: `Atsikvėpk ir atsigerk vandens. Toliau: ${e.name}. ${e.cue}`, secs: REST_BETWEEN });
     const sides = e.sides ? ["kairė pusė", "dešinė pusė"] : [null];
     for (let s = 0; s < sets; s++) {
       sides.forEach((side, k) => {
-        let label = `${i + 1}. ${e.name}`;
+        const sd = side ? k : -1;
+        steps.push({ type: "prep", pos, ex: i, set: s, sets, side: sd, title: "Pasiruošk", sub: "", say: prepText(e, s, sets, sd),
+          cue: sd === 1 ? (VOICE_SWITCH[e.anim] || "Keisk pusę.") : e.setup, secs: SAY.active ? COUNTDOWN : COUNTDOWN_SILENT });
         const parts = [];
         if (sets > 1) parts.push(`${s + 1}/${sets} serija`);
         if (side) parts.push(side);
-        steps.push({ type: "work", ex: i, set: s, sets, side: side ? k : -1, title: label, sub: parts.join(" · "), cue: e.cue + " " + e.dose[lvl] + ".", secs });
-        const lastSide = k === sides.length - 1, lastSet = s === sets - 1;
-        if (!lastSide) steps.push({ type: "rest", sw: true, ex: i, title: "Keisk pusę", sub: "", cue: `Atsigulk ant kito šono / pakeisk koją. Toliau: ${e.name}, dešinė pusė.`, secs: SIDE_SWITCH });
-        else if (!lastSet) steps.push({ type: "rest", nextSet: s + 1, ex: i, title: "Poilsis", sub: "", cue: `Toliau: ${e.name}, ${s + 2} serija.`, secs: REST });
+        steps.push({ type: "work", ex: i, set: s, sets, side: sd, title: e.name, sub: parts.join(" · "), cue: e.cue + " " + e.dose[lvl] + ".", secs });
+        if (k === sides.length - 1 && s < sets - 1) steps.push({ type: "rest", nextSet: s + 1, ex: i, title: "Poilsis", sub: "", cue: `Toliau: ${e.name}, ${s + 2} serija.`, secs: REST });
       });
     }
   });
   return steps;
 }
 
-// Atliktos treniruotės saugomos localStorage žurnale: { d: "2026-10-06", t: "full" | "light", ... }.
-// Viena įskaita dienai ir tipui. Savaitė prasideda pirmadienį; „Šią savaitę X/4“ skaičiuoja visas
-// treniruotes. Įskaitoma, jei realiai treniruotasi bent pusę numatyto laiko (kad keli
-// „Praleisti žingsnį“ paspaudimai nepažymėtų treniruotės atlikta).
+// Atliktos treniruotės saugomos localStorage žurnale: { d: "2026-10-06", t: "core" | "glute" |
+// "recovery" | "relax" (seni: "full", "light"), ex: [animacijos], ... }. Viena įskaita dienai ir tipui.
+// Savaitė prasideda pirmadienį. Įskaitoma, jei realiai treniruotasi bent pusę numatyto laiko
+// (kad keli „Praleisti žingsnį“ paspaudimai nepažymėtų treniruotės atlikta).
 const LOG_KEY = "karolina-log", OLD_KEY = "karolina-done", WEEK_GOAL = 4, KEEP_DAYS = 180;
+const TYPE_NAME = t => (DAYTYPE[t] && DAYTYPE[t].name) || (t === "full" ? "Visa treniruotė" : "Lengva diena");
 function dayKey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
 function loadLog() {
   try {
@@ -182,35 +293,43 @@ function markDone(type, extra = {}) {
 }
 function weekDates() {
   const now = new Date(), mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - weekday(now));
-  return WEEK.map((w, i) => dayKey(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
+  return WEEKDAYS.map((w, i) => dayKey(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
+}
+// Šios savaitės treniruotės: iš viso (be vakarinio atsipalaidavimo) ir pagal tipą
+function weekStats() {
+  const dates = weekDates(), log = loadLog().filter(x => x.d >= dates[0] && x.t !== "relax");
+  const by = { core: 0, glute: 0, recovery: 0 };
+  log.forEach(x => { if (x.t in by) by[x.t]++; else if (x.t === "full") by.core++; });
+  return { total: new Set(log.map(x => x.d + x.t)).size, by };
 }
 function renderWeek() {
-  const log = loadLog(), dates = weekDates(), today = weekday(new Date());
-  const full = new Set(log.filter(x => x.t === "full" && x.d >= dates[0]).map(x => x.d)).size;
-  $("week").textContent = `Šią savaitę: ${full}/${WEEK_GOAL}`;
-  $("days").innerHTML = WEEK.map((w, i) => {
-    const done = log.some(x => x.d === dates[i]);
-    return `<button class="day ${w.type}${i === today ? " today" : ""}${done ? " done" : ""}" data-day="${i}" aria-pressed="${i === selDay}" title="${w.name}: ${DAYTYPE[w.type].name}${done ? " · atlikta" : ""}">
-      <b>${w.short}</b><i aria-hidden="true">${done ? "✓" : w.type === "full" ? "●" : "○"}</i></button>`;
+  const log = loadLog(), dates = weekDates(), today = weekday(new Date()), w = weekStats();
+  $("week").textContent = `Šią savaitę: ${w.total}/${WEEK_GOAL}`;
+  $("days").innerHTML = WEEKDAYS.map((name, i) => {
+    const done = log.filter(x => x.d === dates[i] && x.t !== "relax");
+    const marks = done.map(x => (DAYTYPE[x.t] || {}).mark || "✓").join("");
+    return `<span class="day${i === today ? " today" : ""}${done.length ? " done" : ""}" title="${name}${done.length ? ": " + done.map(x => TYPE_NAME(x.t)).join(", ") : ""}">
+      <b>${WD_SHORT[i]}</b><i aria-hidden="true">${marks || (i === today ? "•" : "·")}</i></span>`;
   }).join("");
-  const w = WEEK[selDay], min = Math.round(buildSteps(level).reduce((a, s) => a + s.secs, 0) / 60), n = DAYTYPE[w.type].list().length;
-  $("dayinfo").innerHTML = `<b>${selDay === today ? "Šiandien" : w.name}${selDay === today ? ` (${w.name.toLowerCase()})` : ""}:</b> ${DAYTYPE[w.type].name.toLowerCase()} – ${plural(n, "pratimas", "pratimai", "pratimų")}, apie ${min} min. ${DAYTYPE[w.type].extra}`;
+  const list = sessionList(dayType()), min = Math.round(buildSteps(level, list).reduce((a, s) => a + s.secs, 0) / 60);
+  $("dayinfo").innerHTML = `<b>Šiandien${override ? "" : " siūloma"}:</b> ${DAYTYPE[dayType()].name.toLowerCase()} – ${plural(list.length, "pratimas", "pratimai", "pratimų")}, apie ${min} min.${easy ? " Lengvesnė versija." : ""}
+    <br><span class="wk">Per savaitę: pilvas ${w.by.core}, sėdmenys ${w.by.glute}, atsigavimas ${w.by.recovery}.</span>`;
+  document.querySelectorAll("[data-type]").forEach(b => b.setAttribute("aria-pressed", b.dataset.type === dayType()));
 }
-function selectDay(i) {
-  if (i === selDay) return;
-  if (idx >= 0 && idx < steps.length && !confirm("Nutraukti dabartinę treniruotę ir pereiti prie kitos dienos?")) return;
-  selDay = i;
-  renderWeek(); reset();
+// Kito tipo pasirinkimas (pasisveikinimo ekrane ir laikmatyje)
+function chooseType(t) {
+  if (idx >= 0 && idx < steps.length && !confirm("Nutraukti dabartinę treniruotę ir pradėti kitą?")) return;
+  override = t === plan.type ? null : t;
+  if (easyTouched !== dayKey(new Date())) easy = plan.easy && STRENGTH.includes(dayType());
+  reset(); renderWeek(); renderHello();
 }
 
-// Bendra trukmė ir poilsio dienų pratimai skaičiuojami iš EX, kad pakeitus pratimus
-// tekstas puslapyje neatsiliktų.
+// Vidutinė pilvo dienos trukmė abiem lygiais (puslapio tekstui)
 function renderSummary() {
   [0, 1].forEach(l => {
-    const min = Math.round(buildSteps(l, DAYTYPE.full.list()).reduce((a, s) => a + s.secs, 0) / 60);
+    const min = Math.round(buildSteps(l, sessionList("core"), false).reduce((a, s) => a + s.secs, 0) / 60);
     document.querySelectorAll(`[data-dur="${l}"]`).forEach(el => { el.textContent = min; });
   });
-  $("restlist").innerHTML = EX.map((e, i) => e.rest ? `<a href="#ex${i}">${i + 1}. ${esc(e.name)}</a>` : "").filter(Boolean).join(", ");
 }
 
 let steps = buildSteps(), idx = -1, left = 0, timer = null, running = false, audio = null, wake = null;
@@ -257,14 +376,14 @@ function show() {
   if (idx !== spokenIdx) { spokenIdx = idx; announce(st); }
   $("kind").textContent = holding ? (st.type === "intro" ? "Įžanga · klausyk" : "Klausyk ir pasiruošk")
     : st.type === "work" ? "Daryk" + (st.sub ? " · " + st.sub : "") : st.title;
-  $("now").textContent = st.type === "intro" ? "Labas, Karolina!" : st.type === "work" ? st.title : st.type === "prep" ? `${st.ex + 1}. ${EX[st.ex].name}`
-    : st.between ? `Toliau: ${st.ex + 1}. ${EX[st.ex].name}` : (st.title === "Keisk pusę" ? "Keisk pusę" : "Atsikvėpk");
-  $("cue").textContent = holding && st.type === "prep" ? EX[st.ex].steps.join(" ") : st.cue;
+  $("now").textContent = st.type === "intro" ? "Labas, Karolina!" : st.type === "work" ? st.title : st.type === "prep" ? EX[st.ex].name
+    : st.between ? `Toliau: ${EX[st.ex].name}` : "Atsikvėpk";
+  $("cue").textContent = st.cue;
   $("clock").textContent = holding ? "Klausyk…" : fmt(left);
   $("player").classList.toggle("is-listen", holding);
   $("bar").style.width = holding ? "0" : (100 * (st.secs - left) / st.secs) + "%";
   const remaining = steps.slice(idx + 1).reduce((a, s) => a + s.secs, 0) + left;
-  const list = DAYTYPE[dayType()].list();
+  const list = [...new Set(steps.filter(s => s.type === "work").map(s => s.ex))];
   $("meta").textContent = `Pratimas ${list.indexOf(st.ex) + 1} iš ${list.length} · liko apie ${Math.ceil(remaining / 60)} min.`;
   highlight(steps[idx].ex);
   $("restctl").hidden = st.type !== "rest";
@@ -293,65 +412,67 @@ function markHeard(k) {
   heard.add(k);
   try { localStorage.setItem(HEARD_KEY, JSON.stringify([...heard])); } catch (e) {}
 }
-function introStep(full = !heard.has("intro")) {
-  const w = WEEK[selDay], type = dayType(), list = DAYTYPE[type].list(), min = Math.round(buildSteps(level).reduce((a, s) => a + s.secs, 0) / 60);
-  const mins = plural(min, "minutė", "minutės", "minučių");
+// Įžangoje nėra pratimų skaičiaus ir trukmės (jie priklauso nuo parinktų pratimų), kad visas
+// variantas būtų iš anksto įrašytas
+function introStep(full = !heard.has("intro"), type = dayType(), ez = easy, why = override ? "" : plan.why) {
+  const ex = sessionList(type)[0];
   if (type === "relax")
-    return { type: "intro", ex: list[0], title: "Įžanga", sub: "", secs: INTRO_SECS,
-      cue: `Labas, Karolina. Diena buvo įtempta, todėl dabar – trumpas atsipalaidavimas: kvėpavimas ir vaiko poza, apie ${mins}. Atsigulk patogiai. Pradedam.` };
-  const what = type === "full" ? `visa treniruotė: ${plural(list.length, "pratimas", "pratimai", "pratimų")}, apie ${mins}` : `lengva diena: kvėpavimas ir tempimai, apie ${mins}, o paskui pusvalandis pasivaikščiojimo`;
-  const why = easy ? "Šiandien tavo kūnas pavargęs, todėl darysim lengvesnę versiją: mažiau serijų ir ilgesnis poilsis. " : "";
-  const text = !full ? `Labas, Karolina. Šiandien ${w.name.toLowerCase()}, ${what}. ${why}Patiesk kilimėlį. Pradedam.`
-    : `Labas, Karolina. Šiandien ${w.name.toLowerCase()}, ${what}. ${why}` +
-    "Šios mankštos tikslas – sustiprinti giliuosius pilvo ir sėdmenų raumenis ir išmokti valdyti dubens padėtį. " +
-    "Judėk lėtai, visą laiką kvėpuok ir niekada nedaryk per aštrų skausmą. Aš pasakysiu, kada ir ką daryti, tau nereikės skaičiuoti. " +
-    "Patiesk kilimėlį. Pradedam.";
-  return { type: "intro", ex: list[0], title: "Įžanga", sub: "", cue: text, secs: INTRO_SECS };
+    return { type: "intro", ex, title: "Įžanga", sub: "", secs: INTRO_SECS,
+      cue: "Labas, Karolina. Diena buvo įtempta, todėl dabar – trumpas atsipalaidavimas: kvėpavimas ir vaiko poza. Atsigulk patogiai." };
+  const reason = type === "recovery" && why === "garmin" ? "Garmin rodo, kad šiandien kūnui reikia daugiau poilsio, todėl vietoj stiprinimo darysim paslankumą ir tempimus. "
+    : ez ? "Šiandien tavo kūnas pavargęs, todėl darysim lengvesnę versiją: mažiau serijų ir ilgesnis poilsis. " : "";
+  const text = `Labas, Karolina. Šiandien – ${DAYTYPE[type].say}. ${reason}` + (full
+    ? (type === "recovery" ? "Pradėsim nuo kvėpavimo, paskui paslankumas ir tempimai. " : "Pradėsim nuo kvėpavimo ir paslankumo, paskui stiprinimas, pabaigoje tempimai. ") + "Šios mankštos tikslas – sustiprinti giliuosius pilvo ir sėdmenų raumenis ir išmokti valdyti dubens padėtį. " +
+      "Judėk lėtai, visą laiką kvėpuok ir niekada nedaryk per aštrų skausmą. Prieš kiekvieną pratimą pasakysiu, kaip atsigulti, ir suskaičiuosiu iki pradžios. "
+    : "") + "Patiesk kilimėlį.";
+  return { type: "intro", ex, title: "Įžanga", sub: "", cue: text, secs: INTRO_SECS };
 }
 let spokenIdx = -1, vKey = null, vFlags = {};
-// Kol balsas skaito įžangą, laikmatis stovi („holding“). Kai baigia – pypsi ir prasideda
-// pirmas pratimas. Jei naršyklė nepraneša apie kalbos pabaigą, po apskaičiuoto laiko tęsiama
-// vis tiek. Prieš pratimą aprašymas nebeskaitomas: pasiruošimo laikas pypsi paskutines 3 s,
-// o pratimui prasidėjus balsas pasako „Pradedam“ ir veda ritmo nurodymais.
+// Kol balsas skaito įžangą arba pasiruošimą (pratimas ir kaip atsigulti), laikmatis stovi
+// („holding“). Po įžangos pereinama prie pasiruošimo; po pasiruošimo prasideda 5 s atgalinis
+// laikas, pypsintis kas sekundę, ir pratimas prasideda žodžiu „Pradedam“. Jei naršyklė
+// nepraneša apie kalbos pabaigą, po apskaičiuoto laiko tęsiama vis tiek.
 let holding = false, gateId = 0, gateTimer = null;
-const isGated = st => SAY.active && st.type === "intro";
-const heardKey = () => "intro";
+const isGated = st => SAY.active && (st.type === "intro" || st.type === "prep");
+const heardKey = st => (st.type === "intro" ? "intro" : null);
 // key – kurį aprašymą pažymėti išklausytu, kai jis pasakomas iki galo (ne praleistas)
 function gate(text, key) {
   const id = ++gateId;
   holding = true; clearTimeout(gateTimer);
-  const done = () => { if (id === gateId && holding && running) markHeard(key); gateEnd(id); };
+  const done = () => { if (id === gateId && holding && running && key) markHeard(key); gateEnd(id); };
   SAY.say(text, true, done);
   gateTimer = setTimeout(done, Math.max(5000, text.length * 110 + 4000));
 }
 function gateEnd(id) {
   if (id !== gateId || !holding || !running) return;
   clearTimeout(gateTimer);
-  setTimeout(() => { if (id === gateId && running && holding) { holding = false; next(); } }, 500);
+  setTimeout(() => {
+    if (id !== gateId || !running || !holding) return;
+    holding = false;
+    if (steps[idx].type !== "prep") return next();
+    // Atgalinis laikas: pirmas pyptelėjimas iškart, kiti – kas sekundę (tick)
+    left = steps[idx].secs; endAt = Date.now() + left * 1000;
+    countBeep(); show();
+  }, 400);
 }
 function announce(st) {
   vKey = null; vFlags = {};
   const e = EX[st.ex];
   if (isGated(st)) {
-    const full = fullIdx === idx || !heard.has(heardKey(st));
-    return gate(introStep(full).cue, heardKey(st));
+    if (st.type === "prep") return gate(st.say, null);
+    const full = fullIdx === idx || !heard.has("intro");
+    return gate(introStep(full).cue, "intro");
   }
-  // Pirmo pratimo pavadinimas (kitus pasako poilsis prieš juos: „Toliau – …“)
-  if (st.type === "prep") return st.pos ? SAY.stop() : SAY.say(`Pirmas pratimas: ${e.name}.`);
   if (st.type === "rest") {
     if (st.between) return SAY.say(`Poilsis. Atsikvėpk. Toliau – ${e.name}.`);
-    if (st.sw) return SAY.say(VOICE_SWITCH[e.anim] || "Keisk pusę.");
     return SAY.say(`Poilsis. Paskui ${ORD[st.nextSet] ? ORD[st.nextSet].toLowerCase() : ""} serija.`);
   }
   if (st.type === "work") {
-    const pre = (st.sets > 1 ? `${ORD[st.set] || ""} serija. ` : "") + (st.side === 0 ? "Kairė pusė. " : st.side === 1 ? "Dešinė pusė. " : "");
+    // Pratimas prasideda „Pradedam“; pirmą ritmo frazę voiceTick pasakys, kai ji baigsis
     const v = VOICE[e.anim](level, st.secs);
-    const fromPrep = idx > 0 && steps[idx - 1].type === "prep";
-    vFlags.pre = pre;
-    // Po pasiruošimo – „Pradedam“; pirmą ritmo frazę voiceTick pasakys, kai ji baigsis
-    if (fromPrep) SAY.say("Pradedam.");
-    else SAY.stop();
-    if (v.start) { SAY.say(pre + v.start, !fromPrep); vKey = "start"; }
+    vFlags.pre = "";
+    SAY.say("Pradedam.");
+    if (v.start) { SAY.say(v.start, false); vKey = "start"; }
   }
 }
 // Kviečiama kas 250 ms: pagal praėjusį žingsnio laiką pasako einamą ritmo nurodymą
@@ -428,7 +549,7 @@ function tick() {
   if (!moved && l === left) return;
   left = l;
   if (moved) stepBeep(steps[idx].type);
-  else if (left <= 3) countBeep();
+  else if (left <= (steps[idx].type === "prep" ? COUNTDOWN : 3) && left > 0) countBeep();
   show();
 }
 // Ekranas neužgęsta, kol vyksta treniruotė. Naršyklė užraktą atleidžia paslėpus skirtuką,
@@ -474,16 +595,15 @@ function finish() {
   setTimeout(() => MEDIA.stop(), 8000); // leidžiam pabaigti pasakyti pabaigos sakinį
   beep(880, 0.2); beep(1175, 0.2, 0.22); beep(1568, 0.45, 0.44); buzz([200, 100, 200, 100, 400]);
   $("kind").textContent = "Baigta";
-  $("now").textContent = dayType() === "full" ? "Puiku, šiandienos mankšta baigta!" : dayType() === "relax" ? "Puiku! Gero vakaro." : "Puiku! Dabar dar 30 min. pasivaikščiok.";
+  $("now").textContent = dayType() === "relax" ? "Puiku! Gero vakaro." : "Puiku, šiandienos mankšta baigta!";
   $("cue").textContent = "Išgerk vandens ir trumpai įsivertink, kaip sekėsi: taip matysi pažangą, o kineziterapeutui bus ką parodyti.";
   $("clock").textContent = "0:00"; $("bar").style.width = "100%";
   $("restctl").hidden = true; $("player").classList.remove("is-rest");
   $("start").textContent = "Pradėti iš naujo"; highlight(-1); showAnim(-1);
   $("home").hidden = false; $("player").classList.remove("is-listen");
-  SAY.say(dayType() === "full" ? "Puiku, Karolina! Mankšta baigta. Išgerk vandens ir trumpai įsivertink, kaip sekėsi."
-    : dayType() === "relax" ? "Puiku, Karolina! Gero vakaro ir ramaus miego." : "Puiku, Karolina! Dabar dar pusvalandį pasivaikščiok.");
+  SAY.say(dayType() === "relax" ? "Puiku, Karolina! Gero vakaro ir ramaus miego." : "Puiku, Karolina! Mankšta baigta. Išgerk vandens ir trumpai įsivertink, kaip sekėsi.");
   if (counted) {
-    pending = { type: dayType(), min: Math.round(trainedMs / 60000), easy };
+    pending = { type: dayType(), min: Math.round(trainedMs / 60000), easy, ex: [...new Set(steps.filter(s => s.type === "work").map(s => EX[s.ex].anim))] };
     $("meta").textContent = "Užpildyk trumpą įsivertinimą, kad treniruotė būtų pažymėta kaip atlikta.";
     $("rate").hidden = false;
     openRate();
@@ -507,7 +627,7 @@ function saveRate(ev) {
   if (!f.reportValidity() || !pending) return;
   const d = new FormData(f), pain = d.get("pain");
   const h = HEALTH.today(), r = HEALTH.readiness();
-  markDone(pending.type, { min: pending.min, rpe: +d.get("rpe"), feel: d.get("feel"), pain, easy: pending.easy || undefined,
+  markDone(pending.type, { min: pending.min, rpe: +d.get("rpe"), feel: d.get("feel"), pain, easy: pending.easy || undefined, ex: pending.ex,
     h: h ? { steps: h.steps, sleep: h.sleep, rhr: h.rhr, bb: h.bb, hrv: h.hrv, ready: r ? r.score : undefined } : undefined,
     where: pain !== "ne" ? String(d.get("where") || "").trim() : "", note: String(d.get("note") || "").trim() });
   pending = null; closeRate();
@@ -520,7 +640,7 @@ function saveRate(ev) {
 // Įrašų istorija (naujausi viršuje) ir kopijavimas tekstu
 const FEEL = { 1: "labai lengva", 2: "lengva", 3: "vidutiniškai", 4: "sunku", 5: "labai sunku" };
 function entryText(x) {
-  const parts = [`${x.d} · ${x.t === "full" ? "visa treniruotė" : x.t === "relax" ? "atsipalaidavimas" : "lengva diena"}${x.lvl ? `, ${x.lvl} lygis` : ""}${x.easy ? ", lengvesnė" : ""}${x.min ? `, ${x.min} min.` : ""}`];
+  const parts = [`${x.d} · ${TYPE_NAME(x.t).toLowerCase()}${x.lvl ? `, ${x.lvl} lygis` : ""}${x.easy ? ", lengvesnė" : ""}${x.min ? `, ${x.min} min.` : ""}`];
   if (x.rpe) parts.push(`sunkumas ${x.rpe}/5 (${FEEL[x.rpe]})`);
   if (x.feel) parts.push(`savijauta: ${x.feel}`);
   if (x.pain) parts.push(`skausmas: ${x.pain}${x.where ? ` (${x.where})` : ""}`);
@@ -548,7 +668,7 @@ function reset() {
   if (SAY.active) steps.unshift(introStep());
   $("start").textContent = "Pradėti"; $("kind").textContent = "Pasiruošk";
   $("now").textContent = "Patiesk kilimėlį ir paspausk „Pradėti“";
-  $("cue").textContent = "Prieš kiekvieną pratimą rodoma animacija, kaip jis daromas. Tada laikmatis skaičiuoja serijas, o animacija lieka rodoma. Viskas persijungia automatiškai.";
+  $("cue").textContent = "Prieš kiekvieną seriją balsas pasako pratimą ir kaip atsigulti, tada 5 s atgalinis laikas ir „Pradedam“. Animacija rodo, kaip daroma. Viskas persijungia automatiškai.";
   $("clock").textContent = fmt(totalSecs()); $("bar").style.width = "0";
   $("meta").textContent = `Visa treniruotė: apie ${Math.round(totalSecs() / 60)} min.`; highlight(-1); showAnim(-1);
   $("restctl").hidden = true; $("player").classList.remove("is-rest", "is-listen"); $("home").hidden = true;
@@ -569,10 +689,7 @@ $("cards").addEventListener("click", ev => {
   const a = ev.target.closest("[data-play]");
   if (a) playVideo(document.querySelector(`#vid${a.dataset.play} .embed`));
 });
-$("days").addEventListener("click", ev => {
-  const b = ev.target.closest("[data-day]");
-  if (b) selectDay(+b.dataset.day);
-});
+document.querySelectorAll("[data-type]").forEach(b => { b.onclick = () => chooseType(b.dataset.type); });
 $("rate").onclick = openRate;
 $("rateform").addEventListener("submit", saveRate);
 $("ratelater").onclick = closeRate;
@@ -582,19 +699,23 @@ $("rateform").addEventListener("change", ev => {
 $("histcopy").onclick = copyHistory;
 // Pasisveikinimas: šiandienos planas ir mygtukas „Pradėkime“ (paleidžia balsą ir treniruotę)
 function renderHello() {
-  // Lengvesnė versija įjungiama automatiškai, kai pasiruošimas žemas, nebent šiandien perjungta ranka
-  if (!(idx >= 0 && idx < steps.length) && easyTouched !== dayKey(new Date())) {
-    const r = HEALTH.readiness(), e = !!r && r.score < 45;
-    if (e !== easy) { easy = e; reset(); }
+  // Šiandienos pasiūlymas perskaičiuojamas (pvz., atėjus Garmin duomenims), jei treniruotė nevyksta
+  if (!(idx >= 0 && idx < steps.length)) {
+    const before = dayType() + easy;
+    refreshPlan();
+    if (before !== dayType() + easy) reset();
   }
-  const w = WEEK[weekday(new Date())], log = loadLog(), dates = weekDates();
-  const full = new Set(log.filter(x => x.t === "full" && x.d >= dates[0]).map(x => x.d)).size;
-  const doneToday = log.some(x => x.d === dayKey(new Date()));
-  const steps0 = buildSteps(level, DAYTYPE[w.type].list()), min = Math.round(steps0.reduce((a, s) => a + s.secs, 0) / 60);
+  const log = loadLog(), w = weekStats(), type = dayType();
+  const doneToday = log.some(x => x.d === dayKey(new Date()) && x.t !== "relax");
+  const list = sessionList(type), min = Math.round(buildSteps(level, list).reduce((a, s) => a + s.secs, 0) / 60);
+  const why = override ? "" : plan.why === "garmin" ? " Garmin rodo, kad kūnui šiandien reikia daugiau poilsio."
+    : plan.why === "rotation" ? " Po stiprinimo dienų – atsigavimas." : "";
   $("hellotext").textContent = (doneToday ? "Šiandienos mankšta jau atlikta, šaunuolė! Jei nori, gali pakartoti. " : "") +
-    [`Šiandien ${w.name.toLowerCase()}: ${DAYTYPE[w.type].name.toLowerCase()}, apie ${min} min.`, DAYTYPE[w.type].extra,
-      `Šią savaitę jau atlikai ${full} iš ${WEEK_GOAL} treniruočių.`].filter(Boolean).join(" ");
-  renderHealth(w.type);
+    `Šiandien ${override ? "" : "siūlau: "}${DAYTYPE[type].name.toLowerCase()}, ${plural(list.length, "pratimas", "pratimai", "pratimų")}, apie ${min} min.${easy ? " Lengvesnė versija." : ""}${why}` +
+    ` Šią savaitę jau atlikai ${w.total} iš ${WEEK_GOAL} treniruočių.`;
+  document.querySelectorAll("[data-type]").forEach(b => b.setAttribute("aria-pressed", b.dataset.type === type));
+  renderWeek();
+  renderHealth(type);
   $("voicenote").textContent = !SAY.supported ? "Ši naršyklė nemoka kalbėti, todėl instrukcijos bus rodomos ekrane."
     : voiceRefused ? "Lietuviško balso nėra, instrukcijos bus rodomos ekrane. iPhone: Nustatymai → Prieinamumas → Šnekamas turinys → Balsai → Lietuvių → atsisiųsk balsą ir atnaujink puslapį. Android: Nustatymai → Sistema → Kalbos ir įvestis → Teksto į kalbą išvestis → lietuvių kalba."
     : !SAY.available ? `Puslapis nerado lietuviško balso sąraše (naršyklė mato balsų: ${SAY.count}). Paspausk „Išbandyti balsą“ – jei išgirsi lietuviškai, balsą įjungsiu.`
@@ -608,7 +729,7 @@ function renderHello() {
 }
 // Garmin duomenys (js/health.js): pasiruošimo kortelė (žiedas su balu, rodiklių plytelės su
 // 14 dienų grafiku, pasiūlymas) ir prisitaikanti treniruotė. Būsenos žinutės – #healthnote.
-let easyTouched = null, sparkKey = null;
+let sparkKey = null;
 const C_RING = 2 * Math.PI * 52;
 const fmt1 = v => String(Math.round(v * 10) / 10).replace(".", ",");
 function renderHealth(type) {
@@ -656,8 +777,9 @@ function renderReady(t, r, type) {
   // Pasiūlymas ir mygtukai
   const tip = [], acts = [];
   const weak = r.parts.filter(p => p.s < 45).map(p => `${{ sleep: "miegas", rhr: "ramybės pulsas" }[p.key] || p.label} ${p.value}`);
-  if (sc < 45) tip.push(`${weak.length ? weak.join(", ") + ". " : ""}Siūlau lengvesnę versiją: viena serija mažiau ir ilgesnis poilsis.`);
-  else if (sc < 70) tip.push(level ? "Šiandien geriau 1 lygis ir neskubėk." : "Daryk įprastai, tik neskubėk.");
+  if (sc < 45) tip.push(`${weak.length ? weak.join(", ") + ". " : ""}Šiandien siūlau atsigavimo dieną: paslankumas ir tempimai.`);
+  else if (!override && plan.type === "recovery") tip.push("Vakar buvo įtempta diena, todėl šiandien siūlau atsigavimo dieną: paslankumas ir tempimai.");
+  else if (sc < 70) tip.push(`Stiprinimas šiandien lengvesnis: viena serija mažiau ir ilgesnis poilsis.${level ? " Geriau ir 1 lygis." : ""}`);
   else tip.push("Puiki diena treniruotei.");
   if (sc < 70 && level) acts.push(`<button class="btn ghost" type="button" data-act="lvl1">Rinktis 1 lygį</button>`);
   if (sc >= 70 && !level) {
@@ -667,8 +789,8 @@ function renderReady(t, r, type) {
   // Atsipalaidavimas siūlomas vakare; jei vakar buvo įtempta – ir paaiškinama kodėl
   const ov = HEALTH.overview();
   if (new Date().getHours() >= 17 || (ov && ov.load === "stress")) {
-    const min = Math.max(1, Math.round(buildSteps(level, DAYTYPE.relax.list(), false).reduce((a, s) => a + s.secs, 0) / 60));
-    if (ov && ov.load === "stress") tip.push("Vakar buvo įtempta diena, tad vakare skirk kelias minutes atsipalaidavimui.");
+    const min = Math.max(1, Math.round(buildSteps(level, sessionList("relax"), false).reduce((a, s) => a + s.secs, 0) / 60));
+    if (ov && ov.load === "stress") tip.push("Vakare skirk kelias minutes atsipalaidavimui.");
     acts.push(`<button class="btn ghost" type="button" data-act="relax">Atsipalaidavimas · ${min} min.</button>`);
   }
   acts.push(`<button class="seg" type="button" data-act="easy" aria-pressed="${easy}">Lengvesnė versija</button>`);
@@ -782,8 +904,7 @@ function goHome() { closeRate(); override = null; reset(); MEDIA.stop(); renderH
 function startWorkout(type = null) {
   if (running) return;
   SAY.recheck();
-  if (selDay !== weekday(new Date())) { selDay = weekday(new Date()); renderWeek(); }
-  override = type;
+  if (type) override = type;
   reset(); setMode("workout"); start();
 }
 $("letsgo").onclick = () => startWorkout(null);
@@ -814,7 +935,7 @@ window.addEventListener("hashchange", () => { if (HEALTH.readLink()) renderHello
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") return;
   const today = weekday(new Date());
-  if (today !== selDay && !(idx >= 0 && idx < steps.length) && lastToday !== today) { selDay = today; reset(); }
+  if (!(idx >= 0 && idx < steps.length) && lastToday !== today) { override = null; refreshPlan(); reset(); renderHello(); }
   lastToday = today;
   renderWeek();
   if (running) { tick(); lockScreen(); }

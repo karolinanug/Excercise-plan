@@ -196,8 +196,21 @@ const VOICE = {
   clam: (l, s) => ({ beat: fit(s, [12, 15][l], [["Pėdos kartu, kelk kelį", 1, "Kelk"], ["Lėtai nuleisk", 1.2, "Žemyn"]]) }),
   sideplank: () => ({ start: "Kelk klubus, kūnas tiesia linija nuo galvos iki kelių", remind: ["Kvėpuok ramiai", "Klubai aukštai", "Stumk grindis dilbiu"], every: 5 }),
   hipflex: () => ({ start: "Uodegikaulis po savimi, suspausk sėdmenį ir švelniai pasislink į priekį", remind: ["Kvėpuok ramiai", "Liemuo tiesus, juosmens neįlenk", "Laikyk, atsipalaiduok"], every: 8 }),
-  child: () => ({ beat: [["Įkvėpk į nugarą", 4], ["Iškvėpk ir atsipalaiduok", 6]] })
+  child: () => ({ beat: [["Įkvėpk į nugarą", 4], ["Iškvėpk ir atsipalaiduok", 6]] }),
+  // Pratimai iš korekcinės programos
+  kneelpush: (l, s) => ({ beat: fit(s, [10, 12][l], [["Stumk dubenį pirmyn ir aukštyn. Laikyk", 3.5, "Pirmyn, laikyk"], ["Grįžk ant kulnų", 1.5, "Grįžk"]]) }),
+  childcobra: (l, s) => ({ beat: fit(s, [10, 12][l], [["Slink pirmyn, krūtinė aukštyn", 2.2, "Pirmyn"], ["Atgal ant kulnų", 2.2, "Atgal"]]) }),
+  squat: () => ({ start: "Pritūpk kuo giliau, kulnai prie grindų", remind: ["Rankos aukštyn", "Rankos žemyn", "Kvėpuok ramiai", "Krūtinė aukštyn"], every: 5 }),
+  crabreach: (l, s) => ({ beat: fit(s, [6, 8][l], [["Kelk dubenį ir siek ranka už galvos. Laikyk", 3.5, "Kelk ir siek"], ["Lėtai žemyn", 2, "Žemyn"]]) }),
+  plank: () => ({ start: "Kūnas tiesia linija, alkūnės po pečiais", remind: ["Stumk grindis dilbiais", "Pilvas įtemptas, juosmens neįlenk", "Kvėpuok"], every: 6 }),
+  slbridge: (l, s) => ({ beat: fit(s, [8, 12][l], [["Spausk kulnu ir kelk dubenį. Laikyk", 3.5, "Kelk, laikyk"], ["Lėtai žemyn", 1.5, "Žemyn"]]) }),
+  heelwalk: (l, s) => ({ beat: fit(s, [3, 4][l], [["Kelk dubenį", 2, "Dubuo aukštyn"], ["Mažais žingsneliais kulnais tolyn", 4, "Tolyn"], ["Ir atgal", 4, "Atgal"], ["Nusileisk", 2, "Žemyn"]]) }),
+  camel: () => ({ start: "Kelk dubenį, krūtinė atverta", remind: ["Kvėpuok ramiai", "Dubuo aukštai", "Laikyk"], every: 7 }),
+  bow: () => ({ start: "Suimk pėdas ir švelniai kilstelk krūtinę", remind: ["Kvėpuok", "Tik tiek, kiek patogu", "Pėdas trauk prie sėdmenų"], every: 8 }),
+  puppy: () => ({ start: "Rankos toli pirmyn, krūtinė žemyn", remind: ["Dubuo virš kelių", "Kvėpuok į nugarą", "Atpalaiduok pečius"], every: 8 }),
+  kneelquad: () => ({ start: "Suimk pėdą, suspausk sėdmenį ir stumk dubenį pirmyn", remind: ["Liemuo tiesus", "Kvėpuok ramiai", "Uodegikaulis po savimi"], every: 8 })
 };
 // Pusės keitimo tekstas
-const VOICE_SWITCH = { clam: "Keisk pusę. Atsigulk ant kito šono.", sideplank: "Keisk pusę. Atsigulk ant kito šono.", hipflex: "Keisk koją. Kita koja priekyje." };
+const VOICE_SWITCH = { clam: "Keisk pusę. Atsigulk ant kito šono.", sideplank: "Keisk pusę. Atsigulk ant kito šono.", hipflex: "Keisk koją. Kita koja priekyje.",
+  crabreach: "Keisk ranką.", slbridge: "Keisk koją.", kneelquad: "Keisk koją. Kita koja priekyje." };
 const ORD = ["Pirma", "Antra", "Trečia", "Ketvirta"];

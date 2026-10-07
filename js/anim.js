@@ -139,6 +139,121 @@ const ANIM = (() => {
         [k(base, { b: -5 }), 4000, 500, "Įkvėpk į nugarą", 1],
         [base, 5000, 500, "Atsipalaiduok", 0.3]
       ];
+    },
+    // ---- Pratimai iš korekcinės programos (paslankumas, stiprinimas, tempimas) ----
+    // Klūpint, rankos atremtos už nugaros: dubuo stumiamas pirmyn ir aukštyn
+    kneelpush: () => {
+      const shin = { k: [104, 98], a: [78, 98], t: [70, 98] };
+      const legs = { l1: shin, l2: shin };
+      const down = k(legs, { hip: [80, 86], sh: [51, 64], hd: [50, 46], a1: [47, 98, 1], a2: [47, 98, 1], b: -1 });
+      const up = k(legs, { hip: [100, 72], sh: [62, 67], hd: [52, 51], a1: [47, 98, 1], a2: [47, 98, 1], b: 4 });
+      return [
+        [down, 1500, 600, "Atsiremk rankomis už savęs", 0.3],
+        [up, 1800, 3000, "Dubuo pirmyn ir aukštyn · 3 s", 1]
+      ];
+    },
+    // Iš vaiko pozos slystama pirmyn į išsirietimą: dubuo prie grindų, krūtinė aukštyn
+    childcobra: () => {
+      const child = { hip: [87, 88], sh: [121, 84], hd: [134, 93], a1: [158, 97, -1], b: -5,
+        l1: { k: [110, 97], a: [84, 98], t: [75, 98] } };
+      const cobra = { hip: [116, 93], sh: [150, 74], hd: [163, 61], a1: [158, 98, 1], b: 5,
+        l1: { k: [90, 98], a: [64, 98], t: [56, 97] } };
+      return [
+        [child, 1800, 800, "Sėdmenys ant kulnų", 0.3],
+        [cobra, 2200, 1200, "Slink pirmyn, krūtinė aukštyn", 1]
+      ];
+    },
+    // Gilus pritūpimas, pėdos visu padu ant grindų; rankos kyla aukštyn
+    squat: () => {
+      const base = { hip: [88, 86], sh: [104, 52], hd: [110, 35], l1: [100, 98, -1, 0], l2: [98, 98, -1, 0], b: -1,
+        a1: [118, 72, -1], a2: [116, 73, -1] };
+      return [
+        [base, 1500, 1500, "Gilus pritūpimas · kulnai prie grindų", 0.6],
+        [k(base, { a1: [110, 19, 1], a2: [108, 19, 1], b: 1 }), 1800, 1000, "Rankos aukštyn", 1]
+      ];
+    },
+    // Sėdint, rankos už nugaros: dubuo kyla, laisva ranka siekia už galvos
+    crabreach: () => {
+      const sit = { hip: [80, 94], sh: [56, 65], hd: [60, 48], a1: [50, 98, 1], a2: [50, 98, 1], l1: [118, 98, -1, 0], l2: [116, 98, -1, 0] };
+      const up = { hip: [86, 72], sh: [50, 74], hd: [36, 69], a2: [50, 98, -1], a1: [40, 40, -1], l1: [118, 98, -1, 0], l2: [116, 98, -1, 0], b: 3 };
+      return [
+        [sit, 1600, 600, "Sėdėk, rankos už nugaros", 0.3],
+        [up, 2200, 3000, "Dubuo aukštyn, ranka toli už galvos · 3 s", 1]
+      ];
+    },
+    // Lenta ant dilbių: kūnas tiesus, alkūnės po pečiais
+    plank: () => {
+      const arms = { a1: { e: [110, 97], w: [127, 98] }, a2: { e: [108, 97], w: [125, 98] } };
+      const base = k(arms, { hip: [72, 82], sh: [110, 80], hd: [126, 74], l1: [22, 94, 1, 70], l2: [22, 94, 1, 70] });
+      return [
+        [base, 1500, 2500, "Kūnas tiesia linija", 0.8],
+        [k(base, { sh: [110, 77], hd: [126, 71], b: -1.5 }), 1200, 2000, "Stumk grindis dilbiais", 1]
+      ];
+    },
+    // Tiltelis viena koja: kita koja pakelta, sulenkta per kelį
+    slbridge: () => {
+      const down = k(SUP, { l2: [140, 98, -1, 0], l1: [136, 72, -1, -60], a1: [104, 99, -1], a2: [104, 99, -1] });
+      const up = k(down, { hip: [108, 80], l1: [132, 56, -1, -60] });
+      return [
+        [down, 1800, 800, "Viena pėda ant grindų, kita pakelta", 0.2],
+        [up, 2000, 3000, "Kelk dubenį viena koja · 3 s", 1]
+      ];
+    },
+    // Tiltelyje mažais žingsneliais kulnais tolyn ir atgal
+    heelwalk: () => {
+      const arms = { a1: [80, 62, 1], a2: [80, 62, 1] };
+      const at = (h, x1, x2) => k(SUP, k(arms, { hip: h, l1: [x1, 98, -1, x1 > 145 ? -70 : 0], l2: [x2, 98, -1, x2 > 145 ? -70 : 0] }));
+      const up = [108, 80], mid = [110, 82], far = [113, 85];
+      return [
+        [at([112, 97], 140, 140), 1500, 500, "Atsigulk, rankos aukštyn", 0.2],
+        [at(up, 140, 140), 1500, 500, "Kelk dubenį", 0.8],
+        [at(mid, 150, 140), 700, 100, "Žingsnelis kulnu", 1],
+        [at(mid, 150, 150), 700, 100, "Žingsnelis kulnu", 1],
+        [at(far, 160, 150), 700, 100, "Toliau", 1],
+        [at(far, 160, 160), 700, 800, "Dubuo vis dar aukštai", 1],
+        [at(mid, 150, 160), 700, 100, "Atgal", 1],
+        [at(mid, 150, 150), 700, 100, "Atgal", 1],
+        [at(up, 140, 150), 700, 100, "Atgal", 1],
+        [at(up, 140, 140), 700, 600, "Atgal", 0.8]
+      ];
+    },
+    // Klūpint dubuo laikomas iškeltas, krūtinė atverta (statinis tempimas)
+    camel: () => {
+      const [down, up] = DEF.kneelpush().map(f => f[0]);
+      return [
+        [down, 1500, 500, "Atsiremk rankomis už savęs", 0.2],
+        [up, 2000, 6000, "Laikyk dubenį iškeltą, kvėpuok", 1]
+      ];
+    },
+    // Gulint ant pilvo, rankos suima pėdas: šlaunų priekis ir krūtinė tempiasi
+    bow: () => {
+      const rest = { hip: [92, 96], sh: [130, 95], hd: [146, 92], a1: [98, 98, 1], a2: [98, 98, 1],
+        l1: { k: [66, 98], a: [74, 73], t: [70, 65] }, l2: { k: [66, 98], a: [74, 73], t: [70, 65] } };
+      const bow = { hip: [92, 96], sh: [120, 72], hd: [134, 62], b: 5, a1: [86, 64, -1], a2: [86, 64, -1],
+        l1: { k: [70, 86], a: [84, 62], t: [82, 54] }, l2: { k: [70, 86], a: [84, 62], t: [82, 54] } };
+      return [
+        [rest, 1500, 800, "Gulėk ant pilvo, sulenk kelius", 0.2],
+        [bow, 2500, 6000, "Suimk pėdas, krūtinė ir keliai kyla", 1]
+      ];
+    },
+    // Klūpint, rankos toli priekyje, krūtinė leidžiasi prie grindų
+    puppy: () => {
+      const legs = { l1: { k: [80, 98], a: [54, 98], t: [46, 98] } };
+      const table = k(legs, { hip: [80, 71], sh: [116, 68], hd: [131, 64], a1: [118, 99, 1] });
+      const pup = k(legs, { hip: [80, 72], sh: [114, 89], hd: [130, 94], a1: [148, 98, -1], b: 4 });
+      return [
+        [table, 1500, 600, "Keturpėsčia", 0.2],
+        [pup, 2500, 6000, "Rankos pirmyn, krūtinė žemyn · dubuo virš kelių", 1]
+      ];
+    },
+    // Klūpint ant vieno kelio, užpakalinės kojos pėda prisitraukiama ranka
+    kneelquad: () => {
+      const back = { k: [80, 98], a: [77, 72], t: [70, 67] };
+      const p1 = { hip: [91, 74], sh: [96, 37], hd: [98, 20], a1: [100, 68, 1], a2: [78, 71, 1], l1: [118, 98, -1, 0], l2: back };
+      return [
+        [p1, 1800, 1500, "Suimk užpakalinės kojos pėdą", 0.4],
+        [k(p1, { hip: [99, 77], sh: [102, 40], hd: [104, 23], a1: [108, 71, 1] }), 2500, 4000, "Dubuo pirmyn · laikyk", 1]
+      ];
     }
   };
 
@@ -153,7 +268,18 @@ const ANIM = (() => {
     clam: ["glute", "Dirba: šoniniai sėdmenų raumenys"],
     sideplank: ["side", "Dirba: šoniniai liemens raumenys"],
     hipflex: ["hipfront", "Tempiasi: klubo priekis (užpakalinė koja)"],
-    child: ["back", "Atsipalaiduoja: nugara ir juosmuo"]
+    child: ["back", "Atsipalaiduoja: nugara ir juosmuo"],
+    kneelpush: ["hipfront", "Tempiasi: šlaunų priekis ir krūtinė"],
+    childcobra: ["back", "Juda: juosmuo ir krūtinės ląsta"],
+    squat: ["glute", "Juda: klubai, keliai ir čiurnos"],
+    crabreach: ["side", "Juda: krūtinė ir pečiai, dirba sėdmenys"],
+    plank: ["core", "Dirba: pilvas ir pečių juosta"],
+    slbridge: ["glute", "Dirba: sėdmenys ir šlaunies užpakalis"],
+    heelwalk: ["glute", "Dirba: šlaunies užpakalis ir sėdmenys"],
+    camel: ["hipfront", "Tempiasi: šlaunų priekis, pilvas ir krūtinė"],
+    bow: ["hipfront", "Tempiasi: šlaunų priekis, pilvas ir krūtinė"],
+    puppy: ["back", "Tempiasi: krūtinė, pečiai ir juosmuo"],
+    kneelquad: ["hipfront", "Tempiasi: šlaunies ir klubo priekis"]
   };
 
   // ---- Piešimas ----
