@@ -773,10 +773,43 @@ function entryText(x) {
   if (x.h) parts.push(`Garmin: ${HEALTH.text(x.h)}${x.h.ready != null ? `, pasiruošimas ${x.h.ready}/100` : ""}`);
   return parts.join(" · ");
 }
+// Įrašai kortelėmis, sugrupuoti pagal savaites (naujausi viršuje)
+const MON_SHORT = ["saus.", "vas.", "kov.", "bal.", "geg.", "birž.", "liep.", "rugp.", "rugs.", "spal.", "lapkr.", "gruod."];
+function parseDay(d) { const [y, m, n] = d.split("-").map(Number); return new Date(y, m - 1, n); }
+function weekLabel(mon) {
+  const diff = Math.round((monday(new Date()) - mon) / 864e5 / 7), sun = addDays(mon, 6);
+  return diff === 0 ? "Ši savaitė" : diff === 1 ? "Praėjusi savaitė"
+    : `${MON_SHORT[mon.getMonth()]} ${mon.getDate()} – ${mon.getMonth() === sun.getMonth() ? "" : MON_SHORT[sun.getMonth()] + " "}${sun.getDate()}`;
+}
+function entryCard(x) {
+  const d = parseDay(x.d), chip = (t, c = "") => `<span class="hchip ${c}">${esc(t)}</span>`;
+  const meta = [x.lvl && `${x.lvl} lygis`, x.min && `${x.min} min.`, x.easy && "lengvesnė"].filter(Boolean).join(" · ");
+  const chips = [
+    x.rpe && chip(`Sunkumas ${x.rpe}/5 · ${FEEL[x.rpe]}`),
+    x.feel && chip(x.feel === "geriau" ? "Savijauta geresnė" : x.feel === "blogiau" ? "Savijauta blogesnė" : "Savijauta tokia pati", x.feel === "geriau" ? "good" : x.feel === "blogiau" ? "bad" : ""),
+    x.pain && chip(x.pain === "ne" ? "Be skausmo" : `Skausmas: ${x.pain}${x.where ? ` (${x.where})` : ""}`, x.pain === "ne" ? "good" : "bad")
+  ].filter(Boolean).join("");
+  return `<li class="hentry">
+    <div class="htop"><span class="hdate">${WEEKDAYS[weekday(d)]}<small>${MONTHS[d.getMonth()]} ${d.getDate()} d.</small></span>
+      <span class="htype t-${esc(x.t)}">${esc((DAYTYPE[x.t] && DAYTYPE[x.t].short) || TYPE_NAME(x.t))}</span></div>
+    ${meta ? `<p class="hmeta">${esc(meta)}</p>` : ""}
+    ${chips ? `<div class="hchips">${chips}</div>` : ""}
+    ${x.note ? `<p class="hnote">${esc(x.note)}</p>` : ""}
+    ${x.m && x.m.length ? `<p class="hms">🏅 ${esc(x.m.join(" "))}</p>` : ""}
+    ${x.h && HEALTH.text(x.h) ? `<p class="hgarmin">Garmin: ${esc(HEALTH.text(x.h))}${x.h.ready != null ? `, pasiruošimas ${x.h.ready}/100` : ""}</p>` : ""}
+  </li>`;
+}
 function renderHistory() {
-  const log = loadLog().slice().reverse().slice(0, 30);
+  const log = loadLog().slice().reverse().slice(0, 40), groups = [];
+  log.forEach(x => {
+    const mon = monday(parseDay(x.d)), g = groups[groups.length - 1];
+    if (g && +g.mon === +mon) g.items.push(x); else groups.push({ mon, items: [x] });
+  });
   $("histlist").innerHTML = log.length
-    ? `<ul>${log.map(x => `<li class="${x.pain && x.pain !== "ne" ? "pain" : ""}">${esc(entryText(x))}</li>`).join("")}</ul>`
+    ? groups.map(g => {
+        const n = g.items.filter(x => x.t !== "relax").length;
+        return `<h3 class="hweek">${weekLabel(g.mon)}<span>${n}/${WEEK_GOAL}${n >= WEEK_GOAL ? " ✓" : ""}</span></h3><ul class="hlist">${g.items.map(entryCard).join("")}</ul>`;
+      }).join("")
     : "<p>Įrašų dar nėra. Jie atsiras pabaigus treniruotę ir užpildžius įsivertinimą.</p>";
   $("histcopy").hidden = !log.length;
 }
