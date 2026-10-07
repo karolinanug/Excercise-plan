@@ -122,7 +122,7 @@ const ANIM = (() => {
       const arm2 = { e: [70, 99], w: [61, 100] };
       return [
         [k(legs, { hip: [107, 97], sh, hd: [55, 75], a2: arm2, a1: { e: [88, 82], w: [104, 90] } }), 1500, 1000, "Alkūnė po petimi", 0.2],
-        [k(legs, { hip: [107, 90], sh, hd: [55, 77], a2: arm2, a1: { e: [88, 79], w: [104, 84] } }), 1500, 3000, "Klubai aukštyn · tiesi linija", 1]
+        [k(legs, { hip: [107, 90], sh, hd: [55, 77], a2: arm2, a1: { e: [71, 63], w: [72, 47] } }), 1500, 3000, "Klubai aukštyn · viršutinė ranka į lubas", 1]
       ];
     },
     hipflex: () => {
@@ -158,9 +158,15 @@ const ANIM = (() => {
         l1: { k: [110, 97], a: [84, 98], t: [75, 98] } };
       const cobra = { hip: [116, 93], sh: [150, 74], hd: [163, 61], a1: [158, 98, 1], b: 5,
         l1: { k: [90, 98], a: [64, 98], t: [56, 97] } };
+      // Tarpinė padėtis: dubuo pakyla virš kelių (keliai lieka vietoje), tada slenka pirmyn ir žemyn
+      const mid = { hip: [112, 74], sh: [146, 78], hd: [160, 72], a1: [158, 98, 1], b: 1,
+        l1: { k: [112, 98], a: [86, 98], t: [78, 98] } };
+      const cobraK = k(cobra, { l1: { k: [92, 98], a: [66, 98], t: [58, 97] } });
       return [
-        [child, 4000, 1500, "Lėtai atgal ant kulnų", 0.3],
-        [cobra, 4000, 1500, "Lėtai pirmyn, krūtinė aukštyn", 1]
+        [child, 2000, 1500, "Lėtai atgal ant kulnų", 0.3],
+        [mid, 2000, 0, "Lėtai pirmyn", 0.6],
+        [cobraK, 2000, 1500, "Krūtinė aukštyn, dubuo žemyn", 1],
+        [mid, 2000, 0, "Lėtai atgal", 0.6]
       ];
     },
     // Gilus pritūpimas, pėdos visu padu ant grindų; rankos kyla aukštyn
@@ -174,11 +180,15 @@ const ANIM = (() => {
     },
     // Sėdint, rankos už nugaros: dubuo kyla, laisva ranka siekia už galvos
     crabreach: () => {
-      const sit = { hip: [80, 94], sh: [56, 65], hd: [60, 48], a1: [50, 98, 1], a2: [50, 98, 1], l1: [118, 98, -1, 0], l2: [116, 98, -1, 0] };
-      const up = { hip: [86, 72], sh: [50, 74], hd: [36, 69], a2: [50, 98, -1], a1: [40, 40, -1], l1: [118, 98, -1, 0], l2: [116, 98, -1, 0], b: 3 };
+      const sit = { hip: [80, 94], sh: [56, 65], hd: [60, 48], a1: [50, 98, -1], a2: [50, 98, -1], l1: [118, 98, -1, 0], l2: [116, 98, -1, 0] };
+      const up = { hip: [86, 72], sh: [53, 66], hd: [38, 61], a2: [50, 98, -1], a1: [44, 33, -1], l1: [118, 98, -1, 0], l2: [116, 98, -1, 0], b: 3 };
+      // Tarpinė padėtis: ranka kyla per šoną atgal (ne pro priekį)
+      const mid = k(up, { hip: [84, 82], sh: [54, 66], hd: [44, 54], a1: [24, 60, -1], b: 1.5 });
       return [
-        [sit, 1600, 600, "Sėdėk, rankos už nugaros", 0.3],
-        [up, 2200, 3000, "Dubuo aukštyn, ranka toli už galvos · 3 s", 1]
+        [sit, 1300, 600, "Sėdėk, rankos už nugaros", 0.3],
+        [mid, 1100, 0, "Dubuo kyla, ranka atgal", 0.7],
+        [up, 1100, 3000, "Dubuo aukštyn, ranka toli už galvos · 3 s", 1],
+        [mid, 1000, 0, "Lėtai žemyn", 0.6]
       ];
     },
     // Lenta ant dilbių: kūnas tiesus, alkūnės po pečiais
