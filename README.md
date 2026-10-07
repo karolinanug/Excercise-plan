@@ -30,7 +30,7 @@ Pratimai paimti iš dviejų šaltinių: pradinio plano ir kineziterapeuto korekc
 
 Pasirinktas lygis, balso nustatymas ir atliktų treniruočių žurnalas saugomi naršyklės `localStorage` (raktai `karolina-level`, `karolina-voice`, `karolina-log`), todėl skaitliukas „Šią savaitę: X/4“ veikia tik tame pačiame įrenginyje ir naršyklėje.
 
-Pratimus, kartojimus ar trukmes keisk `js/app.js` faile, `EX` masyve. `secs` yra vienos serijos trukmė sekundėmis `[1 lygis, 2 lygis]`, `sets` – serijų skaičius, `group` – grupė (`breath`, `mob`, `core`, `glute`, `stretch`), `setup` – ką balsas pasako prieš seriją (kaip atsigulti), `video` neprivalomas. Pakeitus tekstus, įrašus reikia sugeneruoti iš naujo (`python3 tools/garsas.py`).
+Pratimus, kartojimus ar trukmes keisk `js/app.js` faile, `EX` masyve. `secs` yra vienos serijos trukmė sekundėmis `[1 lygis, 2 lygis]`, `sets` – serijų skaičius, `group` – grupė (`breath`, `mob`, `core`, `glute`, `stretch`), `setup` – ką balsas pasako prieš seriją (kaip atsigulti), `video` neprivalomas. Pakeitus tekstus, įrašus reikia sugeneruoti iš naujo (`python3 tools/garsas.py`). Pakeitus JS ar CSS failus, `index.html` pakeisk `?v=` žymę, kad telefonai neliktų su senu failu.
 
 ## Paskelbimas per GitHub Pages
 
