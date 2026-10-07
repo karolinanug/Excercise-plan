@@ -315,10 +315,14 @@ function renderBackup() {
   $("backupnote").textContent = s === "ok" ? "☁️ Įrašai saugomi ir GitHub'e (užšifruoti)."
     + (t ? ` Paskutinė kopija ${new Date(t).toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" })}.` : "")
     : s === "need-token" ? "Įrašai saugomi tik šiame telefone – išvalius naršyklę jie dings. Prijunk kopiją GitHub'e."
-    : s === "bad-token" ? "GitHub raktas nebetinka (gal baigėsi galiojimas) – įvesk naują."
+    : s === "bad-token" ? "GitHub šio rakto neatpažįsta: gal nukopijuotas ne visas, ištrintas ar baigėsi galiojimas. Įvesk naują."
+    : s === "no-write" ? "GitHub neleidžia šiuo raktu įrašyti kopijos. Rakto nustatymuose patikrink: Repository access → Only select repositories → Excercise-plan ir Permissions → Contents → Read and write. Pakeitus nustatymus tas pats raktas tinka – spausk „Bandyti dar kartą“."
+    : s === "no-repo" ? "Raktas nemato šios repozitorijos: Repository access → Only select repositories → Excercise-plan. Pakeitus – „Bandyti dar kartą“."
     : s === "error" ? "Kopijos GitHub'e nepavyko atnaujinti (nėra ryšio?). Bandysiu vėl atidarius programą."
     : "Įrašų kopijai GitHub'e pirmiausia reikia Garmin rakto (Šiandien ekrane).";
-  $("backupbtn").hidden = s !== "need-token" && s !== "bad-token";
+  if (BACKUP.detail && s !== "ok") $("backupnote").textContent += ` (GitHub: ${BACKUP.detail})`;
+  $("backupbtn").hidden = !["need-token", "bad-token", "no-write", "no-repo"].includes(s);
+  $("backupretry").hidden = !["no-write", "no-repo", "error"].includes(s);
 }
 function markDone(type, extra = {}, day = dayKey(new Date())) {
   const now = new Date();
@@ -1032,6 +1036,7 @@ $("garminkey").onclick = () => {
   if (k && k.trim()) HEALTH.setGarminKey(k);
 };
 HEALTH.onChange(() => { renderHello(); if (BACKUP.state === "off" && HEALTH.key) syncBackup(); });
+$("backupretry").onclick = () => { $("backupnote").textContent = "Bandau…"; syncBackup(); };
 $("backupbtn").onclick = async () => {
   const t = prompt("Įklijuok GitHub raktą (fine-grained, tik šiai repozitorijai, Contents: Read and write):");
   if (!t || !t.trim()) return;

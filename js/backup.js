@@ -8,8 +8,8 @@ const BACKUP = (() => {
   const REPO = "karolinanug/Excercise-plan", BRANCH = "main", FILE = "irasai/irasai.enc";
   const T_KEY = "karolina-gh-zetonas", ITER = 310000;
   const API = `https://api.github.com/repos/${REPO}/contents/`;
-  // Būsena: off (nėra Garmin rakto), need-token, bad-token, ok, error
-  let state = "off", lastSync = null;
+  // Būsena: off (nėra Garmin rakto), need-token, bad-token (401), no-write (403), no-repo (404), ok, error
+  let state = "off", lastSync = null, detail = "";
 
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   const toB64 = u8 => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode(...u8.subarray(i, i + 0x8000)); return btoa(s); };
@@ -30,24 +30,29 @@ const BACKUP = (() => {
   const token = () => { try { return localStorage.getItem(T_KEY) || ""; } catch (e) { return ""; } };
   const setTok = t => { try { localStorage.setItem(T_KEY, t); } catch (e) {} };
   const headers = tok => ({ Authorization: "Bearer " + tok, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" });
-  const fail = (r) => { const e = new Error("http " + r.status); e.token = r.status === 401 || r.status === 403; e.conflict = r.status === 409 || r.status === 422; return e; };
+  const STATUS = { 401: "bad-token", 403: "no-write", 404: "no-repo" };
+  async function fail(r) {
+    let msg = ""; try { msg = (await r.json()).message || ""; } catch (e) {}
+    const e = new Error(r.status + (msg ? " " + msg : "")); e.state = STATUS[r.status]; e.conflict = r.status === 409 || (r.status === 422 && /sha/i.test(msg)); return e;
+  }
   // Grąžina { sha, blob } arba null, jei kopijos dar nėra
   async function getFile() {
     const r = await fetch(`${API}${FILE}?ref=${BRANCH}&t=${Date.now()}`, { cache: "no-store", headers: headers(token()) });
     if (r.status === 404) return null;
-    if (!r.ok) throw fail(r);
+    if (!r.ok) throw await fail(r);
     const j = await r.json();
     return { sha: j.sha, blob: JSON.parse(atob(j.content.replace(/\s/g, ""))) };
   }
   async function putFile(text, sha) {
     const r = await fetch(API + FILE, { method: "PUT", headers: headers(token()),
       body: JSON.stringify({ message: "Įrašų kopija", content: btoa(text), branch: BRANCH, sha: sha || undefined }) });
-    if (!r.ok) throw fail(r);
+    if (!r.ok) throw await fail(r);
   }
 
   return {
     get state() { return state; },
     get lastSync() { return lastSync; },
+    get detail() { return detail; },
     // Nuskaito kopiją: { sha, data } (data null, jei kopijos dar nėra) arba null, jei kopija neprijungta ar nepavyko
     async read(pass) {
       if (!pass) { state = "off"; return null; }
@@ -55,7 +60,7 @@ const BACKUP = (() => {
       try {
         const f = await getFile();
         return { sha: f && f.sha, data: f ? await decrypt(f.blob, pass) : null };
-      } catch (e) { state = e.token ? "bad-token" : "error"; return null; }
+      } catch (e) { state = e.state || "error"; detail = e.message; return null; }
     },
     // Įrašo kopiją; jei kitas įrenginys spėjo įrašyti anksčiau, grąžina "conflict"
     async write(pass, data, sha) {
@@ -64,7 +69,7 @@ const BACKUP = (() => {
         state = "ok"; lastSync = Date.now(); return "ok";
       } catch (e) {
         if (e.conflict) return "conflict";
-        state = e.token ? "bad-token" : "error"; return "error";
+        state = e.state === "no-repo" ? "no-write" : e.state || "error"; detail = e.message; return "error";
       }
     },
     // Kopija jau sutampa su telefono įrašais
