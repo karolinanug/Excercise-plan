@@ -8,6 +8,10 @@ Aplinkos kintamieji (GitHub Secrets):
   DUOMENU_RAKTAS                – atsitiktinis raktas; juo šifruojami duomenys ir prisijungimo
                                   žetonas, tą patį raktą svetainėje įvedi telefone
 
+Jei Garmin prisijungiant paprašo kodo iš el. pašto, skriptas parašo komentarą GitHub issue
+„Garmin kodas“ ir iki 10 min. laukia, kol savininkė atsakys komentaru su kodu. Kodas panaudojamas
+ir komentaras ištrinamas. Vėliau jungiamasi išsaugotu žetonu, todėl kodo nebereikia.
+
 Repozitorija vieša, todėl:
   * duomenys ir žetonas saugomi tik užšifruoti (PBKDF2-SHA256 + AES-256-GCM, iššifruoja js/health.js);
   * į žurnalą (Actions log, irgi viešas) nerašomi jokie sveikatos skaičiai.
@@ -15,8 +19,11 @@ Repozitorija vieša, todėl:
 import base64
 import json
 import os
+import re
 import sys
 import time
+import urllib.request
+from datetime import datetime, timezone
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -50,6 +57,54 @@ def decrypt(path: Path, password: str):
     d = lambda k: base64.b64decode(blob[k])
     pt = AESGCM(_key(password, d("salt"))).decrypt(d("iv"), d("data"), None)
     return json.loads(pt)
+
+
+ISSUE_TITLE = "Garmin kodas"
+MFA_WAIT = 600
+
+
+def gh(method, path, body=None):
+    req = urllib.request.Request(
+        f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}{path}", method=method,
+        data=json.dumps(body).encode() if body is not None else None,
+        headers={"Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}", "Accept": "application/vnd.github+json"})
+    with urllib.request.urlopen(req) as r:
+        raw = r.read()
+    return json.loads(raw) if raw else None
+
+
+def prompt_mfa() -> str:
+    """Garmin el. pašto kodas per GitHub issue komentarą (Actions neturi kur jo įvesti)."""
+    if not os.environ.get("GITHUB_TOKEN"):
+        return input("Garmin kodas iš el. pašto: ").strip()
+    owner = os.environ.get("GITHUB_REPOSITORY_OWNER", "")
+    issues = gh("GET", "/issues?state=all&per_page=100") or []
+    issue = next((i for i in issues if i.get("title") == ISSUE_TITLE and "pull_request" not in i), None)
+    if issue is None:
+        issue = gh("POST", "/issues", {"title": ISSUE_TITLE, "body":
+                   "Čia Garmin duomenų parsisiuntimas prašo prisijungimo kodo, kai Garmin jį atsiunčia el. paštu."})
+    elif issue.get("state") != "open":
+        gh("PATCH", f"/issues/{issue['number']}", {"state": "open"})
+    n = issue["number"]
+    asked = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    gh("POST", f"/issues/{n}/comments", {"body":
+       f"@{owner} Garmin atsiuntė prisijungimo kodą į tavo el. paštą. Parašyk čia komentarą, kuriame būtų tik tas kodas. "
+       f"Laukiu {MFA_WAIT // 60} min. Kodą panaudosiu ir komentarą ištrinsiu."})
+    print(f"Laukiamas Garmin kodas issue #{n}")
+    end = time.time() + MFA_WAIT
+    while time.time() < end:
+        time.sleep(10)
+        for c in gh("GET", f"/issues/{n}/comments?since={asked}&per_page=100") or []:
+            m = re.search(r"\b(\d{4,8})\b", c.get("body") or "")
+            if m and c["user"]["login"].lower() == owner.lower() and c["created_at"] >= asked:
+                try:
+                    gh("DELETE", f"/issues/comments/{c['id']}")
+                except Exception:
+                    pass
+                gh("PATCH", f"/issues/{n}", {"state": "closed"})
+                print("Kodas gautas")
+                return m.group(1)
+    sys.exit(f"Garmin kodo negavau per {MFA_WAIT // 60} min. Paleisk iš naujo.")
 
 
 def dig(obj, *keys):
@@ -108,14 +163,14 @@ def main():
         status = getattr(getattr(e, "response", None), "status_code", None)
         return type(e).__name__ + (f", HTTP {status}" if status else "")
 
-    api = Garmin(email, password)
+    api = Garmin(email, password, prompt_mfa=prompt_mfa)
     try:
         api.login(old_token) if old_token else api.login()
     except Exception as e:
         if not old_token:
             sys.exit(f"Prisijungti prie Garmin nepavyko ({why(e)})")
         print(f"Žetonas nebetinka ({why(e)}) – jungiamasi slaptažodžiu")
-        api = Garmin(email, password)
+        api = Garmin(email, password, prompt_mfa=prompt_mfa)
         try:
             api.login()
         except Exception as e2:

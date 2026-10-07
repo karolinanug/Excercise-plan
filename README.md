@@ -62,6 +62,8 @@ Repozitorija vieša, todėl duomenys (`garmin/duomenys.enc`) ir prisijungimo že
 3. **Actions → Garmin duomenys → Run workflow**. Po minutės kitos repozitorijoje atsiras `garmin/duomenys.enc`.
 4. Telefone atidaryk svetainę, paspausk „Įvesti Garmin raktą“ ir įklijuok tą patį raktą.
 
+Jei Garmin prisijungiant paprašo kodo iš el. pašto, parsisiuntimas parašo komentarą GitHub issue „Garmin kodas“ (gausi pranešimą) ir iki 10 min. laukia: atsakyk komentaru, kuriame būtų tik tas kodas. Kodas panaudojamas, komentaras ištrinamas, o vėliau jungiamasi išsaugotu žetonu, todėl kodo nebereikia, kol Garmin jo vėl nepaprašys.
+
 ### Ką svetainė su jais daro
 
 - pasisveikinimo ekrane rodo šiandienos miegą, Body Battery, ramybės pulsą, HRV, stresą ir žingsnius;
