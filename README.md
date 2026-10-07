@@ -48,7 +48,7 @@ Skriptas per `tools/frazes.js` (paleidžia tikrus `js/*.js` su netikru DOM) sure
 
 ## Garmin duomenys
 
-Garmin oficialaus API asmeniniam naudojimui neduoda, todėl naudojama neoficiali, aktyviai prižiūrima biblioteka [python-garminconnect](https://github.com/cyberjunky/python-garminconnect). GitHub Actions (`.github/workflows/garmin.yml`) tris kartus per dieną paleidžia `tools/garmin_sync.py`: šis prisijungia prie Garmin Connect ir parsiunčia miegą (trukmę ir įvertį), ramybės pulsą, Body Battery, HRV, stresą ir žingsnius. Pirmą kartą parsiunčiama 30 dienų, vėliau – paskutinės 4.
+Garmin oficialaus API asmeniniam naudojimui neduoda, todėl naudojama neoficiali, aktyviai prižiūrima biblioteka [python-garminconnect](https://github.com/cyberjunky/python-garminconnect). GitHub Actions (`.github/workflows/garmin.yml`) kartą per dieną ryte (vasarą 8:17, žiemą 7:17) paleidžia `tools/garmin_sync.py`: šis prisijungia prie Garmin Connect ir parsiunčia miegą (trukmę, įvertį, pradžią ir pabaigą), ramybės pulsą, Body Battery (ir praeitos paros kreivę kas 15 min.), HRV, stresą, aktyvumo minutes ir žingsnius. Rankiniu būdu: Actions → Garmin duomenys → Run workflow. Pirmą kartą parsiunčiama 30 dienų, vėliau – paskutinės 4.
 
 Repozitorija vieša, todėl duomenys (`garmin/duomenys.enc`) ir prisijungimo žetonas (`garmin/zetonas.enc`) saugomi tik užšifruoti (PBKDF2-SHA256 + AES-256-GCM), o į Actions žurnalą nerašomi jokie skaičiai. Svetainė (`js/health.js`) duomenis iššifruoja tik telefone raktu, kurį įvedi vieną kartą.
 
@@ -62,17 +62,15 @@ Repozitorija vieša, todėl duomenys (`garmin/duomenys.enc`) ir prisijungimo že
 3. **Actions → Garmin duomenys → Run workflow**. Po minutės kitos repozitorijoje atsiras `garmin/duomenys.enc`.
 4. Telefone atidaryk svetainę, paspausk „Įvesti Garmin raktą“ ir įklijuok tą patį raktą.
 
-Kad duomenys atsinaujintų kiekvieną kartą atidarius svetainę, telefone svetainėje paspausk „Atnaujinti kaskart atidarius“ ir įklijuok GitHub fine-grained raktą (tik šiai repozitorijai; leidimai: Actions – Read and write, Contents – Read-only). Tada svetainė atidarius paleidžia parsisiuntimą (tik šiandien ir vakar) ir po ~1–2 min. parodo naujus duomenis; dažniau nei kas 10 min. nepaleidžia.
-
 Jei Garmin prisijungiant paprašo kodo iš el. pašto, parsisiuntimas parašo komentarą GitHub issue „Garmin kodas“ (gausi pranešimą) ir iki 10 min. laukia: atsakyk komentaru, kuriame būtų tik tas kodas. Kodas panaudojamas, komentaras ištrinamas, o vėliau jungiamasi išsaugotu žetonu, todėl kodo nebereikia, kol Garmin jo vėl nepaprašys.
 
 ### Ką svetainė su jais daro
 
+- **Praeitos paros apžvalga:** Body Battery kreivė nuo vakar 0:00 iki ryto (miegas pažymėtas), vakar diena (žingsniai, aktyvumas, stresas, kiek nusilpo Body Battery; įvertinimas rami / aktyvi / įtempta) ir naktis (miegas, įvertis, kiek pasikrovė Body Battery, HRV; poilsis geras / pakankamas / per mažas) bei trumpas apibendrinimas.
 - **Pasiruošimo kortelė** pasisveikinimo ekrane: animuotas žiedas su balu 0–100 (miegas 30 %, Body Battery 30 %, HRV 20 %, ramybės pulsas 20 %, lyginant su ankstesnių 14 dienų mediana), plytelės su pokyčiu nuo įprasto; paspaudus plytelę – 14 dienų grafikas.
 - **Prisitaikanti treniruotė:** kai balas žemesnis nei 45, automatiškai įjungiama lengvesnė versija (viena serija mažiau, poilsis tarp serijų +10 s), balsas įžangoje pasako kodėl. Perjungti galima ranka mygtuku „Lengvesnė versija“.
 - Kai balas 45–69, siūloma 1 lygis; kai bent 3 dienas iš eilės ≥ 70 ir pasirinktas 1 lygis – pasiūlymas pabandyti 2 lygį.
-- Vakare (nuo 17 val.), jei Garmin vidutinis stresas ≥ 40, siūlomas trumpas atsipalaidavimas (diafragminis kvėpavimas ir vaiko poza).
-- Lengvą dieną pasivaikščiojimas laikomas atliktu, kai žingsnių yra bent 7 000.
+- Vakare (nuo 17 val.) siūlomas trumpas atsipalaidavimas (diafragminis kvėpavimas ir vaiko poza); jei vakar buvo įtempta diena, jis siūlomas visą dieną.
 - Išsaugant įsivertinimą prie įrašo prideda tos dienos Garmin duomenis ir pasiruošimo balą, o „Kopijuoti įrašus“ prideda ir visų dienų Garmin duomenis kineziterapeutui.
 
 Ribas galima keisti `js/health.js` viršuje (`SLEEP_LOW`, `BB_LOW`, `RHR_UP`, `WALK_STEPS`).

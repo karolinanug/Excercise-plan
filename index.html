@@ -30,6 +30,15 @@
           <p class="ready-when" id="readywhen"></p>
         </div>
       </div>
+      <section class="day-ov" id="dayov" aria-labelledby="dayovh" hidden>
+        <h3 id="dayovh">Praeita para</h3>
+        <div class="bbchart" id="bbchart"></div>
+        <div class="ov-cols">
+          <div class="ov-col"><p class="ov-h">Vakar diena <span class="ov-chip" id="loadchip"></span></p><ul id="ovday"></ul></div>
+          <div class="ov-col"><p class="ov-h">Naktis <span class="ov-chip" id="restchip"></span></p><ul id="ovnight"></ul></div>
+        </div>
+        <p class="ov-sum" id="ovsum"></p>
+      </section>
       <div class="tiles" id="tiles"></div>
       <div class="spark" id="spark" hidden></div>
       <p class="ready-tip" id="readytip"></p>
@@ -37,7 +46,6 @@
     </div>
     <p class="hello-health" id="healthnote" hidden></p>
     <button class="btn ghost" id="garminkey" type="button" hidden>Įvesti Garmin raktą</button>
-    <button class="btn ghost" id="ghkey" type="button" hidden>Atnaujinti kaskart atidarius</button>
     <div class="hello-level" role="group" aria-label="Lygis">
       <button class="seg" id="hl1" type="button" aria-pressed="true">1 lygis</button>
       <button class="seg" id="hl2" type="button" aria-pressed="false">2 lygis</button>

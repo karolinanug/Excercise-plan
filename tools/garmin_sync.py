@@ -1,6 +1,7 @@
 """Parsiunčia Karolinos Garmin duomenis ir įrašo juos užšifruotus į garmin/duomenys.enc.
 
-Paleidžia GitHub Actions (.github/workflows/garmin.yml) kelis kartus per dieną. Naudoja
+Paleidžia GitHub Actions (.github/workflows/garmin.yml) kartą per dieną ryte: tada jau yra visa
+vakar diena ir praėjusi naktis (praeitos paros apžvalgai svetainėje). Naudoja
 neoficialią biblioteką python-garminconnect (Garmin oficialaus API asmeniniam naudojimui neduoda).
 
 Aplinkos kintamieji (GitHub Secrets):
@@ -38,9 +39,7 @@ TOKEN = ROOT / "garmin" / "zetonas.enc"
 ITER = 310_000
 FIRST_DAYS = 30   # pirmą kartą parsiunčiama tiek dienų atgal
 DAYS = 4          # vėliau – tik paskutinės dienos (vakar dar gali pasikeisti)
-# Paleista iš svetainės (GREITAI=true): tik šiandien ir vakar, failas įrašomas visada, kad
-# svetainė pagal „updated“ matytų, jog atnaujinta
-QUICK = os.environ.get("GREITAI", "").lower() == "true"
+BB_STEP = 15 * 60 * 1000   # Body Battery kreivė praeitos paros grafikui – kas 15 min.
 KEEP_DAYS = 180
 
 
@@ -133,9 +132,21 @@ def day_entry(api: Garmin, d: str) -> dict:
     dto = sleep.get("dailySleepDTO") or {}
     sleep_s = dto.get("sleepTimeSeconds")
     bb = stats.get("bodyBatteryAtWakeTime") or stats.get("bodyBatteryHighestValue")
+    mins = lambda k: round(stats[k] / 60) if isinstance(stats.get(k), (int, float)) and stats[k] >= 0 else None
+    intensity = [stats.get("moderateIntensityMinutes"), stats.get("vigorousIntensityMinutes")]
     e = {
         "d": d,
         "steps": stats.get("totalSteps"),
+        # Dienos krūvis (praeitos paros apžvalgai)
+        "intensity": sum(x for x in intensity if isinstance(x, int)) if any(isinstance(x, int) for x in intensity) else None,
+        "stressHighMin": mins("highStressDuration"),
+        "stressMedMin": mins("mediumStressDuration"),
+        "bbHigh": stats.get("bodyBatteryHighestValue"),
+        "bbCharged": stats.get("bodyBatteryChargedValue"),
+        "bbDrained": stats.get("bodyBatteryDrainedValue"),
+        # Miego pradžia ir pabaiga (epochos ms, GMT)
+        "sleepStart": dto.get("sleepStartTimestampGMT"),
+        "sleepEnd": dto.get("sleepEndTimestampGMT"),
         "rhr": stats.get("restingHeartRate"),
         "stress": stats.get("averageStressLevel") if (stats.get("averageStressLevel") or -1) >= 0 else None,
         "bb": bb,
@@ -146,6 +157,28 @@ def day_entry(api: Garmin, d: str) -> dict:
         "hrvStatus": dig(hrv, "hrvSummary", "status"),
     }
     return {k: v for k, v in e.items() if v is not None}
+
+
+def bb_curve(api: Garmin, start: str, end: str) -> list:
+    """Body Battery kreivė [[epochos minutės, reikšmė], ...] kas 15 min."""
+    days = call("Body Battery kreivė", api.get_body_battery, start, end) or []
+    pts = []
+    for day in days if isinstance(days, list) else []:
+        for item in (day or {}).get("bodyBatteryValuesArray") or []:
+            if not isinstance(item, (list, tuple)):
+                continue
+            # [laikas, lygis] arba [laikas, "MEASURED", lygis, versija] – imamas pirmas skaičius po laiko
+            ts = next((x for x in item if isinstance(x, (int, float)) and x > 1e11), None)
+            rest = list(item)[list(item).index(ts) + 1:] if ts is not None else []
+            val = next((x for x in rest if isinstance(x, (int, float)) and 0 <= x <= 100), None)
+            if ts is not None and val is not None:
+                pts.append((int(ts), int(val)))
+    out, last = [], None
+    for ts, v in sorted(pts):
+        if last is None or ts - last >= BB_STEP:
+            out.append([ts // 60000, v])
+            last = ts
+    return out
 
 
 def main():
@@ -186,7 +219,7 @@ def main():
             days = decrypt(DATA, key).get("days", [])
         except Exception:
             print("Ankstesni duomenys neiššifruojami (pasikeitė raktas?) – pradedama iš naujo")
-    n = (2 if QUICK else DAYS) if days else FIRST_DAYS
+    n = DAYS if days else FIRST_DAYS
     today = date.today()
     by_day = {x["d"]: x for x in days}
     got = 0
@@ -197,6 +230,13 @@ def main():
             by_day[d] = {**by_day.get(d, {}), **e}
             got += 1
         time.sleep(1)
+    # Praeitos paros Body Battery kreivė (vakar 00:00 – dabar) – tik šiandienos įraše
+    t, y = today.isoformat(), (today - timedelta(days=1)).isoformat()
+    curve = bb_curve(api, y, t)
+    for x in by_day.values():
+        x.pop("bbc", None)
+    if curve and t in by_day:
+        by_day[t]["bbc"] = curve
     oldest = (today - timedelta(days=KEEP_DAYS)).isoformat()
     days = sorted((x for x in by_day.values() if x["d"] >= oldest), key=lambda x: x["d"])
     # Kokie laukai gauti šiandien – tik pavadinimai, be reikšmių
@@ -209,7 +249,7 @@ def main():
             old = decrypt(DATA, key).get("days")
         except Exception:
             pass
-    if old != days or QUICK:
+    if old != days:
         DATA.write_text(encrypt({"updated": int(time.time()), "days": days}, key))
         print("garmin/duomenys.enc atnaujintas")
     new_token = api.client.dumps()

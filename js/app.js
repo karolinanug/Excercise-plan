@@ -616,13 +616,10 @@ function renderHealth(type) {
   if (gs === "bad-key") p.push("Garmin raktas netinka. Įvesk jį iš naujo.");
   if (HEALTH.received && !t) p.push("Nuoroda iš telefono atėjo, bet joje nebuvo skaičių. Patikrink „Shortcut“ nustatymus.");
   if (HEALTH.badSleep != null) p.push(`Miego trukmė atėjo neteisinga (${String(HEALTH.badSleep).replace(".", ",")} val.), todėl jos neišsaugojau.`);
-  if (HEALTH.refreshing) p.push("Garmin duomenys atnaujinami, palauk 1–2 min.");
-  if (HEALTH.refreshErr) p.push(HEALTH.refreshErr + ".");
   if (t && !r) p.push(`Iš Garmin: ${HEALTH.text(t)}.`);
   $("healthnote").textContent = p.join(" ");
   $("healthnote").hidden = !p.length;
   $("garminkey").hidden = gs !== "need-key" && gs !== "bad-key";
-  $("ghkey").hidden = gs !== "ok" || (HEALTH.hasGitHubKey && !/raktas/.test(HEALTH.refreshErr || ""));
   renderReady(t, r, type);
   $("letsgo").textContent = easy ? "Pradėkime · lengvesnė versija" : "Pradėkime";
 }
@@ -650,11 +647,7 @@ function renderReady(t, r, type) {
     } else if (p.base != null && p.cur != null) delta = "kaip įprastai";
     return { key: p.key, label: p.label, value: p.value, delta, cls };
   });
-  if (t.steps != null) {
-    const left = HEALTH.WALK_STEPS - t.steps;
-    tiles.push({ key: "steps", label: "Žingsniai", value: HEALTH.fmtNum(t.steps),
-      delta: type === "light" ? (left > 0 ? `iki tikslo ${HEALTH.fmtNum(left)}` : "pasivaikščiota ✓") : "", cls: type === "light" && left <= 0 ? "up" : "" });
-  }
+  renderOverview();
   if (sparkKey && !tiles.some(x => x.key === sparkKey)) sparkKey = null;
   $("tiles").innerHTML = tiles.map(x => `<button class="tile ${x.cls}" type="button" data-key="${x.key}" aria-pressed="${x.key === sparkKey}">
     <span class="tl">${esc(x.label)}</span><b>${esc(x.value)}</b><span class="td">${esc(x.delta)}</span></button>`).join("");
@@ -670,14 +663,70 @@ function renderReady(t, r, type) {
     const good = [1, 2].every(i => { const x = HEALTH.readiness(dayKey(new Date(Date.now() - i * 864e5))); return x && x.score >= 70; });
     if (good) { tip.push("Jau kelias dienas gerai pailsėjusi, gal pabandyk 2 lygį?"); acts.push(`<button class="btn ghost" type="button" data-act="lvl2">Pabandyti 2 lygį</button>`); }
   }
-  if (new Date().getHours() >= 17 && r.stress != null && r.stress >= 40) {
+  // Atsipalaidavimas siūlomas vakare; jei vakar buvo įtempta – ir paaiškinama kodėl
+  const ov = HEALTH.overview();
+  if (new Date().getHours() >= 17 || (ov && ov.load === "stress")) {
     const min = Math.max(1, Math.round(buildSteps(level, DAYTYPE.relax.list(), false).reduce((a, s) => a + s.secs, 0) / 60));
-    tip.push(`Šiandien stresas buvo aukštas (${r.stress}), vakare tiks trumpas atsipalaidavimas.`);
+    if (ov && ov.load === "stress") tip.push("Vakar buvo įtempta diena, tad vakare skirk kelias minutes atsipalaidavimui.");
     acts.push(`<button class="btn ghost" type="button" data-act="relax">Atsipalaidavimas · ${min} min.</button>`);
   }
   acts.push(`<button class="seg" type="button" data-act="easy" aria-pressed="${easy}">Lengvesnė versija</button>`);
   $("readytip").textContent = tip.join(" ");
   $("readyactions").innerHTML = acts.join("");
+}
+// Praeitos paros apžvalga: Body Battery kreivė (vakar 0:00 – rytas, naktis pažymėta),
+// vakar dienos krūvis, naktis ir trumpas apibendrinimas
+const hm = ms => { const d = new Date(ms); return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`; };
+const minsTxt = m => m >= 60 ? `${Math.floor(m / 60)} val. ${m % 60} min.` : `${m} min.`;
+function renderOverview() {
+  const ov = HEALTH.overview(), box = $("dayov");
+  box.hidden = !ov;
+  if (!ov) return;
+  const { y, night: n, curve } = ov;
+  const ch = $("bbchart");
+  if (curve.length >= 4) {
+    const W = 300, H = 110, L = 22, R = 6, T = 8, B = 18;
+    const now = new Date(), y0 = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).getTime() / 60000;
+    const x1 = Math.max(curve[curve.length - 1][0], y0 + 24 * 60 + 60);
+    const X = m => L + (m - y0) * (W - L - R) / (x1 - y0), Y = v => T + (100 - v) * (H - T - B) / 100;
+    const pts = curve.filter(p => p[0] >= y0).map(p => `${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`);
+    const sleepRect = n.start && n.end ? `<rect class="bb-night" x="${X(n.start / 60000)}" y="${T}" width="${Math.max(0, X(n.end / 60000) - X(n.start / 60000))}" height="${H - T - B}"/>
+      <text class="bb-lbl" x="${(X(n.start / 60000) + X(n.end / 60000)) / 2}" y="${T + 11}" text-anchor="middle">miegas</text>` : "";
+    const tick = (m, txt, anchor = "middle") => m >= y0 && m <= x1 ? `<text class="bb-lbl" x="${X(m)}" y="${H - 4}" text-anchor="${anchor}">${txt}</text><line class="bb-tick" x1="${X(m)}" x2="${X(m)}" y1="${H - B}" y2="${H - B + 3}"/>` : "";
+    const last = curve[curve.length - 1];
+    ch.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Body Battery per praeitą parą">
+      ${[25, 50, 75].map(v => `<line class="bb-grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="bb-lbl" x="${L - 4}" y="${Y(v) + 3}" text-anchor="end">${v}</text>`).join("")}
+      ${sleepRect}
+      <polyline class="bb-line" points="${pts.join(" ")}"/>
+      <circle class="sp-now" cx="${X(last[0])}" cy="${Y(last[1])}" r="4.5"/>
+      ${tick(y0, "vakar", "start")}${tick(y0 + 12 * 60, "12:00")}${tick(y0 + 24 * 60, "0:00")}
+    </svg><p class="bb-cap">Body Battery: dieną senka, naktį kraunasi. Paskutinė reikšmė ${last[1]}.</p>`;
+    ch.hidden = false;
+  } else ch.hidden = true;
+  const li = a => a.filter(Boolean).map(x => `<li>${x}</li>`).join("");
+  $("ovday").innerHTML = y ? li([
+    y.steps != null && `<b>${HEALTH.fmtNum(y.steps)}</b> žingsnių`,
+    y.intensity != null && `<b>${y.intensity}</b> min. aktyvumo`,
+    y.stress != null && `stresas vid. <b>${y.stress}</b>${y.stressHighMin ? `, aukštas ${minsTxt(y.stressHighMin)}` : ""}`,
+    y.bbLow != null && `Body Battery nukrito iki <b>${y.bbLow}</b>`
+  ]) : "<li>Vakar dienos duomenų nėra.</li>";
+  $("ovnight").innerHTML = li([
+    n.sleep != null && `miegas <b>${fmt1(n.sleep)} val.</b>${n.start && n.end ? ` (${hm(n.start)}–${hm(n.end)})` : ""}`,
+    n.score != null && `miego įvertis <b>${n.score}</b>/100`,
+    n.charged != null ? `Body Battery <b>${n.charged >= 0 ? "+" : ""}${n.charged}</b> (${n.bbStart} → ${n.bbWake})` : n.bbWake != null && `Body Battery pabudus <b>${n.bbWake}</b>`,
+    n.hrv != null && `HRV <b>${n.hrv}</b> ms`
+  ]) || "<li>Nakties duomenų nėra.</li>";
+  const LOAD = { stress: "įtempta", active: "aktyvi", calm: "rami" }, REST = { good: "geras poilsis", ok: "pakankamas", low: "per mažas" };
+  const chip = (id, txt, cls) => { $(id).textContent = txt || ""; $(id).hidden = !txt; $(id).dataset.k = cls || ""; };
+  chip("loadchip", LOAD[ov.load], ov.load); chip("restchip", REST[ov.rest], ov.rest);
+  const s = [];
+  if (ov.load === "stress") s.push(`Vakar buvo įtempta diena${y.stress != null ? ` (vidutinis stresas ${y.stress})` : ""}${y.bbLow != null ? `, Body Battery nusileido iki ${y.bbLow}` : ""}.`);
+  else if (ov.load === "active") s.push("Vakar buvo aktyvi diena.");
+  else if (ov.load === "calm") s.push("Vakar buvo rami diena.");
+  if (ov.rest === "good") s.push(`Naktį gerai pailsėjai${n.charged != null ? ` ir pasikrovei ${n.charged} Body Battery` : ""}.`);
+  else if (ov.rest === "ok") s.push(`Naktį pailsėjai pakankamai${n.charged != null ? ` (+${Math.max(0, n.charged)} Body Battery)` : ""}, bet ne iki galo.`);
+  else if (ov.rest === "low") s.push(`Naktį organizmas atsigavo per mažai${n.charged != null ? ` (tik ${n.charged >= 0 ? "+" : ""}${n.charged} Body Battery)` : ""}${n.sleep != null ? `, miegojai ${fmt1(n.sleep)} val.` : "."}`);
+  $("ovsum").textContent = s.join(" ");
 }
 // Paskutinių 14 dienų grafikas su įprasta reikšme (punktyrinė linija)
 function renderSpark() {
@@ -768,7 +817,7 @@ document.addEventListener("visibilitychange", () => {
   lastToday = today;
   renderWeek();
   if (running) { tick(); lockScreen(); }
-  else HEALTH.syncGarmin().then(HEALTH.refreshGarmin);
+  else HEALTH.syncGarmin();
 });
 renderSummary();
 renderVideos();
@@ -776,4 +825,4 @@ renderWeek();
 renderHistory();
 renderHello();
 setLevel(level);
-HEALTH.syncGarmin().then(HEALTH.refreshGarmin);
+HEALTH.syncGarmin();

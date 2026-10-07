@@ -1,9 +1,7 @@
 // Garmin duomenys. Du šaltiniai:
-// 1. garmin/duomenys.enc – kelis kartus per dieną parsiunčia GitHub Actions (tools/garmin_sync.py),
+// 1. garmin/duomenys.enc – kartą per dieną ryte parsiunčia GitHub Actions (tools/garmin_sync.py),
 //    užšifruota raktu, kurį telefone įvedi vieną kartą; iššifruojama tik naršyklėje.
-//    Jei telefone įvestas ir GitHub raktas (fine-grained, tik šiai repozitorijai: Actions – rašyti,
-//    Contents – skaityti), kiekvienas svetainės atidarymas paleidžia parsisiuntimą ir po ~1–2 min.
-//    parodo naujus duomenis (ne dažniau kaip kas MIN_GAP).
+//    Iš jo – praeitos paros apžvalga (vakar diena + naktis, Body Battery kreivė) ir pasiruošimas.
 // 2. iPhone „Shortcuts“ nuoroda …/#zingsniai=8400&miegas=7.2&pulsas=58 (Apple Health).
 //    Naudojama # dalis, nes ji nesiunčiama į serverį.
 // Abu saugomi tik telefone (localStorage karolina-garmin ir karolina-health); Garmin svarbesnis.
@@ -15,8 +13,6 @@ const HEALTH = (() => {
   const WALK_STEPS = 7000;   // lengvą dieną: tiek žingsnių – pasivaikščiojimas laikomas atliktu
   const BB_LOW = 35;         // Body Battery ryte mažiau – patariama lengviau
   const GARMIN_URL = "garmin/duomenys.enc", G_KEY = "karolina-garmin", G_PASS = "karolina-garmin-raktas";
-  const REPO = "karolinanug/Excercise-plan", WORKFLOW = "garmin.yml", G_GH = "karolina-garmin-gh";
-  const MIN_GAP = 10 * 60 * 1000, WAIT = 4 * 60 * 1000;
   const pad = n => String(n).padStart(2, "0");
   const dayKey = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   // „8 400“, „7,2 hr“, „58 count/min“ -> skaičius
@@ -69,34 +65,8 @@ const HEALTH = (() => {
     await apply(blob);
     notify();
   }
-  // --- Atnaujinimas atidarius svetainę (per GitHub API) ---
-  let refreshing = false, refreshErr = null;
-  const gh = (path, opts = {}) => fetch("https://api.github.com/repos/" + REPO + path, Object.assign({}, opts, {
-    cache: "no-store",
-    headers: Object.assign({ Authorization: "Bearer " + stored(G_GH), Accept: "application/vnd.github+json" }, opts.headers || {})
-  }));
-  async function refreshGarmin() {
-    if (refreshing || !stored(G_GH) || !stored(G_PASS) || gState === "bad-key") return;
-    if (gUpdated && Date.now() - gUpdated * 1000 < MIN_GAP) return;
-    refreshing = true; refreshErr = null; notify();
-    const before = gUpdated || 0;
-    try {
-      const r = await gh(`/actions/workflows/${WORKFLOW}/dispatches`, { method: "POST", body: JSON.stringify({ ref: "main", inputs: { greitai: "true" } }) });
-      if ([401, 403, 404].includes(r.status)) throw new Error("GitHub raktas netinka");
-      if (!r.ok) throw new Error(`GitHub klaida ${r.status}`);
-      // Pages persikrauna lėtai, todėl naujas failas skaitomas tiesiai per GitHub API
-      const end = Date.now() + WAIT;
-      while (Date.now() < end && !(gUpdated > before)) {
-        await new Promise(f => setTimeout(f, 15000));
-        try {
-          const f = await gh("/contents/garmin/duomenys.enc?ref=main&t=" + Date.now(), { headers: { Accept: "application/vnd.github.raw+json" } });
-          if (f.ok) await apply(await f.json());
-        } catch (e) {}
-      }
-      if (!(gUpdated > before)) refreshErr = "Garmin duomenų atnaujinti nepavyko, rodomi ankstesni";
-    } catch (e) { refreshErr = e.message; }
-    refreshing = false; notify();
-  }
+  // Atnaujinimo atidarius nebėra – pamirštam anksčiau įvestą GitHub raktą
+  try { localStorage.removeItem("karolina-garmin-gh"); } catch (e) {}
   // Abu šaltiniai vienoje lentelėje pagal dieną: Garmin reikšmės svarbesnės, žingsnių – didesnė
   function merged() {
     const m = new Map();
@@ -150,13 +120,41 @@ const HEALTH = (() => {
     // Garmin būsena: off (neprijungta), need-key, bad-key, ok
     get garminState() { return gState; },
     get garminUpdated() { return gUpdated; },
-    setGarminKey(p) { try { localStorage.setItem(G_PASS, String(p || "").trim()); } catch (e) {} gState = "off"; return syncGarmin().then(refreshGarmin); },
+    setGarminKey(p) { try { localStorage.setItem(G_PASS, String(p || "").trim()); } catch (e) {} gState = "off"; return syncGarmin(); },
     syncGarmin,
-    refreshGarmin,
-    get refreshing() { return refreshing; },
-    get refreshErr() { return refreshErr; },
-    get hasGitHubKey() { return !!stored(G_GH); },
-    setGitHubKey(t) { try { localStorage.setItem(G_GH, String(t || "").trim()); } catch (e) {} refreshErr = null; return refreshGarmin(); },
+    // Praeitos paros apžvalga: vakar diena, naktis (miegas, Body Battery prieš miegą ir pabudus),
+    // Body Battery kreivė ir įvertinimai. null, jei nėra nei vakar, nei šiandienos duomenų.
+    overview() {
+      const now = new Date(), t = this.today(), y = this.get(dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)));
+      if (!t && !y) return null;
+      const curve = (t && t.bbc) || [];
+      // Kreivės reikšmė arčiausiai nurodyto laiko (ms)
+      const at = ms => {
+        if (!ms || !curve.length) return null;
+        let best = null, dist = Infinity;
+        for (const [m, v] of curve) { const d = Math.abs(m * 60000 - ms); if (d < dist) { dist = d; best = v; } }
+        return dist <= 60 * 60000 ? best : null;
+      };
+      const night = t ? { sleep: t.sleep, score: t.sleepScore, start: t.sleepStart, end: t.sleepEnd, hrv: t.hrv, rhr: t.rhr } : {};
+      night.bbStart = at(night.start); night.bbWake = at(night.end) ?? (t ? t.bb : null);
+      night.charged = night.bbStart != null && night.bbWake != null ? night.bbWake - night.bbStart : null;
+      // Poilsio įvertinimas: miego įvertis (arba trukmė) ir kiek pasikrovė Body Battery
+      const sq = night.score != null ? night.score : night.sleep != null ? Math.max(0, Math.min(100, (night.sleep - 4) / 3.5 * 100)) : null;
+      let rest = null;
+      if (sq != null || night.charged != null) {
+        if ((sq != null && sq < 60) || (night.charged != null && night.charged < 30)) rest = "low";
+        else if ((sq == null || sq >= 75) && (night.charged == null || night.charged >= 45)) rest = "good";
+        else rest = "ok";
+      }
+      // Vakar dienos krūvis
+      let load = null;
+      if (y) {
+        if ((y.stress != null && y.stress >= 40) || (y.stressHighMin || 0) >= 60) load = "stress";
+        else if ((y.intensity || 0) >= 30 || (y.steps || 0) >= 10000) load = "active";
+        else if (y.steps != null || y.stress != null) load = "calm";
+      }
+      return { y, t, night, curve, rest, load };
+    },
     onChange(f) { listeners.push(f); },
     today() { return this.get(dayKey(new Date())); },
     // Įprasta reikšmė – ankstesnių 14 dienų mediana (reikia bent 3 dienų)

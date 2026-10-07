@@ -266,3 +266,20 @@ body.voice-on[data-mode="workout"] .anim-say { display: none; }
 @keyframes spark-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .ring-fg, .spark, .tile { transition: none; animation: none; } }
 @media (max-width: 380px) { .ring { width: 88px; height: 88px; } .ring-label b { font-size: 1.7rem; } }
+/* Praeitos paros apžvalga */
+.day-ov { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid color-mix(in srgb, var(--bg) 25%, transparent); padding-top: 12px; }
+.day-ov h3 { font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; opacity: .8; color: inherit; }
+.bbchart svg { width: 100%; height: auto; display: block; }
+.bb-line { fill: none; stroke: var(--bg); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.bb-night { fill: color-mix(in srgb, var(--bg) 16%, transparent); }
+.bb-grid { stroke: color-mix(in srgb, var(--bg) 22%, transparent); stroke-width: 1; }
+.bb-tick { stroke: color-mix(in srgb, var(--bg) 60%, transparent); }
+.bb-lbl { fill: currentColor; font-size: 9px; opacity: .8; }
+.bb-cap { font-size: .78rem; opacity: .8; margin-top: 2px; }
+.ov-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ov-h { font-weight: 800; font-size: .95rem; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 4px; }
+.ov-chip { font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--bg) 85%, transparent); color: var(--accent); }
+.ov-chip[data-k="low"], .ov-chip[data-k="stress"] { background: var(--warn-soft); color: var(--warn); }
+.ov-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: .85rem; }
+.ov-sum { font-size: .95rem; }
+@media (max-width: 360px) { .ov-cols { grid-template-columns: 1fr; } }
