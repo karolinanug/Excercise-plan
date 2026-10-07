@@ -66,7 +66,7 @@ Repozitorija vieša, todėl duomenys (`garmin/duomenys.enc`) ir prisijungimo že
 3. **Actions → Garmin duomenys → Run workflow**. Po minutės kitos repozitorijoje atsiras `garmin/duomenys.enc`.
 4. Telefone atidaryk svetainę, paspausk „Įvesti Garmin raktą“ ir įklijuok tą patį raktą.
 
-Jei Garmin prisijungiant paprašo kodo iš el. pašto, parsisiuntimas parašo komentarą GitHub issue „Garmin kodas“ (gausi pranešimą) ir iki 10 min. laukia: atsakyk komentaru, kuriame būtų tik tas kodas. Kodas panaudojamas, komentaras ištrinamas, o vėliau jungiamasi išsaugotu žetonu, todėl kodo nebereikia, kol Garmin jo vėl nepaprašys.
+Jei Garmin prisijungiant paprašo kodo iš el. pašto, jis pasiimamas automatiškai iš atskiros Gmail dėžutės, skirtos tik Garmin kodams (Secrets `KODU_EMAIL` ir `KODU_SLAPTAZODIS` – Google programos slaptažodis). Į ją pagrindinis paštas Gmail filtru persiunčia laiškus nuo `alerts@account.garmin.com` su tema „Security Passcode“. Panaudotas laiškas ištrinamas. Jei dėžutė nenustatyta arba per 3 min. laiško nėra, parsisiuntimas parašo komentarą GitHub issue „Garmin kodas“ ir laukia, kol į jį atsakysi kodu. Vėliau jungiamasi išsaugotu žetonu, todėl kodo reikia retai.
 
 ### Ką svetainė su jais daro
 

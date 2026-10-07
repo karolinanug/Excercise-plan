@@ -9,15 +9,21 @@ Aplinkos kintamieji (GitHub Secrets):
   DUOMENU_RAKTAS                – atsitiktinis raktas; juo šifruojami duomenys ir prisijungimo
                                   žetonas, tą patį raktą svetainėje įvedi telefone
 
-Jei Garmin prisijungiant paprašo kodo iš el. pašto, skriptas parašo komentarą GitHub issue
-„Garmin kodas“ ir iki 10 min. laukia, kol savininkė atsakys komentaru su kodu. Kodas panaudojamas
-ir komentaras ištrinamas. Vėliau jungiamasi išsaugotu žetonu, todėl kodo nebereikia.
+Jei Garmin prisijungiant paprašo kodo iš el. pašto:
+  1. jei nustatyti KODU_EMAIL ir KODU_SLAPTAZODIS (atskira Gmail dėžutė, į kurią pagrindinis
+     paštas filtru persiunčia Garmin kodų laiškus; Google programos slaptažodis), kodas
+     pasiimamas iš ten automatiškai (IMAP);
+  2. jei ten per 3 min. laiško nėra (arba dėžutė nenustatyta), skriptas parašo komentarą GitHub
+     issue „Garmin kodas“ ir laukia, kol savininkė atsakys komentaru su kodu.
+Vėliau jungiamasi išsaugotu žetonu, todėl kodo nebereikia.
 
 Repozitorija vieša, todėl:
   * duomenys ir žetonas saugomi tik užšifruoti (PBKDF2-SHA256 + AES-256-GCM, iššifruoja js/health.js);
   * į žurnalą (Actions log, irgi viešas) nerašomi jokie sveikatos skaičiai.
 """
 import base64
+import email
+import imaplib
 import json
 import os
 import re
@@ -75,8 +81,53 @@ def gh(method, path, body=None):
     return json.loads(raw) if raw else None
 
 
+MAIL_WAIT = 180
+
+
+def mail_code(since: float):
+    """Garmin kodas iš atskiros Gmail dėžutės (IMAP), jei laiškas atėjo po `since`. Kitaip None."""
+    user, pw = os.environ.get("KODU_EMAIL", "").strip(), os.environ.get("KODU_SLAPTAZODIS", "").replace(" ", "")
+    if not (user and pw):
+        return None
+    try:
+        with imaplib.IMAP4_SSL("imap.gmail.com") as m:
+            m.login(user, pw)
+            m.select("INBOX")
+            _, ids = m.search(None, '(FROM "garmin.com")')
+            for mid in reversed(ids[0].split()[-10:]):
+                _, data = m.fetch(mid, "(RFC822)")
+                msg = email.message_from_bytes(data[0][1])
+                sent = email.utils.parsedate_to_datetime(msg["Date"]).timestamp() if msg["Date"] else 0
+                if sent < since - 60:
+                    continue
+                parts = msg.walk() if msg.is_multipart() else [msg]
+                text = " ".join((p.get_payload(decode=True) or b"").decode(p.get_content_charset() or "utf-8", "replace")
+                                for p in parts if p.get_content_type() in ("text/plain", "text/html"))
+                text = re.sub(r"<[^>]+>", " ", text)
+                # Kodas – pirmas šešiaženklis skaičius po žodžių „one-time code“ / „kodas“
+                after = re.split(r"(?i)one-time code|vienkartin|kodas", text, maxsplit=1)[-1]
+                code = re.search(r"(?<![\d#])(\d{6})(?!\d)", after)
+                if code:
+                    m.store(mid, "+FLAGS", "\\Deleted")
+                    m.expunge()
+                    return code.group(1)
+    except Exception as e:
+        print(f"  Kodų dėžutė: nepavyko ({type(e).__name__})")
+    return None
+
+
 def prompt_mfa() -> str:
-    """Garmin el. pašto kodas per GitHub issue komentarą (Actions neturi kur jo įvesti)."""
+    """Garmin el. pašto kodas: iš kodų dėžutės, o jei jos nėra – per GitHub issue komentarą."""
+    since = time.time()
+    if os.environ.get("KODU_EMAIL"):
+        print("Laukiamas Garmin kodas kodų dėžutėje")
+        while time.time() < since + MAIL_WAIT:
+            time.sleep(10)
+            code = mail_code(since)
+            if code:
+                print("Kodas gautas iš kodų dėžutės")
+                return code
+        print("Kodų dėžutėje laiško nėra – prašoma per GitHub issue")
     if not os.environ.get("GITHUB_TOKEN"):
         return input("Garmin kodas iš el. pašto: ").strip()
     owner = os.environ.get("GITHUB_REPOSITORY_OWNER", "")
@@ -96,6 +147,10 @@ def prompt_mfa() -> str:
     end = time.time() + MFA_WAIT
     while time.time() < end:
         time.sleep(10)
+        code = mail_code(since)
+        if code:
+            print("Kodas gautas iš kodų dėžutės")
+            return code
         for c in gh("GET", f"/issues/{n}/comments?since={asked}&per_page=100") or []:
             m = re.search(r"\b(\d{4,8})\b", c.get("body") or "")
             if m and c["user"]["login"].lower() == owner.lower() and c["created_at"] >= asked:
@@ -194,6 +249,15 @@ def main():
             old_token = decrypt(TOKEN, key)["tokens"]
         except Exception:
             print("Išsaugotas žetonas neiššifruojamas – jungiamasi slaptažodžiu")
+
+    # Ar kodų dėžutė pasiekiama (kad apie klaidą sužinotume ne tada, kai kodo jau reikės)
+    if os.environ.get("KODU_EMAIL"):
+        try:
+            with imaplib.IMAP4_SSL("imap.gmail.com") as m:
+                m.login(os.environ["KODU_EMAIL"].strip(), os.environ.get("KODU_SLAPTAZODIS", "").replace(" ", ""))
+            print("Kodų dėžutė pasiekiama")
+        except Exception as e:
+            print(f"ĮSPĖJIMAS: kodų dėžutė nepasiekiama ({type(e).__name__})")
 
     def why(e):  # tik klaidos tipas ir HTTP kodas – pranešimuose gali būti asmeninių duomenų
         status = getattr(getattr(e, "response", None), "status_code", None)

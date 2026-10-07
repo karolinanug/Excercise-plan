@@ -1,5 +1,5 @@
 # Kartą per dieną ryte parsiunčia Garmin duomenis į garmin/duomenys.enc (užšifruotus).
-# Reikia Secrets: GARMIN_EMAIL, GARMIN_PASSWORD, DUOMENU_RAKTAS. Žr. README.md „Garmin duomenys“.
+# Reikia Secrets: GARMIN_EMAIL, GARMIN_PASSWORD, DUOMENU_RAKTAS (neprivaloma: KODU_EMAIL, KODU_SLAPTAZODIS). Žr. README.md „Garmin duomenys“.
 name: Garmin duomenys
 
 on:
@@ -31,6 +31,9 @@ jobs:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
           DUOMENU_RAKTAS: ${{ secrets.DUOMENU_RAKTAS }}
+          # Neprivaloma: atskira Gmail dėžutė Garmin kodams (žr. README)
+          KODU_EMAIL: ${{ secrets.KODU_EMAIL }}
+          KODU_SLAPTAZODIS: ${{ secrets.KODU_SLAPTAZODIS }}
           TZ: Europe/Vilnius
           GITHUB_TOKEN: ${{ github.token }}
         run: python tools/garmin_sync.py
