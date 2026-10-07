@@ -120,6 +120,7 @@ const HEALTH = (() => {
     // Garmin būsena: off (neprijungta), need-key, bad-key, ok
     get garminState() { return gState; },
     get garminUpdated() { return gUpdated; },
+    get key() { return stored(G_PASS); },
     setGarminKey(p) { try { localStorage.setItem(G_PASS, String(p || "").trim()); } catch (e) {} gState = "off"; return syncGarmin(); },
     syncGarmin,
     // Praeitos paros apžvalga: vakar diena, naktis (miegas, Body Battery prieš miegą ir pabudus),

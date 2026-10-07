@@ -281,8 +281,44 @@ function loadLog() {
     return a.filter(x => x && typeof x.d === "string");
   } catch (e) { return []; }
 }
-function saveLog(log) {
+function saveLog(log, backup = true) {
   try { localStorage.setItem(LOG_KEY, JSON.stringify(log)); localStorage.removeItem(OLD_KEY); } catch (e) {}
+  if (backup) { clearTimeout(backupTimer); backupTimer = setTimeout(syncBackup, 1500); }
+}
+// ---- Įrašų kopija GitHub'e (js/backup.js) ----
+// Telefono ir kopijos įrašai sujungiami: ta pati diena ir tipas – paliekamas išsamesnis įrašas.
+// Taip išvalius naršyklę įrašai grįžta, o kitame įrenginyje įrašyti – susilieja.
+let backupTimer = null, backupBusy = null;
+function mergeLogs(a, b) {
+  const m = new Map(), size = x => Object.keys(x).length + (x.m ? x.m.length : 0);
+  [...a, ...b].forEach(x => { const k = x.d + "|" + x.t, o = m.get(k); if (!o || size(x) > size(o)) m.set(k, x); });
+  return [...m.values()].sort((x, y) => x.d < y.d ? -1 : x.d > y.d ? 1 : 0);
+}
+function syncBackup() {
+  if (backupBusy) return backupBusy.then(syncBackup);
+  backupBusy = (async () => {
+    const pass = HEALTH.key;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const remote = await BACKUP.read(pass);
+      if (!remote) break;
+      const local = loadLog(), rlog = (remote.data && remote.data.log) || [], all = mergeLogs(local, rlog);
+      if (JSON.stringify(all) !== JSON.stringify(local)) { saveLog(all, false); renderWeek(); renderHistory(); renderHello(); }
+      if (remote.data && JSON.stringify(all) === JSON.stringify(rlog)) { BACKUP.synced(); break; }
+      if ((await BACKUP.write(pass, { log: all }, remote.sha)) !== "conflict") break;
+    }
+    renderBackup();
+  })().finally(() => { backupBusy = null; });
+  return backupBusy;
+}
+function renderBackup() {
+  const s = BACKUP.state, t = BACKUP.lastSync;
+  $("backupnote").textContent = s === "ok" ? "☁️ Įrašai saugomi ir GitHub'e (užšifruoti)."
+    + (t ? ` Paskutinė kopija ${new Date(t).toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" })}.` : "")
+    : s === "need-token" ? "Įrašai saugomi tik šiame telefone – išvalius naršyklę jie dings. Prijunk kopiją GitHub'e."
+    : s === "bad-token" ? "GitHub raktas nebetinka (gal baigėsi galiojimas) – įvesk naują."
+    : s === "error" ? "Kopijos GitHub'e nepavyko atnaujinti (nėra ryšio?). Bandysiu vėl atidarius programą."
+    : "Įrašų kopijai GitHub'e pirmiausia reikia Garmin rakto (Šiandien ekrane).";
+  $("backupbtn").hidden = s !== "need-token" && s !== "bad-token";
 }
 function markDone(type, extra = {}, day = dayKey(new Date())) {
   const now = new Date();
@@ -991,7 +1027,14 @@ $("garminkey").onclick = () => {
   const k = prompt("Įklijuok Garmin duomenų raktą (DUOMENU_RAKTAS):");
   if (k && k.trim()) HEALTH.setGarminKey(k);
 };
-HEALTH.onChange(() => renderHello());
+HEALTH.onChange(() => { renderHello(); if (BACKUP.state === "off" && HEALTH.key) syncBackup(); });
+$("backupbtn").onclick = async () => {
+  const t = prompt("Įklijuok GitHub raktą (fine-grained, tik šiai repozitorijai, Contents: Read and write):");
+  if (!t || !t.trim()) return;
+  $("backupnote").textContent = "Tikrinu raktą…";
+  if (await BACKUP.setToken(t)) syncBackup();
+  else { renderBackup(); $("backupnote").textContent = "Raktas netinka: jis turi būti skirtas šiai repozitorijai ir turėti Contents: Read and write teisę."; }
+};
 let voiceRefused = false;
 $("vtest").onclick = () => { SAY.test(); $("vask").hidden = false; };
 $("vyes").onclick = () => { SAY.force = true; SAY.on = true; $("vask").hidden = true; renderHello(); if (!(idx >= 0 && idx < steps.length)) reset(); };
@@ -1042,7 +1085,7 @@ document.addEventListener("visibilitychange", () => {
   lastToday = today;
   renderWeek();
   if (running) { tick(); lockScreen(); }
-  else HEALTH.syncGarmin();
+  else { HEALTH.syncGarmin(); syncBackup(); }
 });
 renderSummary();
 renderVideos();
@@ -1051,3 +1094,5 @@ renderHistory();
 renderHello();
 setLevel(level);
 HEALTH.syncGarmin();
+renderBackup();
+syncBackup();

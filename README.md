@@ -16,6 +16,7 @@ Treniruotė rodoma per visą ekraną, be apatinės juostos.
 
 - `index.html` – puslapis
 - `css/style.css` – stiliai (šviesi ir tamsi tema, prisitaiko prie telefono)
+- `js/backup.js` – užšifruota įrašų kopija GitHub'e (`irasai/irasai.enc`), žr. „Įrašų kopija“
 - `js/app.js` – pratimų sąrašas (`EX` masyvas viršuje), dienų ratas ir laikmatis. Pasiruošimo ir darbo metu rodoma pratimo animacija.
 - `js/voice.js` – lietuviškas balsas (įrašytos frazės iš `audio/`, atsarginis – naršyklės kalbos sintezė) ir kiekvieno pratimo ritmo nurodymai (`VOICE`): ką ir po kiek sekundžių pasakyti. Trukmės automatiškai pritaikomos prie serijos ilgio.
 - `js/anim.js` – schematinės pratimų animacijos (SVG). Kiekvienas pratimas `EX` masyve nurodo savo animaciją lauku `anim`, o pozos aprašytos `DEF` objekte sąnarių taškais: `[poza, perėjimo ms, laikymo ms, užuomina, įtampa 0–1]`. `FOCUS` nurodo, kuri kūno vieta paryškinama (dirbantys raumenys) ir kaip ji pavadinta po animacija; spalvos – CSS kintamieji `--fig-*`.
@@ -92,3 +93,16 @@ Jei Garmin prisijungiant paprašo kodo iš el. pašto, jis pasiimamas automatiš
 Ribas galima keisti `js/health.js` viršuje (`SLEEP_LOW`, `BB_LOW`, `RHR_UP`, `WALK_STEPS`).
 
 Atsarginis kelias be GitHub Actions – iPhone „Shortcuts“, atidarantis svetainę su nuoroda `…/#zingsniai=8400&miegas=7.2&pulsas=58` (duomenys iš Apple Health). Abu šaltiniai sujungiami, Garmin duomenys svarbesni.
+
+## Įrašų kopija
+
+Treniruočių įrašai ir serijos saugomi telefono naršyklėje, o išvalius naršyklę dingtų. Todėl programa juos dar ir užšifruoja Garmin raktu ir išsaugo faile `irasai/irasai.enc` šioje repozitorijoje (šaka `main`). Atidarius programą telefono ir GitHub įrašai sujungiami, o po kiekvieno naujo įrašo kopija atnaujinama.
+
+Vieną kartą:
+
+1. GitHub → Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate new token.
+2. Repository access: **Only select repositories** → `Excercise-plan`. Permissions → Repository permissions → **Contents: Read and write**. Galiojimą rinkis kuo ilgesnį.
+3. Raktą išsisaugok slaptažodžių tvarkyklėje šalia Garmin rakto.
+4. Programoje: **Pažanga** → „Mano įrašai“ → **Prijungti įrašų kopiją GitHub'e** → įklijuok raktą.
+
+GitHub raktas laikomas tik telefone ir niekur nekeliamas. Jei naršyklė išsivalė: Šiandien ekrane įvesk Garmin raktą, Pažangoje vėl prijunk kopiją tuo pačiu GitHub raktu, ir visi įrašai bei serijos grįš. Kai raktas nustos galioti, programa paprašys naujo.
