@@ -626,17 +626,77 @@ function saveRate(ev) {
   const f = $("rateform");
   if (!f.reportValidity() || !pending) return;
   const d = new FormData(f), pain = d.get("pain");
-  const h = HEALTH.today(), r = HEALTH.readiness();
+  const h = HEALTH.today(), r = HEALTH.readiness(), before = streaks();
   markDone(pending.type, { min: pending.min, rpe: +d.get("rpe"), feel: d.get("feel"), pain, easy: pending.easy || undefined, ex: pending.ex,
     h: h ? { steps: h.steps, sleep: h.sleep, rhr: h.rhr, bb: h.bb, hrv: h.hrv, ready: r ? r.score : undefined } : undefined,
     where: pain !== "ne" ? String(d.get("where") || "").trim() : "", note: String(d.get("note") || "").trim() });
+  // Nauji pasiekimai įrašomi prie šiandienos įrašo (rodomi pasisveikinimo ekrane)
+  const got = milestones(before, streaks());
+  if (got.length) { const log = loadLog(), e = log[log.length - 1]; e.m = got; saveLog(log); }
   pending = null; closeRate();
   $("rate").hidden = true;
-  $("meta").textContent = "Treniruotė pažymėta kaip atlikta.";
+  $("meta").textContent = "Treniruotė pažymėta kaip atlikta." + (got.length ? " 🏅 " + got.join(" ") : "");
   if (pain === "taip" || d.get("feel") === "blogiau")
     $("cue").textContent = "Pasižymėjai skausmą ar blogesnę savijautą. Kitą kartą tą pratimą daryk švelniau arba praleisk ir būtinai pasakyk kineziterapeutui. Jei skausmas aštrus ar plinta į koją, mankštą sustabdyk ir kreipkis į gydytoją.";
   renderWeek(); renderHistory(); renderHello();
+  if (got.length) buzz([80, 60, 80, 60, 200]);
 }
+// ---- Serijos ir pasiekimai ----
+// Dienų serija: kiek dienų iš eilės kas nors daryta (įskaitant vakarinį atsipalaidavimą); šiandien
+// dar nedaryta serijos nenutraukia. Savaičių serija: kiek savaičių iš eilės pasiektas tikslas
+// (WEEK_GOAL treniruočių, be atsipalaidavimo) – poilsio dienos jos nenutraukia.
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const monday = d => addDays(d, -weekday(d));
+function streaks(log = loadLog()) {
+  const days = new Set(log.map(x => x.d)), train = log.filter(x => x.t !== "relax");
+  const today = new Date(), doneToday = days.has(dayKey(today));
+  let day = 0;
+  for (let d = doneToday ? today : addDays(today, -1); days.has(dayKey(d)); d = addDays(d, -1)) day++;
+  let dayBest = 0, run = 0, prev = null;
+  [...days].sort().forEach(k => { const d = new Date(k + "T12:00"); run = prev && Math.round((d - prev) / 864e5) === 1 ? run + 1 : 1; dayBest = Math.max(dayBest, run); prev = d; });
+  // Treniruotės pagal savaitę (pirmadienio data)
+  const perWeek = {};
+  new Set(train.map(x => x.d + "|" + x.t)).forEach(k => { const w = dayKey(monday(new Date(k.slice(0, 10) + "T12:00"))); perWeek[w] = (perWeek[w] || 0) + 1; });
+  const thisMon = monday(today), thisWeek = perWeek[dayKey(thisMon)] || 0;
+  let week = 0;
+  for (let m = thisWeek >= WEEK_GOAL ? thisMon : addDays(thisMon, -7); (perWeek[dayKey(m)] || 0) >= WEEK_GOAL; m = addDays(m, -7)) week++;
+  let weekBest = 0, wrun = 0, wprev = null;
+  Object.keys(perWeek).sort().forEach(k => {
+    if (perWeek[k] < WEEK_GOAL) { wrun = 0; wprev = null; return; }
+    const m = new Date(k + "T12:00");
+    wrun = wprev && Math.round((m - wprev) / 864e5) === 7 ? wrun + 1 : 1; weekBest = Math.max(weekBest, wrun); wprev = m;
+  });
+  return { day, dayBest, week, weekBest, thisWeek, total: new Set(train.map(x => x.d + "|" + x.t)).size, doneToday };
+}
+// Kas naujai pasiekta, palyginus serijas prieš ir po įrašo
+function milestones(a, b) {
+  const m = [];
+  if (b.total === 1 && a.total === 0) m.push("Pirmoji treniruotė! Puiki pradžia.");
+  [5, 10, 25, 50, 100, 200].forEach(n => { if (a.total < n && b.total >= n) m.push(`${n} treniruočių iš viso!`); });
+  [3, 7, 14, 30, 60, 100].forEach(n => { if (a.day < n && b.day >= n) m.push(`${n} dienų serija!`); });
+  if (a.thisWeek < WEEK_GOAL && b.thisWeek >= WEEK_GOAL) m.push("Savaitės tikslas pasiektas!");
+  [2, 4, 8, 12, 26, 52].forEach(n => { if (a.week < n && b.week >= n) m.push(`${n} savaitės iš eilės su tikslu!`); });
+  if (b.day > a.day && b.day > a.dayBest && a.dayBest >= 3) m.push("Naujas dienų serijos rekordas!");
+  return m;
+}
+function renderStreak() {
+  const s = streaks(), left = Math.max(0, WEEK_GOAL - s.thisWeek);
+  const parts = [`🔥 ${s.day} ${s.day === 1 ? "diena" : s.day % 10 === 0 || (s.day % 100 > 10 && s.day % 100 < 20) ? "dienų" : "dienos"} iš eilės`,
+    `${s.week} sav. su tikslu iš eilės`, left ? `šią savaitę dar ${left} iki tikslo` : "šios savaitės tikslas pasiektas ✓"];
+  $("streak").innerHTML = parts.map((p, i) => `<span class="st${i === 0 && s.day ? " hot" : ""}">${p}</span>`).join("");
+  $("streakbest").textContent = s.total ? `Rekordai: ${s.dayBest} d. iš eilės, ${s.weekBest} sav. su tikslu iš eilės. Iš viso treniruočių: ${s.total}.` : "";
+  const today = loadLog().find(x => x.d === dayKey(new Date()) && x.m && x.m.length);
+  $("milestone").textContent = today ? "🏅 " + today.m.join(" ") : "";
+  $("milestone").hidden = !today;
+  $("markdone").hidden = s.doneToday;
+}
+// Treniruotė padaryta be laikmačio (arba neužpildytas įsivertinimas) – pažymima ranka
+$("markdone").onclick = () => {
+  const list = sessionList(dayType());
+  pending = { type: dayType(), min: Math.round(buildSteps(level, list).reduce((a, s) => a + s.secs, 0) / 60), easy, ex: list.map(i => EX[i].anim), manual: true };
+  openRate();
+};
+
 // Įrašų istorija (naujausi viršuje) ir kopijavimas tekstu
 const FEEL = { 1: "labai lengva", 2: "lengva", 3: "vidutiniškai", 4: "sunku", 5: "labai sunku" };
 function entryText(x) {
@@ -714,7 +774,7 @@ function renderHello() {
     `Šiandien ${override ? "" : "siūlau: "}${DAYTYPE[type].name.toLowerCase()}, ${plural(list.length, "pratimas", "pratimai", "pratimų")}, apie ${min} min.${easy ? " Lengvesnė versija." : ""}${why}` +
     ` Šią savaitę jau atlikai ${w.total} iš ${WEEK_GOAL} treniruočių.`;
   document.querySelectorAll("[data-type]").forEach(b => b.setAttribute("aria-pressed", b.dataset.type === type));
-  renderWeek();
+  renderWeek(); renderStreak();
   renderHealth(type);
   $("voicenote").textContent = !SAY.supported ? "Ši naršyklė nemoka kalbėti, todėl instrukcijos bus rodomos ekrane."
     : voiceRefused ? "Lietuviško balso nėra, instrukcijos bus rodomos ekrane. iPhone: Nustatymai → Prieinamumas → Šnekamas turinys → Balsai → Lietuvių → atsisiųsk balsą ir atnaujink puslapį. Android: Nustatymai → Sistema → Kalbos ir įvestis → Teksto į kalbą išvestis → lietuvių kalba."

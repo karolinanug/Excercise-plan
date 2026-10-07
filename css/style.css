@@ -286,3 +286,10 @@ body.voice-on[data-mode="workout"] .anim-say { display: none; }
 .ov-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: .85rem; }
 .ov-sum { font-size: .95rem; }
 @media (max-width: 360px) { .ov-cols { grid-template-columns: 1fr; } }
+/* Serijos */
+.streak { display: flex; flex-wrap: wrap; gap: 6px; }
+.streak .st { font-size: .85rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--bg) 16%, transparent); border: 1px solid color-mix(in srgb, var(--bg) 30%, transparent); }
+.streak .st.hot { background: var(--bg); color: var(--accent); }
+.milestone { font-weight: 800; font-size: 1rem; background: var(--bg); color: var(--accent); border-radius: 12px; padding: 8px 12px; animation: pop .5s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .milestone { animation: none; } }
