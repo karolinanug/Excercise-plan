@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Manrope:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="css/style.css?v=202610071901">
+<link rel="stylesheet" href="css/style.css?v=202610071908">
 </head>
 <body data-mode="today">
 <div class="wrap">
@@ -98,7 +98,6 @@
           </span>
         </div>
       </div>
-      <button class="linkbtn" id="markdone" type="button">Šiandien jau mankštinausi – pažymėti</button>
     </div>
   </section>
 
@@ -106,6 +105,7 @@
   <section class="screen stats" id="scr-stats" aria-labelledby="statsh">
     <header class="top"><h1 id="statsh">Pažanga</h1></header>
     <div class="stat-grid" id="statgrid"></div>
+        <button class="linkbtn" id="markdone" type="button">Pažymėti treniruotę ranka (ir praėjusią dieną)</button>
     <section class="card" aria-labelledby="weekh">
       <div class="card-head"><h2 id="weekh">Ši savaitė</h2><span class="week" id="week"></span></div>
       <div class="days" id="days" aria-label="Savaitės dienos"></div>
@@ -223,6 +223,19 @@
     <form id="rateform" method="dialog">
       <h2 id="rateh">Kaip sekėsi?</h2>
       <p class="rate-sub" id="ratesub"></p>
+      <div class="manualbox" id="manualbox" hidden>
+        <label class="field">Kurią dieną?
+          <input type="date" name="day" id="rateday">
+        </label>
+        <label class="field">Kokia treniruotė?
+          <select name="type" id="ratetype">
+            <option value="core">Pilvo ir liemens diena</option>
+            <option value="glute">Sėdmenų diena</option>
+            <option value="recovery">Atsigavimo diena</option>
+            <option value="relax">Atsipalaidavimas</option>
+          </select>
+        </label>
+      </div>
       <fieldset>
         <legend>Kaip sunku buvo?</legend>
         <div class="opts scale">
@@ -268,10 +281,10 @@
   <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg><span>Pažanga</span></button>
   <button type="button" data-tab="ex"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><path d="M12 8v6m0 0-4 6m4-6 4 6M6 10.5h12"/></svg><span>Pratimai</span></button>
 </nav>
-<script src="js/anim.js?v=202610071901"></script>
-<script src="audio/frazes.js?v=202610071901"></script>
-<script src="js/voice.js?v=202610071901"></script>
-<script src="js/health.js?v=202610071901"></script>
-<script src="js/app.js?v=202610071901"></script>
+<script src="js/anim.js?v=202610071908"></script>
+<script src="audio/frazes.js?v=202610071908"></script>
+<script src="js/voice.js?v=202610071908"></script>
+<script src="js/health.js?v=202610071908"></script>
+<script src="js/app.js?v=202610071908"></script>
 </body>
 </html>

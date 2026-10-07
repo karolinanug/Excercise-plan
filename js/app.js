@@ -284,13 +284,18 @@ function loadLog() {
 function saveLog(log) {
   try { localStorage.setItem(LOG_KEY, JSON.stringify(log)); localStorage.removeItem(OLD_KEY); } catch (e) {}
 }
-function markDone(type, extra = {}) {
-  const now = new Date(), today = dayKey(now);
+function markDone(type, extra = {}, day = dayKey(new Date())) {
+  const now = new Date();
   const oldest = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - KEEP_DAYS));
-  const log = loadLog().filter(x => x.d >= oldest && !(x.d === today && x.t === type));
-  log.push(Object.assign({ d: today, t: type, lvl: level + 1 }, extra));
+  const log = loadLog().filter(x => x.d >= oldest && !(x.d === day && x.t === type));
+  log.push(Object.assign({ d: day, t: type, lvl: level + 1 }, extra));
+  // Ranka įrašyta praėjusi diena įterpiama pagal datą (stabilus rūšiavimas išlaiko dienos įrašų tvarką)
+  log.sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
   saveLog(log);
+  return log.findIndex(x => x.d === day && x.t === type);
 }
+// Paprašoma, kad naršyklė neišvalytų įrašų pati (pvz., Safari po savaitės nenaudojimo)
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
 function weekDates() {
   const now = new Date(), mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - weekday(now));
   return WEEKDAYS.map((w, i) => dayKey(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
@@ -623,6 +628,8 @@ function openRate() {
   if (!pending) return;
   const f = $("rateform");
   f.reset(); $("wherebox").hidden = true;
+  $("manualbox").hidden = !pending.manual;
+  if (pending.manual) { $("rateday").value = $("rateday").max = dayKey(new Date()); $("ratetype").value = pending.type; }
   $("ratesub").textContent = `${DAYTYPE[pending.type].name}, ${level + 1} lygis${pending.easy ? ", lengvesnė versija" : ""}, apie ${pending.min} min.`;
   const box = $("ratebox");
   if (box.showModal) box.showModal(); else box.setAttribute("open", "");
@@ -633,13 +640,17 @@ function saveRate(ev) {
   const f = $("rateform");
   if (!f.reportValidity() || !pending) return;
   const d = new FormData(f), pain = d.get("pain");
-  const h = HEALTH.today(), r = HEALTH.readiness(), before = streaks();
-  markDone(pending.type, { min: pending.min, rpe: +d.get("rpe"), feel: d.get("feel"), pain, easy: pending.easy || undefined, ex: pending.ex,
+  const day = pending.manual && d.get("day") || dayKey(new Date()), isToday = day === dayKey(new Date());
+  if (pending.manual && d.get("type") && d.get("type") !== pending.type) {
+    pending.type = d.get("type"); pending.ex = sessionList(pending.type).map(i => EX[i].anim);
+  }
+  const h = isToday ? HEALTH.today() : null, r = isToday ? HEALTH.readiness() : null, before = streaks();
+  const at = markDone(pending.type, { min: pending.min, rpe: +d.get("rpe"), feel: d.get("feel"), pain, easy: pending.easy || undefined, ex: pending.ex,
     h: h ? { steps: h.steps, sleep: h.sleep, rhr: h.rhr, bb: h.bb, hrv: h.hrv, ready: r ? r.score : undefined } : undefined,
-    where: pain !== "ne" ? String(d.get("where") || "").trim() : "", note: String(d.get("note") || "").trim() });
+    where: pain !== "ne" ? String(d.get("where") || "").trim() : "", note: String(d.get("note") || "").trim() }, day);
   // Nauji pasiekimai įrašomi prie šiandienos įrašo (rodomi pasisveikinimo ekrane)
   const got = milestones(before, streaks());
-  if (got.length) { const log = loadLog(), e = log[log.length - 1]; e.m = got; saveLog(log); }
+  if (got.length) { const log = loadLog(); log[at].m = got; saveLog(log); }
   pending = null; closeRate();
   $("rate").hidden = true;
   $("meta").textContent = "Treniruotė pažymėta kaip atlikta." + (got.length ? " 🏅 " + got.join(" ") : "");
@@ -698,7 +709,6 @@ function renderStreak() {
     tile("🎯", `${s.thisWeek}/${WEEK_GOAL}`, "šią savaitę", left ? `dar ${left} iki tikslo` : "tikslas pasiektas ✓",
       `<i class="stat-bar"><i style="width:${Math.min(100, 100 * s.thisWeek / WEEK_GOAL)}%"></i></i>`) +
     tile("💪", s.total, "treniruočių iš viso", "");
-  $("markdone").hidden = s.doneToday;
   return s;
 }
 // Treniruotė padaryta be laikmačio (arba neužpildytas įsivertinimas) – pažymima ranka
