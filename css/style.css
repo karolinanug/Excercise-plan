@@ -12,6 +12,11 @@
   --oak-soft: #f1e4d3;
   --lilac: #a593d6;
   --gold: #e7c46a;
+  --glitter: radial-gradient(circle at 8% 22%, #ffe27a 0 1.4px, transparent 2px), radial-gradient(circle at 23% 71%, #f5a3c7 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 37% 12%, #fff 0 1px, transparent 1.6px), radial-gradient(circle at 51% 58%, #b9a5f0 0 1.4px, transparent 2px),
+    radial-gradient(circle at 66% 30%, #9ff0c4 0 1.2px, transparent 1.8px), radial-gradient(circle at 79% 81%, #ffe27a 0 1px, transparent 1.6px),
+    radial-gradient(circle at 92% 44%, #fff 0 1.3px, transparent 1.9px), radial-gradient(circle at 14% 93%, #9fd8f0 0 1px, transparent 1.6px),
+    radial-gradient(circle at 58% 92%, #f5a3c7 0 1px, transparent 1.6px), radial-gradient(circle at 86% 9%, #b9a5f0 0 1.2px, transparent 1.8px);
   --warn: #a0652a;
   --warn-soft: #f6ebdc;
   --stop: #a23b3b;
@@ -370,10 +375,21 @@ body:not([data-mode="workout"]) #quit { display: none; }
 .sparkles { position: absolute; inset: 0; pointer-events: none; }
 .sparkles i { position: absolute; width: 14px; height: 14px; background: var(--gold); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: twinkle 2.6s ease-in-out infinite; opacity: 0; }
 .sparkles i:nth-child(1) { left: 12%; top: 14%; }
-.sparkles i:nth-child(2) { right: 16%; top: 22%; width: 10px; height: 10px; animation-delay: .8s; }
+.sparkles i:nth-child(2) { right: 16%; top: 22%; width: 10px; height: 10px; animation-delay: .8s; background: #f5a3c7; }
 .sparkles i:nth-child(3) { left: 22%; bottom: 18%; width: 9px; height: 9px; animation-delay: 1.5s; background: #fff; }
 .sparkles i:nth-child(4) { right: 10%; bottom: 30%; animation-delay: 2s; }
+.sparkles i:nth-child(5) { left: 8%; top: 48%; width: 11px; height: 11px; animation-delay: .4s; background: #b9a5f0; }
+.sparkles i:nth-child(6) { right: 30%; top: 8%; width: 8px; height: 8px; animation-delay: 1.2s; background: #9ff0c4; }
+.sparkles i:nth-child(7) { left: 40%; bottom: 8%; width: 10px; height: 10px; animation-delay: 1.9s; background: #9fd8f0; }
+.sparkles i:nth-child(8) { left: 30%; top: 6%; width: 7px; height: 7px; animation-delay: 2.3s; background: #f5a3c7; }
+/* Blizgučių dulkės kortelėse, mygtuke ir serijos ženklelyje */
+@keyframes glint { 0%, 100% { opacity: .35; } 50% { opacity: .95; } }
+.ready, #letsgo, .done-card { position: relative; overflow: hidden; isolation: isolate; }
+.ready::before, .done-card::before, #letsgo::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--glitter), var(--glitter); background-size: 180px 140px, 110px 90px; background-position: 0 0, 37px 23px; animation: glint 3.2s ease-in-out infinite; }
+#letsgo::before { opacity: .6; animation-duration: 2.4s; }
+.streak-pill.hot { border: 2px solid transparent; background: linear-gradient(var(--oak-soft), var(--oak-soft)) padding-box, linear-gradient(120deg, #e7c46a, #f5a3c7, #b9a5f0, #9ff0c4, #e7c46a) border-box; background-size: 100% 100%, 300% 100%; animation: holo 4s linear infinite; }
+@keyframes holo { to { background-position: 0 0, 300% 0; } }
 .done-cat { position: absolute; right: 12px; bottom: 0; width: 96px; height: auto; }
 .done-cat .fur { fill: #8f969c; } .done-cat .fur2 { fill: #767d84; } .done-cat .eye { fill: #2b3a30; } .done-cat .nose { fill: #d99aa5; }
 .done-card > *:not(.sparkles):not(.done-cat) { position: relative; }
-@media (prefers-reduced-motion: reduce) { .sparkles i { animation: none; opacity: .8; } .milestone { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sparkles i { animation: none; opacity: .8; } .milestone, .streak-pill.hot, .ready::before, .done-card::before, #letsgo::before { animation: none; } }
