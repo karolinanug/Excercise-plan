@@ -594,6 +594,7 @@ function renderHello() {
 function renderHealth(type) {
   const t = HEALTH.today(), a = HEALTH.advice(), p = [];
   if (HEALTH.received && !t) p.push("Nuoroda iš telefono atėjo, bet joje nebuvo skaičių. Patikrink „Shortcut“ nustatymus.");
+  if (HEALTH.badSleep != null) p.push(`Miego trukmė atėjo neteisinga (${String(HEALTH.badSleep).replace(".", ",")} val.), todėl jos neišsaugojau.`);
   if (t) {
     p.push(`Iš Garmin: ${HEALTH.text(t)}.`);
     if (a.tired) p.push(`Šiandien geriau lengviau: ${a.why}. ${level ? "Rinkis 1 lygį" : "Daryk 1 lygį"} ir judėk švelniai.`);

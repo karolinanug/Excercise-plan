@@ -24,13 +24,17 @@ const HEALTH = (() => {
   }
   function save(a) { try { localStorage.setItem(KEY, JSON.stringify(a)); } catch (e) {} }
 
-  let received = null;
+  let received = null, badSleep = null;
   // Grąžina true, jei nuorodoje buvo Garmin duomenų (ir juos išsaugo)
   function readLink() {
     const raw = (location.hash || "").replace(/^#/, "");
     if (!/(zingsniai|miegas|pulsas)=/.test(raw)) return false;
     const q = new URLSearchParams(raw);
-    const steps = num(q.get("zingsniai")), sleep = hours(num(q.get("miegas"))), rhr = num(q.get("pulsas"));
+    const steps = num(q.get("zingsniai")), rhr = num(q.get("pulsas"));
+    let sleep = hours(num(q.get("miegas")));
+    // Daugiau nei 16 val. – greičiausiai „Shortcut“ sudėjo persidengiančius įrašus; nesaugom
+    badSleep = sleep != null && sleep > 16 ? Math.round(sleep * 10) / 10 : null;
+    if (badSleep != null) sleep = null;
     try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
     if (steps == null && sleep == null && rhr == null) { received = {}; return true; }
     const today = dayKey(new Date()), now = new Date();
@@ -54,6 +58,7 @@ const HEALTH = (() => {
   return {
     WALK_STEPS,
     get received() { return received; },
+    get badSleep() { return badSleep; },
     readLink,
     all: load,
     get(d) { return load().find(x => x.d === d) || null; },
