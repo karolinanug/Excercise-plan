@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Manrope:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="css/style.css?v=202610071924">
+<link rel="stylesheet" href="css/style.css?v=202610080734">
 </head>
 <body data-mode="today">
 <div class="wrap">
@@ -22,6 +22,34 @@
       <div><p class="top-date" id="todaydate"></p><h1 id="helloh">Labas, Karolina!</h1></div>
       <button class="streak-pill" id="streakpill" type="button" aria-label="Serija – atidaryti pažangą"></button>
     </header>
+
+    <!-- Garmin: pasiruošimas ir praeita para (rodoma visada) -->
+    <p class="hello-health" id="healthnote" hidden></p>
+    <button class="btn ghost" id="garminkey" type="button" hidden>Įvesti Garmin raktą</button>
+
+    <div class="ready" id="ready" hidden>
+      <div class="ready-top">
+        <div class="ring">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fg" id="ringfg" cx="60" cy="60" r="52"/></svg>
+          <div class="ring-label"><b id="readyscore">–</b></div>
+        </div>
+        <div class="ready-head">
+          <p class="ready-kicker">Pasiruošimas</p>
+          <p class="ready-title" id="readytitle"></p>
+          <p class="ready-tip" id="readytip"></p>
+        </div>
+      </div>
+      <details class="day-ov" id="dayov" hidden>
+        <summary><span>Praeita para</span><span class="ov-chip" id="loadchip"></span><span class="ov-chip" id="restchip"></span></summary>
+        <p class="ov-sum" id="ovsum"></p>
+        <div class="bbchart" id="bbchart"></div>
+        <div class="ov-cols">
+          <div class="ov-col"><p class="ov-h">Vakar diena</p><ul id="ovday"></ul></div>
+          <div class="ov-col"><p class="ov-h">Naktis</p><ul id="ovnight"></ul></div>
+        </div>
+        <p class="ready-when" id="readywhen"></p>
+      </details>
+    </div>
 
     <!-- Šiandien jau atlikta: tik pagyrimas -->
     <div class="done-card" id="donecard" hidden>
@@ -35,33 +63,6 @@
     </div>
 
     <div class="todo" id="todo">
-      <p class="hello-health" id="healthnote" hidden></p>
-      <button class="btn ghost" id="garminkey" type="button" hidden>Įvesti Garmin raktą</button>
-
-      <div class="ready" id="ready" hidden>
-        <div class="ready-top">
-          <div class="ring">
-            <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="ring-bg" cx="60" cy="60" r="52"/><circle class="ring-fg" id="ringfg" cx="60" cy="60" r="52"/></svg>
-            <div class="ring-label"><b id="readyscore">–</b></div>
-          </div>
-          <div class="ready-head">
-            <p class="ready-kicker">Pasiruošimas</p>
-            <p class="ready-title" id="readytitle"></p>
-            <p class="ready-tip" id="readytip"></p>
-          </div>
-        </div>
-        <details class="day-ov" id="dayov" hidden>
-          <summary><span>Praeita para</span><span class="ov-chip" id="loadchip"></span><span class="ov-chip" id="restchip"></span></summary>
-          <p class="ov-sum" id="ovsum"></p>
-          <div class="bbchart" id="bbchart"></div>
-          <div class="ov-cols">
-            <div class="ov-col"><p class="ov-h">Vakar diena</p><ul id="ovday"></ul></div>
-            <div class="ov-col"><p class="ov-h">Naktis</p><ul id="ovnight"></ul></div>
-          </div>
-          <p class="ready-when" id="readywhen"></p>
-        </details>
-      </div>
-
       <div class="plan-card">
         <p class="kicker">Šiandienos treniruotė</p>
         <h2 class="plan-title" id="plantitle"></h2>
@@ -285,11 +286,11 @@
   <button type="button" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg><span>Pažanga</span></button>
   <button type="button" data-tab="ex"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><path d="M12 8v6m0 0-4 6m4-6 4 6M6 10.5h12"/></svg><span>Pratimai</span></button>
 </nav>
-<script src="js/anim.js?v=202610071924"></script>
-<script src="audio/frazes.js?v=202610071924"></script>
-<script src="js/voice.js?v=202610071924"></script>
-<script src="js/backup.js?v=202610071924"></script>
-<script src="js/health.js?v=202610071924"></script>
-<script src="js/app.js?v=202610071924"></script>
+<script src="js/anim.js?v=202610080734"></script>
+<script src="audio/frazes.js?v=202610080734"></script>
+<script src="js/voice.js?v=202610080734"></script>
+<script src="js/backup.js?v=202610080734"></script>
+<script src="js/health.js?v=202610080734"></script>
+<script src="js/app.js?v=202610080734"></script>
 </body>
 </html>

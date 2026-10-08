@@ -917,6 +917,11 @@ function renderHealth(type) {
   if (HEALTH.received && !t) p.push("Nuoroda iš telefono atėjo, bet joje nebuvo skaičių. Patikrink „Shortcut“ nustatymus.");
   if (HEALTH.badSleep != null) p.push(`Miego trukmė atėjo neteisinga (${String(HEALTH.badSleep).replace(".", ",")} val.), todėl jos neišsaugojau.`);
   if (t && !r) p.push(`Iš Garmin: ${HEALTH.text(t)}.`);
+  if (gs === "ok" && !t) {
+    const up = HEALTH.garminUpdated ? new Date(HEALTH.garminUpdated * 1000) : null;
+    p.push("Šiandienos Garmin duomenų dar nėra – jie atsinaujina kasdien ryte." +
+      (up ? ` Paskutiniai: ${WEEKDAYS[weekday(up)].toLowerCase()} ${String(up.getHours()).padStart(2, "0")}:${String(up.getMinutes()).padStart(2, "0")}.` : ""));
+  }
   $("healthnote").textContent = p.join(" ");
   $("healthnote").hidden = !p.length;
   $("garminkey").hidden = gs !== "need-key" && gs !== "bad-key";

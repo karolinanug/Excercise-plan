@@ -6,6 +6,8 @@ on:
   schedule:
     # UTC; Vilniuje vasarą 8:17, žiemą 7:17 (laikrodis iki tol spėja susinchronizuoti naktį)
     - cron: "17 5 * * *"
+    # Atsarginis: GitHub suplanuotus paleidimus kartais praleidžia ar gerokai pavėlina
+    - cron: "43 6 * * *"
   workflow_dispatch:
 
 permissions:
