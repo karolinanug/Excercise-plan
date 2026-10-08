@@ -173,8 +173,8 @@ function playVideo(box) {
 }
 
 // Dienų ratas pagal kineziterapeuto programą: kiekviena treniruotė – kvėpavimas → paslankumas →
-// stiprinimas → tempimas. Dienos akcentas keičiasi ratu (pilvas → sėdmenys → atsigavimas), o
-// Garmin pasiruošimas nusprendžia, ar šiandien stiprinimas, ar atsigavimas (žr. suggestPlan).
+// stiprinimas → tempimas. Dienos akcentas keičiasi paeiliui (pilvas ↔ sėdmenys), atsigavimas – tik
+// po kelių stiprinimo dienų iš eilės (žr. suggestPlan). Garmin duomenys dienos tipo nekeičia.
 // Paslankumo, sėdmenų ir tempimo pratimai parenkami rečiausiai darytieji per 14 dienų, kad per
 // savaitę visi būtų atlikti panašiai dažnai. „relax“ – vakarinis atsipalaidavimas.
 const WEEKDAYS = ["Pirmadienis", "Antradienis", "Trečiadienis", "Ketvirtadienis", "Penktadienis", "Šeštadienis", "Sekmadienis"];
@@ -201,19 +201,19 @@ function sessionList(type) {
   return [...byGroup("breath"), ...["mob", "core", "glute", "stretch"].flatMap(g => t.plan[g] ? pick(g, t.plan[g]) : [])];
 }
 // Šiandienos pasiūlymas: { type, easy, why } – kita rato diena, pakoreguota pagal Garmin
+// Dienos tipas parenkamas tik pagal treniruočių istoriją – Garmin duomenys tik informuoja.
+// Pilvo ir sėdmenų dienos keičiasi paeiliui (siūloma ta, kuri daryta seniau); atsigavimo diena
+// siūloma tik po 3 stiprinimo dienų iš eilės. Kitą tipą visada galima pasirinkti pačiai.
+const RECOVERY_AFTER = 3;
 function suggestPlan() {
   const log = loadLog().filter(x => x.t !== "relax").reverse();
   const lastOf = t => (log.find(x => x.t === t) || {}).d || "";
   const strength = lastOf("core") <= lastOf("glute") ? "core" : "glute";
-  const r = HEALTH.readiness(), ov = HEALTH.overview();
-  if ((r && r.score < 45) || (ov && ov.load === "stress"))
-    return { type: "recovery", easy: false, why: "garmin" };
-  // Be Garmin duomenų: po dviejų stiprinimo dienų iš eilės (per paskutines 3 d.) – atsigavimas
-  const recent = log.filter(x => x.d >= dayKey(new Date(Date.now() - 3 * 864e5)));
-  if (!r && recent.length >= 2 && recent.slice(0, 2).every(x => x.t !== "recovery")) return { type: "recovery", easy: false, why: "rotation" };
-  if (!r && log.length && log[0].t !== "recovery" && lastOf("recovery") < lastOf("core") && lastOf("recovery") < lastOf("glute") && lastOf("core") && lastOf("glute"))
-    return { type: "recovery", easy: false, why: "rotation" };
-  return { type: strength, easy: !!r && r.score < 70, why: "" };
+  const days = new Set(log.filter(x => STRENGTH.includes(x.t)).map(x => x.d)), now = new Date();
+  let run = 0;
+  while (days.has(dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - run - 1)))) run++;
+  if (run >= RECOVERY_AFTER) return { type: "recovery", easy: false, why: "rotation" };
+  return { type: strength, easy: false, why: "" };
 }
 // Lietuviškas daugiskaitos linksnis: 1 minutė, 2 minutės, 10 minučių, 21 minutė...
 function plural(n, one, few, many) {
@@ -887,8 +887,7 @@ function renderHello() {
   const list = sessionList(type), min = Math.round(buildSteps(level, list).reduce((a, x) => a + x.secs, 0) / 60);
   $("plantitle").textContent = DAYTYPE[type].name.replace(" (paslankumas ir tempimai)", "");
   $("planmeta").textContent = `${plural(list.length, "pratimas", "pratimai", "pratimų")} · apie ${min} min. · ${level + 1} lygis${easy ? " · lengvesnė" : ""}`;
-  const why = override ? "" : plan.why === "garmin" ? "Garmin rodo, kad kūnui šiandien reikia daugiau poilsio."
-    : plan.why === "rotation" ? "Po stiprinimo dienų – atsigavimas." : "";
+  const why = !override && plan.why === "rotation" ? `Po ${RECOVERY_AFTER} stiprinimo dienų iš eilės – atsigavimas. Jei nori, gali rinktis stiprinimą („Keisti treniruotę“).` : "";
   $("planwhy").textContent = why; $("planwhy").hidden = !why;
   $("planexsum").textContent = `Pratimai (${list.length})`;
   $("planlist").innerHTML = list.map(i => `<li><span>${esc(EX[i].name)}</span><small>${GROUPS[EX[i].group]}</small></li>`).join("");
@@ -961,8 +960,7 @@ function renderReady(t, r, type) {
   const tip = [], acts = [];
   const weak = r.parts.filter(p => p.s < 45).map(p => `${{ sleep: "miegas", rhr: "ramybės pulsas" }[p.key] || p.label} ${p.value}`);
   if (sc < 45) tip.push(weak.length ? weak.join(", ") + "." : "Kūnui reikia poilsio.");
-  else if (!override && plan.type === "recovery") tip.push("Vakar buvo įtempta diena.");
-  else if (sc < 70) tip.push(`Stiprinimas šiandien lengvesnis.${level ? " Geriau 1 lygis." : ""}`);
+  else if (sc < 70) tip.push("Jei jautiesi pavargusi, gali rinktis lengvesnę versiją.");
   else tip.push("Puiki diena treniruotei.");
   if (sc < 70 && level) acts.push(`<button class="btn ghost" type="button" data-act="lvl1">Rinktis 1 lygį</button>`);
   if (sc >= 70 && !level) {
