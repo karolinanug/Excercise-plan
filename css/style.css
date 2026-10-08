@@ -440,3 +440,6 @@ body:not([data-mode="workout"]) #quit { display: none; }
 .history .hnote { font-size: .9rem; color: var(--ink); font-style: italic; border-left: 3px solid var(--accent-soft); padding-left: 8px; }
 .history .hms { font-size: .85rem; font-weight: 700; color: var(--warn); }
 .history .hgarmin { font-size: .78rem; color: var(--muted); }
+.ex-tip { background: var(--oak-soft); border-radius: 14px; padding: 10px 14px; margin-top: 10px; }
+.ex-tip h4 { margin: 0 0 4px; }
+.ex-tip p { margin: 0; font-size: .92rem; }

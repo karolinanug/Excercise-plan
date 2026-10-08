@@ -32,6 +32,7 @@ const EX = [
   { name: "Paukštis–šuo", en: "Bird dog", why: "Moko išlaikyti stuburą stabilų, kai juda rankos ir kojos. Stiprina nugaros tiesiamuosius, sėdmenis ir pilvo raumenis simetriškai.",
     steps: ["Keturpėsčia: delnai po pečiais, keliai po klubais, nugara tiesi kaip stalas.", "Švelniai įtempk pilvą. Pradžioje tik slysk viena koja atgal, neatkeldama nuo grindų.", "Kai jauti stabilumą, ištiesk koją atgal klubo aukštyje ir kartu priešingą ranką į priekį.", "Palaikyk 3 sekundes, grįžk ir keisk puses."],
     mistakes: ["Keli koją per aukštai ir įlenki juosmenį.", "Dubuo pasisuka į šoną. Įsivaizduok stiklinę vandens ant juosmens.", "Galva nusvyra arba atsilošia. Žiūrėk į grindis."],
+    tip: { title: "🪵 Pasitikrink su lazda", text: "Pasidėk lazdą ar šluotos kotą išilgai nugaros: ji turi liesti pakaušį, nugarą tarp menčių ir kryžkaulį, po juosmeniu lieka tik delno storio tarpelis. Keliant ranką ir koją lazda neturi nukristi ar pasvirti – jei pasvyra, dubuo pasisuko. Be lazdos tą patį parodys ant juosmens padėtas plastikinis butelis." },
     dose: ["2 serijos × 6 kartai kiekviena pusė, pakaitomis, laikyti 3 s", "3 serijos × 8 kartai, laikyti 5 s"], sets: [2,3], secs: [60,90], sides: false, cue: "Ištiesk koją ir priešingą ranką, laikyk 3 s, keisk pusę. Juosmuo neįlinksta.",
     group: "glute", setup: "Atsistok keturpėsčia, nugara tiesi kaip stalas.",
     anim: "birddog", video: { id: "LaLKNS7mxrk", title: "Bird Dog Exercise for Beginners", by: "Margaret Martin, kineziterapeutė" } },
@@ -83,6 +84,7 @@ const EX = [
   { name: "Lenta ant dilbių", en: "Forearm plank", why: "Stiprina visą liemenį ir pečių juostą. Mokaisi išlaikyti dubenį neutralų, kai kūnas apkrautas.",
     steps: ["Atsiremk dilbiais, alkūnės tiesiai po pečiais, kojos ištiestos pečių plotyje.", "Įtempk pilvą ir sėdmenis: kūnas tiesia linija nuo galvos iki kulnų.", "Stumk grindis dilbiais, kad mentės nesusmegtų. Žvilgsnis į grindis tarp delnų.", "Laikyk ir ramiai kvėpuok. Jei per sunku, nuleisk kelius ant grindų."],
     mistakes: ["Dubuo nusvyra ir juosmuo įlinksta. Tai ką tik išmoktą dubens pakreipimą daryk ir čia.", "Sėdmenys per aukštai.", "Galva atlošta. Kaklas tęsia stuburą."],
+    tip: { title: "🪵 Pasitikrink su lazda", text: "Paprašyk ką nors uždėti lazdą ar šluotos kotą išilgai nugaros (arba užsidėk pati prieš pakildama): ji turi liesti pakaušį, nugarą tarp menčių ir kryžkaulį. Jei lazda atitrūksta nuo kryžkaulio – dubuo nusvyra: uodegikaulį truputį pakišk po savimi ir įtempk sėdmenis. Jei atitrūksta nuo pakaušio – galva nukarusi. Lazdos reikia tik kol išmoksi pajusti poziciją." },
     dose: ["2 kartai × 20 s", "2 kartai × 35 s"], sets: [2,2], secs: [20,35], sides: false, cue: "Alkūnės po pečiais, kūnas tiesus, stumk grindis dilbiais.",
     group: "core", setup: "Atsigulk ant pilvo ir atsiremk dilbiais, alkūnės po pečiais.", anim: "plank" },
   { name: "Tiltelis viena koja", en: "Single-leg glute bridge", why: "Sunkesnis tiltelio variantas: stiprina kiekvieno šono sėdmenis ir šlaunies užpakalį atskirai, gerina dubens stabilumą.",
@@ -147,6 +149,7 @@ function renderCards() {
       <ol>${e.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>
       <h4>Dažnos klaidos</h4>
       <ul class="mist">${e.mistakes.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
+      ${e.tip ? `<div class="ex-tip"><h4>${esc(e.tip.title)}</h4><p>${esc(e.tip.text)}</p></div>` : ""}
       ${e.video ? `<a class="video" href="#vid${i}" data-play="${i}"><i class="play" aria-hidden="true"></i><span>Žiūrėti video<small>${esc(e.video.by)} · skiltyje „Video“</small></span></a>` : ""}
     </article>`).join("");
   cardAnims.forEach(c => c.destroy());
